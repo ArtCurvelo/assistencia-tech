@@ -9,13 +9,13 @@
 
 - [x] 2.1 Implementar o menu administrativo recolhível abaixo de 900 px, com `aria-expanded` e fechamento ao escolher uma página; verificar no navegador em 375 px, 768 px e 1366 px.
 - [x] 2.2 Manter "Entrar" visível para visitantes no cabeçalho público do celular; verificar no navegador em 375 px.
-- [x] 2.3 Adicionar o link "Pular para o conteúdo" e o foco visível; verificar com Tab no navegador.
+- [ ] 2.3 Adicionar o link "Pular para o conteúdo" e o foco visível; verificar com Tab no navegador.
 
 ## 3. Painel
 
 - [x] 3.1 Criar `payment_summary` e adicionar cores e quantidades numéricas a `status_counts`, com testes em `tests/test_presenters.py`; verificar com `pytest`.
 - [x] 3.2 Substituir as barras do painel por gráficos Recharts (status e pagamentos); verificar no navegador que todos os status e situações aparecem com quantidades.
-- [x] 3.3 Exibir "—" nos indicadores antes do carregamento e quando ele falhar; verificar com teste de `EMPTY_METRICS` e no navegador observando o estado inicial do painel.
+- [ ] 3.3 Exibir "—" nos indicadores antes do carregamento e quando ele falhar; verificar com teste de `EMPTY_METRICS` e no navegador observando o estado inicial do painel.
 
 ## 4. Formulários e páginas
 
@@ -54,7 +54,7 @@
 - `/admin/relatorio-inexistente`: página "Página não encontrada" com "Ir para a minha área" para usuário autenticado.
 - Link "Pular para o conteúdo": é o primeiro elemento focável e aponta para `#conteudo` (que existe, com `tabindex=-1`).
 
-**Não verificado visualmente / observações:**
+**Não verificado visualmente / observações (tarefas 2.3 e 3.3 permanecem abertas por isso):**
 - O deslocamento do link de salto e o contorno de foco (`:focus`, `:focus-visible`) não puderam ser observados, porque o painel do navegador estava oculto e a janela não tinha foco (`document.hasFocus() = false`); as regras CSS estão presentes e o elemento recebe o foco.
 - 3.3: no modo Xano, o login (sem contrato) bloqueia o acesso antes do painel, então o cenário original "painel com a fonte Xano" deixou de ser alcançável desde a mudança de autenticação; o cenário foi reescrito para falha de carregamento e estado inicial. A cobertura é feita pelo teste de `EMPTY_METRICS` e pelo valor inicial do estado; o estado inicial é transitório e não foi capturado no navegador.
 - Tablet (768 px) verificado por medição de largura, sem captura de tela.
