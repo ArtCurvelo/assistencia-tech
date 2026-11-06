@@ -15,4 +15,4 @@ Esta versão utiliza dados fictícios no estado da aplicação. Não foi forneci
 
 ## Processo de especificação
 
-Consulte `OPEN_SPEC_APPROACH.md` e `specs/001-assistencia-tech-v1/` para a proposta, especificação, design e tarefas da versão. O projeto não utiliza a ferramenta OpenSpec diretamente.
+O projeto utiliza a ferramenta OpenSpec para organizar as mudanças. Consulte `OPEN_SPEC_APPROACH.md` para o fluxo adotado e a localização dos artefatos em `openspec/`. A pasta `specs/001-assistencia-tech-v1/` é o registro histórico da versão 1.0, anterior à adoção da CLI.

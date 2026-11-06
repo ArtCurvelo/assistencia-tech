@@ -1,46 +1,50 @@
-# Documentação de engenharia inspirada no OpenSpec
+# Processo de especificação com OpenSpec
 
 ## Objetivo deste documento
 
-Este projeto **não utiliza o OpenSpec como ferramenta ou CLI**. Em vez disso, mantém documentos versionáveis que registram intenção, requisitos, decisões de arquitetura, tarefas e evidências de validação, inspirados no fluxo de trabalho de especificação antes da implementação.
+Este projeto utiliza a ferramenta **OpenSpec** (CLI `openspec`, versão 1.14.3, esquema `spec-driven`) para organizar as mudanças relevantes: cada mudança é proposta, especificada, projetada e dividida em tarefas verificáveis antes da implementação, e as especificações aprovadas passam a compor a documentação viva do sistema.
 
-Isso deve ser descrito ao professor como **processo de especificação inspirado no OpenSpec**, e não como “OpenSpec instalado” ou “OpenSpec executado”.
+> Versões anteriores deste documento afirmavam que a ferramenta não era utilizada. Isso deixou de ser verdade a partir da mudança `redesign-interface` (arquivada em 2026-10-29), executada e validada com a CLI.
 
-## Como navegar na documentação
+## Onde estão os artefatos
 
-- `PROJECT.md`: contexto, problema e escopo.
-- `REQUIREMENTS.md`: requisitos e critérios de aceitação gerais.
-- `DESIGN.md`: arquitetura e decisões técnicas.
-- `TASKS.md`: plano de trabalho e estado das atividades.
-- `CHANGELOG.md`: mudanças relevantes por versão.
-- `specs/001-assistencia-tech-v1/PROPOSAL.md`: proposta e motivação da mudança.
-- `specs/001-assistencia-tech-v1/SPEC.md`: comportamento esperado e critérios verificáveis.
-- `specs/001-assistencia-tech-v1/DESIGN.md`: plano de implementação.
-- `specs/001-assistencia-tech-v1/TASKS.md`: tarefas rastreáveis de implementação e validação.
+| Local | Conteúdo |
+|---|---|
+| `openspec/config.yaml` | Contexto do projeto e regras para os artefatos (idioma, restrições do Xano, verificação das tarefas) |
+| `openspec/specs/<capacidade>/spec.md` | Especificações vigentes do sistema (fonte da verdade) |
+| `openspec/changes/<mudança>/` | Mudanças em andamento: `proposal.md`, `specs/` (deltas), `design.md`, `tasks.md` |
+| `openspec/changes/archive/` | Mudanças concluídas e arquivadas |
+| `docs/specs/001-assistencia-tech-v1/` | Registro histórico da versão 1.0, anterior à adoção da CLI (mantido apenas como histórico) |
+
+## Especificações vigentes
+
+- `design-system` — consistência visual, elementos interativos e feedback de estado.
+- `responsive-interface` — adaptação a telas, navegação e formulários em telas pequenas.
+
+## Mudanças
+
+- `redesign-interface` — arquivada em 2026-10-29. Observação: foi arquivada com parte das tarefas de verificação manual ainda abertas (revisão completa de rotas e tamanhos de tela). Essas verificações foram incorporadas aos grupos de verificação das mudanças seguintes.
+- `integrate-xano-backend` — em andamento: camada de acesso a dados, modo demonstração, cliente Xano e integração real (esta última bloqueada até a documentação oficial da API).
 
 ## Fluxo de trabalho adotado
 
-1. **Propor:** registrar problema, motivação, escopo e não objetivos.
-2. **Especificar:** definir comportamentos e critérios de aceitação antes de considerar a funcionalidade pronta.
-3. **Projetar:** registrar componentes, estado, serviços, riscos e decisões.
-4. **Planejar:** dividir o trabalho em tarefas pequenas e verificáveis.
-5. **Implementar:** desenvolver conforme a especificação.
-6. **Validar:** executar testes e registrar o que foi e o que não foi validado.
-7. **Atualizar:** manter tarefas, changelog e documentação coerentes com o código.
+1. **Propor** (`proposal.md`): problema, motivação, escopo e o que está fora do escopo.
+2. **Especificar** (`specs/**/spec.md`): requisitos com `SHALL/MUST` e cenários `WHEN/THEN` testáveis.
+3. **Projetar** (`design.md`): decisões técnicas, alternativas consideradas e riscos.
+4. **Planejar** (`tasks.md`): tarefas pequenas, cada uma com sua forma de verificação.
+5. **Implementar** tarefa a tarefa, marcando apenas o que foi implementado **e** verificado.
+6. **Validar** com `pytest`, `openspec validate <mudança> --strict` e verificação no navegador.
+7. **Arquivar** com `openspec archive <mudança>`, que incorpora os deltas às especificações vigentes.
+
+## Comandos úteis
+
+```powershell
+openspec list                      # mudanças em andamento
+openspec list --specs              # especificações vigentes
+openspec status --change integrate-xano-backend
+openspec validate --all --strict
+```
 
 ## Rastreabilidade
 
-Cada requisito possui um identificador (`RFxx` ou `RNFxx`) e deve apontar para uma ou mais tarefas. Uma tarefa só deve ser marcada como concluída quando houver evidência compatível. A existência do código, isoladamente, não prova que uma tela foi validada visualmente ou que uma integração real funciona.
-
-## Limitações atuais
-
-- A aplicação ainda é um protótipo demonstrativo.
-- Os dados são fictícios e não têm persistência em banco.
-- Login e cadastro não autenticam usuários.
-- As APIs e seus contratos ainda não foram integrados.
-- Os testes atuais cobrem a estrutura dos dados demonstrativos; não cobrem toda a interface Reflex.
-- A inicialização e a renderização no navegador ainda precisam ser validadas no ambiente de desenvolvimento.
-
-## Declaração sugerida para o relatório acadêmico
-
-> O projeto adotou um processo de especificação e implementação inspirado nas práticas do OpenSpec, mantendo artefatos versionáveis de proposta, requisitos, design, tarefas e validação. A ferramenta OpenSpec não foi utilizada diretamente; os documentos foram mantidos no repositório para tornar as decisões e os critérios de aceite auditáveis.
+Os requisitos funcionais e não funcionais gerais (`RFxx`, `RNFxx`) estão em `docs/REQUIREMENTS.md`. Os requisitos detalhados e seus cenários ficam nas especificações do OpenSpec. Uma tarefa só é marcada como concluída quando há evidência compatível (teste executado, comando validado ou verificação registrada); a existência do código, isoladamente, não prova que uma tela foi validada ou que uma integração real funciona.

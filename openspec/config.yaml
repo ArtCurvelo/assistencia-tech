@@ -1,32 +1,20 @@
 schema: spec-driven
 
-# Project context (optional)
-# Add only constraints that should guide OpenSpec artifacts and workflows.
-# Include constraints an agent cannot infer by reading the code.
-# Keep general project documentation and discoverable codebase facts out.
-# Example:
-#   context: |
-#     Designs and tasks must cover Windows, macOS, and Linux
-#     Write all artifacts in Spanish
+context: |
+  Projeto acadêmico (curso de ADS) de gestão de assistência técnica.
+  Todos os artefatos devem ser escritos em português do Brasil; as palavras-chave
+  normativas do OpenSpec (SHALL, MUST, WHEN, THEN) permanecem em inglês.
+  Frontend em Python com Reflex 0.8.x; backend e banco de dados planejados no Xano.
+  Regra absoluta: nunca inventar endpoints, métodos HTTP, contratos de autenticação,
+  estruturas de resposta ou campos da API do Xano. Enquanto a documentação oficial
+  não for fornecida, usar apenas interfaces internas, mocks e o modo demonstração,
+  sempre identificado como tal na interface.
+  Ambiente de desenvolvimento: Windows, PowerShell e .venv local.
+  Cada arquivo Python deve ter menos de 1000 linhas.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always state what is out of scope
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
-
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+rules:
+  tasks:
+    - Cada tarefa deve indicar como sua conclusão será verificada.
+    - Tarefas que dependem dos contratos do Xano devem ser marcadas como bloqueadas.
+  proposal:
+    - Declarar explicitamente o que está fora do escopo.

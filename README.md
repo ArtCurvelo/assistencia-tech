@@ -1,8 +1,8 @@
 # Assistência TECH — Reflex 1.0
 
-Protótipo acadêmico de gestão de assistência técnica, baseado nos HTMLs e CSS fornecidos.
+Aplicação acadêmica de gestão de assistência técnica, desenvolvida em Python com Reflex, com backend planejado no Xano.
 
-## Funcionalidades
+## Funcionalidades atuais
 - Página inicial e página de serviços.
 - Formulários demonstrativos de login e cadastro.
 - Consulta de OS usando dados fictícios.
@@ -11,37 +11,33 @@ Protótipo acadêmico de gestão de assistência técnica, baseado nos HTMLs e C
 - Pesquisa e alteração de status das ordens.
 
 ## Requisitos
-- Python 3.10+ (recomenda-se Python 3.11 ou 3.12 para compatibilidade ampla).
+- Python 3.10+ (a `.venv` do projeto usa Python 3.14).
+- Reflex 0.8.x (fixado em `requirements.txt`).
 - Acesso à internet na instalação inicial das dependências e para carregar a fonte Inter.
 
-## Instalação
-```bash
-python -m venv .venv
-```
+> **Atenção:** execute sempre os comandos com a `.venv` ativada. O Python global desta máquina tem outra versão do Reflex (0.10), incompatível com a faixa fixada no projeto.
 
-Windows PowerShell:
+## Instalação (Windows PowerShell)
 ```powershell
+python -m venv .venv
 .venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-reflex init
+pip install -r requirements-dev.txt
 reflex run
 ```
 
 Linux/macOS:
 ```bash
+python -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-reflex init
+pip install -r requirements-dev.txt
 reflex run
 ```
-
-Se `reflex init` perguntar sobre sobrescrever arquivos de configuração, mantenha a configuração deste projeto.
 
 A aplicação normalmente abre em `http://localhost:3000`.
 
 ## Testes
-```bash
-python -m unittest discover -s tests -v
+```powershell
+python -m pytest
 ```
 
 ## Rotas
@@ -57,8 +53,12 @@ python -m unittest discover -s tests -v
 ## Limitações conhecidas
 - Os registros são fictícios e ficam no estado da aplicação; não existe persistência em banco.
 - Login e cadastro não autenticam nem armazenam credenciais.
-- Não há conexão com APIs externas. Os contratos reais ainda precisam ser inspecionados antes da integração.
-- Este artefato é uma primeira implementação e precisa de validação em ambiente Reflex e inspeção visual em navegador antes de ser considerado pronto para produção.
+- Não há conexão com o Xano. Os contratos reais da API ainda precisam ser fornecidos antes da integração.
 
-## Documentação de especificação
-Consulte `docs/PROJECT.md`, `docs/REQUIREMENTS.md`, `docs/DESIGN.md`, `docs/TASKS.md` e `docs/CHANGELOG.md`.
+## Documentação
+- `docs/PROJECT.md` — contexto e escopo.
+- `docs/REQUIREMENTS.md` — requisitos funcionais e não funcionais.
+- `docs/OPEN_SPEC_APPROACH.md` — processo de especificação com OpenSpec.
+- `docs/CHANGELOG.md` — histórico de mudanças.
+- `openspec/specs/` — especificações vigentes.
+- `openspec/changes/` — mudanças em andamento (atualmente `integrate-xano-backend`).

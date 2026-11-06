@@ -1,10 +1,10 @@
-# Spec Delta
+# design-system Specification
 
 ## Purpose
 
 Define uma identidade visual consistente para o Assistência TECH, garantindo que as páginas e os componentes da interface apresentem uma experiência moderna, legível e coerente.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Consistência visual
 
