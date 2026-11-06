@@ -1471,3 +1471,139 @@ textarea.input {
   border-left: 3px solid #ff5c5c;
   border-radius: 6px;
 }
+
+/* =========================================================
+   FASE 2 — DOMÍNIO COMPLETO (status, tabelas, diálogos, OS)
+   ========================================================= */
+
+/* Status adicionais (classes geradas sem acento) */
+.status-em-analise { border-color: rgba(255, 208, 120, 0.2); background: rgba(255, 190, 70, 0.13); color: #ffd078; }
+.status-aguardando-aprovacao { border-color: rgba(200, 150, 255, 0.25); background: rgba(160, 100, 255, 0.14); color: #d4b4ff; }
+.status-concluido { border-color: rgba(37, 167, 255, 0.3); background: rgba(37, 167, 255, 0.14); color: var(--blue-light); }
+.status-entregue { border-color: rgba(192, 207, 223, 0.18); background: rgba(145, 164, 186, 0.12); color: #cbd8e7; }
+.status-cancelado { border-color: rgba(255, 92, 92, 0.3); background: rgba(255, 92, 92, 0.1); color: #ffb4b4; }
+
+.pay-badge {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.pay-pendente { background: rgba(255, 190, 70, 0.1); color: #ffd078; }
+.pay-parcial { background: rgba(37, 167, 255, 0.12); color: var(--blue-light); }
+.pay-pago { background: var(--green-soft); color: var(--green); }
+
+/* Botões */
+.btn-danger {
+  border: 1px solid rgba(255, 92, 92, 0.45);
+  background: rgba(255, 92, 92, 0.12);
+  color: #ffb4b4;
+  cursor: pointer;
+}
+.btn-danger:hover:not(:disabled) { background: rgba(255, 92, 92, 0.22); }
+
+.btn-sm {
+  padding: 5px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-sm:hover:not(:disabled) { border-color: var(--blue-light); color: var(--text); }
+.btn-sm-danger { border-color: rgba(255, 92, 92, 0.4); color: #ffb4b4; }
+.btn-sm-danger:hover:not(:disabled) { border-color: #ff5c5c; color: #ffd2d2; }
+
+/* Formulários */
+.stack-form { display: flex; flex-direction: column; gap: 16px; width: 100%; margin-top: 12px; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field-hint { color: var(--text-muted); font-size: 11px; }
+.narrow-field { max-width: 360px; margin-top: 16px; }
+.select-trigger { width: 100%; justify-content: space-between; }
+textarea.input { width: 100%; }
+
+/* Painéis e tabelas */
+.panel-header { margin-bottom: 14px; }
+.table-wrap { width: 100%; overflow-x: auto; }
+.code-link { color: var(--blue-light); font-weight: 600; }
+.code-link:hover { color: var(--green); }
+.back-link { color: var(--text-muted); font-size: 12px; font-weight: 600; }
+.back-link:hover { color: var(--green); }
+
+.info-label {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.info-value { margin-top: 2px; color: var(--text); font-weight: 600; }
+
+.totals-grid {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+/* Diálogos */
+.dialog-card {
+  border: 1px solid var(--border-strong);
+  background: var(--card) !important;
+  color: var(--text);
+  max-width: 720px;
+}
+.dialog-wide { max-width: 880px; }
+.dialog-actions { margin-top: 18px; }
+
+/* Indicadores do painel */
+.stat-hint { margin-top: 4px; color: var(--text-muted); font-size: 11px; }
+.dashboard-grid > * { min-width: 0; }
+.bar-row { width: 100%; font-size: 13px; }
+.bar-count { font-weight: 700; }
+.bar-track { height: 8px; margin-top: 6px; border-radius: 999px; background: var(--input-bg); overflow: hidden; }
+.bar-fill { display: block; height: 100%; padding: 0; border: 0; border-radius: 999px; }
+.summary-line { margin-top: 16px; }
+
+/* Linha do tempo da OS */
+.timeline { position: relative; padding-left: 22px; }
+.timeline::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  left: 6px;
+  width: 2px;
+  background: var(--border);
+}
+.timeline-item { position: relative; padding: 0 0 18px; }
+.timeline-dot {
+  position: absolute;
+  top: 5px;
+  left: -21px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--green);
+  border-radius: 50%;
+  background: var(--bg);
+}
+.timeline-kind { color: var(--green); font-size: 12px; font-weight: 700; }
+.timeline-body { display: flex; flex-direction: column; gap: 4px; }
+
+/* Consulta pública */
+.tracking-result {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid rgba(57, 255, 90, 0.25);
+  border-radius: var(--radius-sm);
+  background: var(--green-soft);
+}
+.tracking-code { color: var(--text-muted); font-size: 12px; font-weight: 700; }
+.tracking-status { color: var(--green); font-size: 20px; font-weight: 800; }
+
+.pay-nao-se-aplica { background: rgba(145, 164, 186, 0.1); color: var(--text-muted); }
+.code-link { white-space: nowrap; }

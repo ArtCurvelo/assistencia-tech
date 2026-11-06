@@ -48,7 +48,7 @@ O sistema SHALL permitir somente as transições: Recebido → Em análise; Em a
 
 ### Requirement: Técnico responsável
 
-O sistema SHALL permitir atribuir e trocar o técnico responsável por uma ordem que não esteja finalizada. Uma ordem MUST ter técnico responsável para sair do status Recebido.
+O sistema SHALL permitir atribuir e trocar o técnico responsável por uma ordem que não esteja Entregue nem Cancelada. Uma ordem MUST ter técnico responsável para passar de Recebido a Em análise; o cancelamento de uma ordem recebida não exige técnico.
 
 #### Scenario: Início da análise sem técnico
 - **WHEN** o usuário tenta mover para Em análise uma ordem sem técnico responsável

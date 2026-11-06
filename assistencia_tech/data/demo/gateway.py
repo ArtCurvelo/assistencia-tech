@@ -1,7 +1,8 @@
 """Modo demonstração: repositórios em memória.
 
 Os dados existem apenas enquanto o processo da aplicação estiver em execução
-e são sempre identificados como demonstrativos na interface.
+e são sempre identificados como demonstrativos na interface. Regras de
+negócio não ficam aqui: estão em ``domain`` e ``services``.
 """
 
 from __future__ import annotations
@@ -11,18 +12,10 @@ from collections.abc import Callable
 from datetime import date
 
 from ...config import DATA_SOURCE_DEMO
-from ...models import (
-    ORDER_STATUSES,
-    Client,
-    ClientCreate,
-    Equipment,
-    EquipmentCreate,
-    OrderCreate,
-    ServiceOrder,
-)
-from ...services import demo_data
+from ...models import Client, ClientCreate, Equipment, EquipmentCreate, ServiceOrder, Technician
 from ..errors import NotFoundError, ValidationError
 from ..repositories import DataGateway
+from . import seed
 
 YearProvider = Callable[[], int]
 _CODE_RE = re.compile(r"^OS-(\d{4})-(\d+)$")
@@ -42,59 +35,68 @@ def next_order_code(existing_codes: list[str], year: int) -> str:
     return format_order_code(year, max(numbers, default=0) + 1)
 
 
-def _next_id(items: list[Client] | list[Equipment]) -> str:
-    return str(max((int(item.id) for item in items if item.id.isdigit()), default=0) + 1)
+def _next_id(ids: list[str]) -> str:
+    return str(max((int(i) for i in ids if i.isdigit()), default=0) + 1)
 
 
-class _ClientNames:
-    """Consulta compartilhada para validar o vínculo com clientes cadastrados."""
+class _MemoryRepository:
+    entity_label = "Registro"
 
-    def __init__(self, clients: DemoClientRepository) -> None:
-        self._clients = clients
-
-    def require(self, name: str) -> None:
-        if all(client.name != name for client in self._clients.items):
-            raise ValidationError(f"Cliente não encontrado: {name}. Cadastre o cliente antes de continuar.")
-
-
-class DemoClientRepository:
-    def __init__(self, items: list[Client]) -> None:
+    def __init__(self, items: list) -> None:
         self.items = list(items)
 
-    async def list(self) -> list[Client]:
+    async def list(self) -> list:
         return list(self.items)
 
+    async def get(self, item_id: str):
+        for item in self.items:
+            if item.id == item_id:
+                return item
+        raise NotFoundError(f"{self.entity_label} não encontrado.")
+
+    async def update(self, entity):
+        await self.get(entity.id)
+        self.items = [entity if item.id == entity.id else item for item in self.items]
+        return entity
+
+    async def delete(self, item_id: str) -> None:
+        await self.get(item_id)
+        self.items = [item for item in self.items if item.id != item_id]
+
+
+class DemoClientRepository(_MemoryRepository):
+    entity_label = "Cliente"
+
     async def create(self, data: ClientCreate) -> Client:
-        if any(client.email == data.email for client in self.items):
-            raise ValidationError(f"Já existe um cliente com o e-mail {data.email}.")
-        client = Client(id=_next_id(self.items), **data.model_dump())
+        client = Client(id=_next_id([c.id for c in self.items]), **data.model_dump())
         self.items.append(client)
         return client
 
 
-class DemoEquipmentRepository:
-    def __init__(self, items: list[Equipment], clients: _ClientNames) -> None:
-        self.items = list(items)
-        self._clients = clients
-
-    async def list(self) -> list[Equipment]:
-        return list(self.items)
+class DemoEquipmentRepository(_MemoryRepository):
+    entity_label = "Equipamento"
 
     async def create(self, data: EquipmentCreate) -> Equipment:
-        self._clients.require(data.client)
-        equipment = Equipment(id=_next_id(self.items), **data.model_dump())
+        equipment = Equipment(id=_next_id([e.id for e in self.items]), **data.model_dump())
         self.items.append(equipment)
         return equipment
 
 
-class DemoOrderRepository:
-    def __init__(self, items: list[ServiceOrder], clients: _ClientNames, year_provider: YearProvider) -> None:
+class DemoTechnicianRepository:
+    def __init__(self, items: list[Technician]) -> None:
         self.items = list(items)
-        self._clients = clients
+
+    async def list(self) -> list[Technician]:
+        return list(self.items)
+
+
+class DemoOrderRepository:
+    def __init__(self, items: list[ServiceOrder], year_provider: YearProvider) -> None:
+        self.items = list(items)
         self._year = year_provider
 
     async def list(self) -> list[ServiceOrder]:
-        return list(self.items)
+        return sorted(self.items, key=lambda o: (o.opened_at, o.code), reverse=True)
 
     def _index_of(self, code: str) -> int:
         wanted = code.strip().upper()
@@ -106,35 +108,28 @@ class DemoOrderRepository:
     async def get_by_code(self, code: str) -> ServiceOrder:
         return self.items[self._index_of(code)]
 
-    async def create(self, data: OrderCreate) -> ServiceOrder:
-        self._clients.require(data.client)
-        code = next_order_code([order.code for order in self.items], self._year())
-        order = ServiceOrder(code=code, status=ORDER_STATUSES[0], **data.model_dump())
-        self.items.insert(0, order)
+    async def next_code(self) -> str:
+        return next_order_code([o.code for o in self.items], self._year())
+
+    async def create(self, order: ServiceOrder) -> ServiceOrder:
+        if any(o.code.upper() == order.code.upper() for o in self.items):
+            raise ValidationError(f"Já existe uma ordem com o código {order.code}.")
+        self.items.append(order)
         return order
 
-    async def update_status(self, code: str, status: str) -> ServiceOrder:
-        if status not in ORDER_STATUSES:
-            raise ValidationError(f"Status inválido: {status}. Use: {', '.join(ORDER_STATUSES)}.")
-        index = self._index_of(code)
-        updated = self.items[index].model_copy(update={"status": status})
-        self.items[index] = updated
-        return updated
+    async def save(self, order: ServiceOrder) -> ServiceOrder:
+        self.items[self._index_of(order.code)] = order
+        return order
 
 
 def build_demo_gateway(year_provider: YearProvider | None = None) -> DataGateway:
-    """Cria um gateway de demonstração com os dados iniciais fictícios."""
-    clients = DemoClientRepository([Client(**c) for c in demo_data.initial_clients()])
-    names = _ClientNames(clients)
+    """Cria um gateway de demonstração com os dados fictícios iniciais."""
     return DataGateway(
         source=DATA_SOURCE_DEMO,
         label="Modo demonstração",
         is_demo=True,
-        clients=clients,
-        equipment=DemoEquipmentRepository([Equipment(**e) for e in demo_data.initial_equipment()], names),
-        orders=DemoOrderRepository(
-            [ServiceOrder(**o) for o in demo_data.initial_orders()],
-            names,
-            year_provider or (lambda: date.today().year),
-        ),
+        clients=DemoClientRepository(seed.seed_clients()),
+        equipment=DemoEquipmentRepository(seed.seed_equipment()),
+        technicians=DemoTechnicianRepository(seed.seed_technicians()),
+        orders=DemoOrderRepository(seed.seed_orders(), year_provider or (lambda: date.today().year)),
     )

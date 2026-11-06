@@ -3,12 +3,12 @@
 Aplicação acadêmica de gestão de assistência técnica, desenvolvida em Python com Reflex, com backend planejado no Xano.
 
 ## Funcionalidades atuais
-- Página inicial e página de serviços.
-- Formulários demonstrativos de login e cadastro.
-- Consulta de OS usando dados fictícios.
-- Painel administrativo.
-- Cadastro demonstrativo de clientes, equipamentos e ordens.
-- Pesquisa e alteração de status das ordens.
+- Página inicial, serviços e consulta pública de OS (sem dados pessoais).
+- Painel com indicadores: ordens em aberto, aguardando aprovação, prontas para entrega e valor a receber.
+- Clientes: CPF e telefone validados, unicidade de CPF e e-mail, edição, exclusão controlada e histórico de atendimentos.
+- Equipamentos: vínculo com cliente, número de série único, filtros, edição, exclusão controlada e histórico de manutenção.
+- Ordens de serviço: fluxo de status com regras, técnico responsável, diagnóstico, orçamento de serviços e peças, pagamentos, cancelamento com motivo e linha do tempo.
+- Formulários demonstrativos de login e cadastro (autenticação real em mudança futura).
 
 ## Requisitos
 - Python 3.10+ (a `.venv` do projeto usa Python 3.14).
@@ -46,9 +46,9 @@ python -m pytest
 - `/login`
 - `/cadastro`
 - `/admin`
-- `/admin/clientes`
+- `/admin/clientes` e `/admin/clientes/[cliente_id]`
 - `/admin/equipamentos`
-- `/admin/ordens`
+- `/admin/ordens` e `/admin/ordens/[codigo]`
 
 ## Fonte de dados
 A aplicação usa uma camada de acesso a dados com duas fontes, escolhidas por variável de ambiente (veja `.env.example` e `docs/XANO_INTEGRATION.md`):
@@ -63,8 +63,9 @@ A aplicação usa uma camada de acesso a dados com duas fontes, escolhidas por v
 ## Documentação
 - `docs/PROJECT.md` — contexto e escopo.
 - `docs/REQUIREMENTS.md` — requisitos funcionais e não funcionais.
+- `docs/DATA_MODEL.md` — diagrama entidade-relacionamento e ciclo de vida da OS.
 - `docs/OPEN_SPEC_APPROACH.md` — processo de especificação com OpenSpec.
 - `docs/XANO_INTEGRATION.md` — arquitetura de dados, configuração e registro de contratos do Xano.
 - `docs/CHANGELOG.md` — histórico de mudanças.
 - `openspec/specs/` — especificações vigentes.
-- `openspec/changes/` — mudanças em andamento (atualmente `integrate-xano-backend`).
+- `openspec/changes/` — mudanças em andamento (`integrate-xano-backend` e `expand-service-domain`).

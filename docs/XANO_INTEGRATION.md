@@ -7,11 +7,14 @@ Este documento descreve a arquitetura de acesso a dados do Assistência TECH, co
 ## Arquitetura
 
 ```
-Páginas Reflex (assistencia_tech.py, components.py)
+Páginas Reflex (pages/, components/)
         │  exibem dados e disparam eventos
         ▼
-AppState (state.py)
-        │  orquestra carregamento, feedback e erros
+Estados Reflex (state/)               carregamento, feedback e erros
+        │
+        ▼
+Serviços de aplicação (services/)     orquestração
+        │  usam as regras puras de domain/ (validação, status, valores, histórico)
         ▼
 DataGateway (data/repositories.py)   ← interfaces internas (Protocol)
         │
@@ -22,7 +25,7 @@ DataGateway (data/repositories.py)   ← interfaces internas (Protocol)
                  └── gateway.py     implementação das interfaces
 ```
 
-- As páginas **não** conhecem a fonte de dados.
+- As páginas **não** conhecem a fonte de dados, e as regras de negócio valem igualmente para o modo demonstração e para o Xano.
 - `data/factory.py` escolhe o gateway a partir da configuração.
 - Os modelos (`models/`) validam os dados de entrada e geram mensagens em português.
 - Os erros (`data/errors.py`) carregam uma mensagem segura para o usuário (`user_message`) e detalhes técnicos apenas para o log (`detail`).

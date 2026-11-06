@@ -1,21 +1,47 @@
-"""Modelos das entidades atuais do sistema.
+"""Entidades e objetos de valor do domínio.
 
-Os campos refletem o estado atual da aplicação. A ampliação do domínio
-(diagnóstico, peças, pagamentos, histórico) será feita em mudança própria.
+Os modelos são imutáveis (``frozen``): alterações geram uma nova instância
+com ``model_copy``. A ordem de serviço é um agregado que contém seus itens,
+pagamentos e histórico.
 """
 
 from __future__ import annotations
 
 import re
-from typing import ClassVar
+from datetime import datetime
+from decimal import Decimal
+from enum import StrEnum
+from typing import Annotated, ClassVar
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, field_validator
 
-ORDER_STATUSES: tuple[str, ...] = ("Recebido", "Em análise", "Em reparo", "Concluído")
-EQUIPMENT_KINDS: tuple[str, ...] = ("Computador", "Notebook", "Console", "Celular", "Outro")
-PHONE_NOT_INFORMED = "Não informado"
+from ..domain.validators import normalize_cpf, normalize_phone, parse_brl
+
+EQUIPMENT_KINDS: tuple[str, ...] = ("Computador", "Notebook", "Console", "Celular", "Tablet", "Outro")
+PAYMENT_METHODS: tuple[str, ...] = ("Dinheiro", "PIX", "Cartão de débito", "Cartão de crédito")
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+Money = Annotated[Decimal, BeforeValidator(parse_brl), Field(gt=0)]
+Text = Annotated[str, Field(min_length=1)]
+
+
+class OrderStatus(StrEnum):
+    RECEIVED = "Recebido"
+    ANALYSIS = "Em análise"
+    AWAITING_APPROVAL = "Aguardando aprovação"
+    REPAIR = "Em reparo"
+    DONE = "Concluído"
+    DELIVERED = "Entregue"
+    CANCELLED = "Cancelado"
+
+
+ORDER_STATUSES: tuple[str, ...] = tuple(status.value for status in OrderStatus)
+
+
+class ItemKind(StrEnum):
+    SERVICE = "Serviço"
+    PART = "Peça"
 
 
 class _Model(BaseModel):
@@ -24,12 +50,21 @@ class _Model(BaseModel):
     field_labels: ClassVar[dict[str, str]] = {}
 
 
+# ----------------------------------------------------------------------
+# Clientes
+# ----------------------------------------------------------------------
 class ClientCreate(_Model):
-    field_labels: ClassVar[dict[str, str]] = {"name": "Nome", "email": "E-mail", "phone": "Telefone"}
+    field_labels: ClassVar[dict[str, str]] = {"name": "Nome", "cpf": "CPF", "email": "E-mail", "phone": "Telefone"}
 
-    name: str = Field(min_length=1)
-    email: str = Field(min_length=1)
-    phone: str = PHONE_NOT_INFORMED
+    name: Text
+    cpf: Text
+    email: Text
+    phone: Text
+
+    @field_validator("cpf")
+    @classmethod
+    def _cpf(cls, value: str) -> str:
+        return normalize_cpf(value)
 
     @field_validator("email")
     @classmethod
@@ -41,46 +76,161 @@ class ClientCreate(_Model):
     @field_validator("phone")
     @classmethod
     def _phone(cls, value: str) -> str:
-        return value or PHONE_NOT_INFORMED
+        return normalize_phone(value)
 
 
 class Client(ClientCreate):
-    id: str = Field(min_length=1)
+    id: Text
 
 
+# ----------------------------------------------------------------------
+# Técnicos
+# ----------------------------------------------------------------------
+class Technician(_Model):
+    id: Text
+    name: Text
+    specialty: str = ""
+
+
+# ----------------------------------------------------------------------
+# Equipamentos
+# ----------------------------------------------------------------------
 class EquipmentCreate(_Model):
-    field_labels: ClassVar[dict[str, str]] = {"client": "Cliente", "kind": "Tipo", "model": "Marca/modelo"}
+    field_labels: ClassVar[dict[str, str]] = {
+        "client_id": "Cliente",
+        "kind": "Tipo",
+        "brand": "Marca",
+        "model": "Modelo",
+        "serial_number": "Número de série",
+        "notes": "Observações",
+    }
 
-    client: str = Field(min_length=1)
-    kind: str = Field(min_length=1)
-    model: str = Field(min_length=1)
+    client_id: Text
+    kind: Text
+    brand: Text
+    model: Text
+    serial_number: str = ""
+    notes: str = ""
+
+    @field_validator("kind")
+    @classmethod
+    def _kind(cls, value: str) -> str:
+        if value not in EQUIPMENT_KINDS:
+            raise ValueError(f"tipo inválido; use {', '.join(EQUIPMENT_KINDS)}")
+        return value
+
+    @field_validator("serial_number")
+    @classmethod
+    def _serial(cls, value: str) -> str:
+        return value.upper()
+
+    @property
+    def description(self) -> str:
+        return f"{self.kind} {self.brand} {self.model}"
 
 
 class Equipment(EquipmentCreate):
-    id: str = Field(min_length=1)
+    id: Text
 
 
+def serial_key(serial: str) -> str:
+    """Chave de comparação do número de série (sem espaços, sem caixa)."""
+    return re.sub(r"\s", "", serial).casefold()
+
+
+# ----------------------------------------------------------------------
+# Itens, pagamentos e histórico
+# ----------------------------------------------------------------------
+class OrderItemCreate(_Model):
+    field_labels: ClassVar[dict[str, str]] = {
+        "kind": "Tipo do item",
+        "description": "Descrição",
+        "quantity": "Quantidade",
+        "unit_price": "Valor",
+    }
+
+    kind: ItemKind
+    description: Text
+    quantity: int = Field(default=1, ge=1)
+    unit_price: Money
+
+    @field_validator("quantity", mode="before")
+    @classmethod
+    def _quantity(cls, value: object) -> object:
+        if isinstance(value, str):
+            value = value.strip() or "1"
+            if not value.isdigit():
+                raise ValueError("informe uma quantidade inteira positiva")
+            return int(value)
+        return value
+
+
+class OrderItem(OrderItemCreate):
+    id: Text
+
+    @property
+    def subtotal(self) -> Decimal:
+        return self.unit_price * self.quantity
+
+
+class PaymentCreate(_Model):
+    field_labels: ClassVar[dict[str, str]] = {"amount": "Valor do pagamento", "method": "Forma de pagamento"}
+
+    amount: Money
+    method: Text
+
+    @field_validator("method")
+    @classmethod
+    def _method(cls, value: str) -> str:
+        if value not in PAYMENT_METHODS:
+            raise ValueError(f"forma de pagamento inválida; use {', '.join(PAYMENT_METHODS)}")
+        return value
+
+
+class Payment(PaymentCreate):
+    id: Text
+    paid_at: datetime
+
+
+class HistoryEvent(_Model):
+    at: datetime
+    author: Text
+    kind: Text
+    description: Text
+
+
+# ----------------------------------------------------------------------
+# Ordem de serviço (agregado)
+# ----------------------------------------------------------------------
 class OrderCreate(_Model):
     field_labels: ClassVar[dict[str, str]] = {
-        "client": "Cliente",
-        "device": "Equipamento",
+        "client_id": "Cliente",
+        "equipment_id": "Equipamento",
         "problem": "Problema relatado",
     }
 
-    client: str = Field(min_length=1)
-    device: str = Field(min_length=1)
-    problem: str = Field(min_length=1)
+    client_id: Text
+    equipment_id: Text
+    problem: Text
 
 
 class ServiceOrder(OrderCreate):
-    field_labels: ClassVar[dict[str, str]] = {**OrderCreate.field_labels, "code": "Código", "status": "Status"}
+    code: Text
+    status: OrderStatus = OrderStatus.RECEIVED
+    opened_at: datetime
+    updated_at: datetime
+    technician_id: str | None = None
+    diagnosis: str = ""
+    cancel_reason: str = ""
+    items: tuple[OrderItem, ...] = ()
+    payments: tuple[Payment, ...] = ()
+    history: tuple[HistoryEvent, ...] = ()
 
-    code: str = Field(min_length=1)
-    status: str = ORDER_STATUSES[0]
 
-    @field_validator("status")
-    @classmethod
-    def _status(cls, value: str) -> str:
-        if value not in ORDER_STATUSES:
-            raise ValueError("status inválido")
-        return value
+class PublicOrderView(_Model):
+    """Projeção da OS para a consulta pública: sem dados pessoais nem valores."""
+
+    code: str
+    status: str
+    equipment: str
+    updated_at: datetime

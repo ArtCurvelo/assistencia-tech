@@ -23,6 +23,10 @@ def _message_for(model_cls: type[pydantic.BaseModel], error: Mapping[str, Any]) 
     if kind == "value_error":
         reason = str(error.get("ctx", {}).get("error", "valor inválido"))
         return f"{label}: {reason}."
+    if kind in {"greater_than", "greater_than_equal"}:
+        return f"{label}: o valor deve ser positivo."
+    if kind == "enum":
+        return f"{label}: opção inválida."
     return f"{label}: valor inválido."
 
 

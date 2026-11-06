@@ -19,13 +19,21 @@ from ..errors import ContractPendingError
 # correspondem a endpoints do Xano.
 OPERATIONS: dict[str, str] = {
     "clients.list": "listar clientes",
+    "clients.get": "consultar cliente",
     "clients.create": "cadastrar clientes",
+    "clients.update": "editar clientes",
+    "clients.delete": "excluir clientes",
     "equipment.list": "listar equipamentos",
+    "equipment.get": "consultar equipamento",
     "equipment.create": "cadastrar equipamentos",
+    "equipment.update": "editar equipamentos",
+    "equipment.delete": "excluir equipamentos",
+    "technicians.list": "listar técnicos",
     "orders.list": "listar ordens de serviço",
     "orders.get_by_code": "consultar ordem de serviço",
+    "orders.next_code": "gerar o código da ordem de serviço",
     "orders.create": "abrir ordens de serviço",
-    "orders.update_status": "atualizar o status da ordem de serviço",
+    "orders.save": "atualizar a ordem de serviço",
 }
 
 

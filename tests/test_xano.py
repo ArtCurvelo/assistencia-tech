@@ -11,7 +11,15 @@ from assistencia_tech.data.xano import (
     build_xano_gateway,
     require_contract,
 )
-from assistencia_tech.models import ClientCreate, OrderCreate
+from datetime import datetime
+
+from assistencia_tech.domain.clock import BRT
+from assistencia_tech.models import Client, ClientCreate, Equipment, EquipmentCreate, ServiceOrder
+
+CLIENT_DATA = ClientCreate(name="Ana", cpf="52998224725", email="ana@exemplo.test", phone="11987654321")
+EQUIPMENT_DATA = EquipmentCreate(client_id="1", kind="Notebook", brand="Dell", model="Inspiron")
+_AT = datetime(2026, 11, 6, tzinfo=BRT)
+ORDER = ServiceOrder(code="OS-2026-00001", client_id="1", equipment_id="1", problem="X", opened_at=_AT, updated_at=_AT)
 
 pytestmark = pytest.mark.anyio
 
@@ -115,18 +123,41 @@ async def test_xano_gateway_sends_no_requests_without_contracts():
         Settings(data_source="xano", xano_base_url=BASE_URL), client=make_client(handler)
     )
     assert gateway.is_demo is False
-    operations = [
-        gateway.clients.list(),
-        gateway.clients.create(ClientCreate(name="Ana", email="ana@exemplo.test")),
-        gateway.equipment.list(),
-        gateway.orders.list(),
-        gateway.orders.get_by_code("OS-2026-00001"),
-        gateway.orders.create(OrderCreate(client="Ana", device="X", problem="Y")),
-        gateway.orders.update_status("OS-2026-00001", "Concluído"),
-    ]
-    for operation in operations:
+    client = Client(id="1", **CLIENT_DATA.model_dump())
+    operations = {
+        "clients.list": gateway.clients.list(),
+        "clients.get": gateway.clients.get("1"),
+        "clients.create": gateway.clients.create(CLIENT_DATA),
+        "clients.update": gateway.clients.update(client),
+        "clients.delete": gateway.clients.delete("1"),
+        "equipment.list": gateway.equipment.list(),
+        "equipment.get": gateway.equipment.get("1"),
+        "equipment.create": gateway.equipment.create(EQUIPMENT_DATA),
+        "equipment.update": gateway.equipment.update(Equipment(id="1", **EQUIPMENT_DATA.model_dump())),
+        "equipment.delete": gateway.equipment.delete("1"),
+        "technicians.list": gateway.technicians.list(),
+        "orders.list": gateway.orders.list(),
+        "orders.get_by_code": gateway.orders.get_by_code("OS-2026-00001"),
+        "orders.next_code": gateway.orders.next_code(),
+        "orders.create": gateway.orders.create(ORDER),
+        "orders.save": gateway.orders.save(ORDER),
+    }
+    assert set(operations) == set(OPERATIONS)
+    for name, operation in operations.items():
         with pytest.raises(errors.ContractPendingError) as info:
             await operation
-        assert "documentação oficial" in info.value.user_message
+        assert "documentação oficial" in info.value.user_message, name
     assert calls == []
-    assert set(OPERATIONS) >= {"clients.list", "orders.update_status"}
+
+
+async def test_registered_contract_without_mapping_still_sends_nothing():
+    calls = []
+    registry = {"clients.list": EndpointContract(method="GET", path="/exemplo", source="teste")}
+    gateway = build_xano_gateway(
+        Settings(data_source="xano", xano_base_url=BASE_URL),
+        client=make_client(lambda r: calls.append(r) or httpx.Response(200, json=[])),
+        registry=registry,
+    )
+    with pytest.raises(errors.ContractPendingError, match="em implementação"):
+        await gateway.clients.list()
+    assert calls == []
