@@ -43,7 +43,7 @@ O modo demonstração SHALL oferecer consulta e cadastro de clientes, equipament
 - **THEN** o cliente passa a aparecer na lista de clientes
 
 #### Scenario: Status inválido
-- **WHEN** uma atualização tenta atribuir a uma ordem um status fora de Recebido, Em análise, Em reparo e Concluído
+- **WHEN** uma atualização tenta atribuir a uma ordem um status fora do conjunto de status permitidos
 - **THEN** a ordem mantém o status anterior e o usuário é informado de que o status é inválido
 
 ### Requirement: Código único e padronizado da ordem de serviço
