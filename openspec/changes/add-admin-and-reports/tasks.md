@@ -37,7 +37,11 @@
 - Relatórios: período padrão de 08/08/2026 a 06/11/2026; indicadores e tabelas iguais aos testes; período invertido recusado; filtro de outubro atualizado; CSV baixado como `ordens-2026-10-01-a-2026-10-31.csv`, com BOM UTF-8 (`EF BB BF`), cabeçalho, 7 linhas, `;` e vírgula decimal.
 - Celular (375 px): `/admin/relatorios` e `/admin/colaboradores` sem largura excedente.
 
-**Não verificado no navegador (coberto por testes de serviço):** reativação de colaborador, redefinição de senha pela interface e acesso do Atendente aos relatórios.
+- Reativação de Paulo Nunes pela interface (Inativo → Ativo) e login dele em seguida.
+- Redefinição de senha da Fernanda: senha fraca recusada; nova senha aceita; a senha anterior passa a ser recusada no login.
+- Atendente: menu com "Relatórios" e sem "Colaboradores"; `/admin/colaboradores` leva a `/acesso-negado`; `/admin/relatorios` exibe os indicadores e o botão "Exportar CSV".
+
+**Observação:** durante a verificação, o servidor de desenvolvimento recarregou e os dados em memória voltaram ao seed (comportamento conhecido do modo demonstração); as verificações seguintes foram refeitas a partir desse estado.
 
 ## Workflow follow-up
 
