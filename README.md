@@ -75,4 +75,4 @@ A aplicação usa uma camada de acesso a dados com duas fontes, escolhidas por v
 - `docs/XANO_INTEGRATION.md` — arquitetura de dados, configuração e registro de contratos do Xano.
 - `docs/CHANGELOG.md` — histórico de mudanças.
 - `openspec/specs/` — especificações vigentes.
-- `openspec/changes/` — mudanças em andamento (`integrate-xano-backend`, `expand-service-domain` e `add-auth-and-access-control`).
+- `openspec/changes/` — mudanças em andamento (`integrate-xano-backend`, `expand-service-domain`, `add-auth-and-access-control` e `refine-frontend-experience`).

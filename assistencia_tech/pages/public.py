@@ -272,3 +272,26 @@ def access_denied_page() -> rx.Component:
             class_name="auth-container",
         ),
     )
+
+
+def not_found_page() -> rx.Component:
+    return public_page(
+        rx.center(
+            rx.box(
+                rx.text("404", class_name="not-found-code"),
+                rx.heading("Página não encontrada", size="7"),
+                rx.text("O endereço acessado não existe ou foi movido.", class_name="muted"),
+                rx.flex(
+                    rx.cond(
+                        AppState.is_authenticated,
+                        rx.link(button("Ir para a minha área"), href=AppState.user_home),
+                        rx.link(button("Página inicial"), href="/"),
+                    ),
+                    gap="3",
+                    justify="center",
+                ),
+                class_name="auth-card auth-heading",
+            ),
+            class_name="auth-container",
+        ),
+    )

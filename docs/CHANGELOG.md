@@ -1,5 +1,13 @@
 # Changelog
 
+## Não lançado — Fase 4 (frontend e responsividade, mudança `refine-frontend-experience`)
+- Correção da largura excedente no celular em clientes, equipamentos, ordens e detalhes (de até 754 px para 375 px): tabelas com rolagem própria.
+- Menu administrativo recolhível abaixo de 900 px, com `aria-expanded`; barra lateral mantida no computador.
+- Painel com gráficos Recharts (ordens por status e situação dos pagamentos) e indicadores em grade adaptável; "—" quando os dados não estão disponíveis.
+- Formulários preservam os dados quando a operação é recusada e são limpos após o sucesso.
+- Botão "Entrar" visível no celular; link "Pular para o conteúdo" e foco visível; página "Página não encontrada".
+- 270 testes automatizados.
+
 ## Não lançado — Fase 3 (autenticação e acesso, mudança `add-auth-and-access-control`)
 - Login e logout com sessão no servidor (token opaco em cookie `SameSite=Strict`, expiração após 2 h sem atividade).
 - Senhas com PBKDF2-SHA256 e sal; política de senha; bloqueio de 5 minutos após 5 tentativas; mensagem genérica de credenciais inválidas.

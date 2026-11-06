@@ -37,6 +37,8 @@ class OrderDetailState(AdminState):
     permissions: dict[str, str] = {}
     next_status: list[str] = []
     item_kind: str = "Serviço"
+    item_form_key: int = 0
+    payment_form_key: int = 0
 
     cancel_open: bool = False
 
@@ -110,6 +112,8 @@ class OrderDetailState(AdminState):
         form = {**form_data, "kind": self.item_kind}
         async for event in self._run(lambda s: s.add_item(self.code, form), "Item adicionado ao orçamento."):
             yield event
+        if self.feedback_kind == "success":
+            self.item_form_key += 1
 
     async def remove_item(self, item_id: str):
         async for event in self._run(lambda s: s.remove_item(self.code, item_id), "Item removido do orçamento."):
@@ -118,6 +122,8 @@ class OrderDetailState(AdminState):
     async def add_payment(self, form_data: dict):
         async for event in self._run(lambda s: s.add_payment(self.code, form_data), "Pagamento registrado."):
             yield event
+        if self.feedback_kind == "success":
+            self.payment_form_key += 1
 
     async def change_status(self, status: str):
         if status == CANCELLED:

@@ -192,6 +192,23 @@ def next_statuses(order: ServiceOrder, principal: Principal | None) -> list[str]
     return [status.value for status in transitions_for(principal, order)]
 
 
+# Cores sólidas dos gráficos (versões opacas das cores dos badges).
+STATUS_COLORS: dict[str, str] = {
+    "Recebido": "#087cff",
+    "Em análise": "#ffbe46",
+    "Aguardando aprovação": "#a064ff",
+    "Em reparo": "#39ff5a",
+    "Concluído": "#25a7ff",
+    "Entregue": "#91a4ba",
+    "Cancelado": "#ff5c5c",
+}
+PAYMENT_COLORS: dict[str, str] = {"Pendente": "#ffbe46", "Parcial": "#25a7ff", "Pago": "#39ff5a"}
+
+EMPTY_METRICS: Row = {
+    "open": "—", "awaiting": "—", "ready": "—", "receivable": "—", "clients": "—", "equipment": "—", "orders": "—",
+}
+
+
 def dashboard_metrics(catalog: Catalog) -> Row:
     receivable = sum(
         (compute_totals(o).balance for o in catalog.orders if o.status != OrderStatus.CANCELLED),
@@ -219,9 +236,28 @@ def status_counts(catalog: Catalog) -> list[Row]:
                 "count": str(count),
                 "percent": f"{round(count * 100 / total)}%",
                 "status_class": status_class(status),
+                "color": STATUS_COLORS[status.value],
             }
         )
     return rows
+
+
+def status_chart(catalog: Catalog) -> list[dict]:
+    """Dados do gráfico de barras (quantidade numérica para o Recharts)."""
+    return [
+        {"status": status.value, "quantidade": sum(1 for o in catalog.orders if o.status == status)}
+        for status in OrderStatus
+    ]
+
+
+def payment_summary(catalog: Catalog) -> list[dict]:
+    """Situação dos pagamentos das ordens com valor, exceto as canceladas."""
+    counts = dict.fromkeys(PAYMENT_COLORS, 0)
+    for order in catalog.orders:
+        totals = compute_totals(order)
+        if order.status != OrderStatus.CANCELLED and totals.total > 0:
+            counts[totals.payment_status] += 1
+    return [{"situacao": name, "quantidade": count, "fill": PAYMENT_COLORS[name]} for name, count in counts.items()]
 
 
 # ----------------------------------------------------------------------

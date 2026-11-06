@@ -83,7 +83,8 @@ def equipment_page() -> rx.Component:
             panel(
                 rx.heading("Cadastrar equipamento", size="4"),
                 rx.form(_equipment_fields(), submit_button("Adicionar equipamento"),
-                        on_submit=EquipmentState.add_equipment, reset_on_submit=True, class_name="stack-form"),
+                        on_submit=EquipmentState.add_equipment, reset_on_submit=False,
+                        key=EquipmentState.form_key, class_name="stack-form"),
             ),
         ),
         panel(

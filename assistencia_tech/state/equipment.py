@@ -16,6 +16,7 @@ ALL_KINDS = "Todos"
 class EquipmentState(AdminState):
     search: str = ""
     kind_filter: str = ALL_KINDS
+    form_key: int = 0
 
     edit_open: bool = False
     edit_id: str = ""
@@ -53,6 +54,7 @@ class EquipmentState(AdminState):
         try:
             created = await EquipmentService(self._gateway(), await self._current()).create(form_data)
             await self._reload()
+            self.form_key += 1
             yield self._succeed(f"Equipamento {created.description} cadastrado.")
         except DataAccessError as error:
             yield self._fail(error)

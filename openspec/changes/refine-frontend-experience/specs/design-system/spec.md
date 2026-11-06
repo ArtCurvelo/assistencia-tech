@@ -26,9 +26,13 @@ O painel administrativo SHALL apresentar graficamente a distribuição das orden
 
 Quando os dados do painel não puderem ser carregados, os indicadores SHALL exibir "—" em vez de ficarem vazios, junto com a mensagem de falha.
 
-#### Scenario: Backend sem contrato
-- **WHEN** o painel é aberto com a fonte Xano sem contratos registrados
-- **THEN** cada indicador exibe "—" e o alerta informa que a integração está pendente
+#### Scenario: Falha no carregamento
+- **WHEN** um colaborador autenticado abre o painel e o carregamento dos dados falha
+- **THEN** cada indicador exibe "—" e o alerta informa o motivo da falha
+
+#### Scenario: Antes do primeiro carregamento
+- **WHEN** o painel é exibido antes de os dados terem sido carregados
+- **THEN** os indicadores exibem "—" em vez de ficarem vazios
 
 ### Requirement: Navegação por teclado
 

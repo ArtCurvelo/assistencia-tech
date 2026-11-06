@@ -9,6 +9,8 @@ from assistencia_tech.presenters import (
     order_permissions,
     order_row,
     slug,
+    payment_summary,
+    status_chart,
     status_counts,
     totals_row,
 )
@@ -82,3 +84,21 @@ async def test_dashboard_metrics(catalog):
     assert metrics["receivable"] == "R$ 706,00"
     counts = {row["status"]: row["count"] for row in status_counts(catalog)}
     assert set(counts.values()) == {"1"} and len(counts) == 7
+
+
+async def test_chart_data(catalog):
+    chart = status_chart(catalog)
+    assert [row["status"] for row in chart][0] == "Recebido" and len(chart) == 7
+    assert all(row["quantidade"] == 1 for row in chart)
+    colors = {row["color"] for row in status_counts(catalog)}
+    assert len(colors) == 7 and all(c.startswith("#") for c in colors)
+    # Canceladas e ordens sem valor ficam de fora: 00120 pago; 00122 parcial; 00123 e 00125 pendentes.
+    summary = {row["situacao"]: row["quantidade"] for row in payment_summary(catalog)}
+    assert summary == {"Pendente": 2, "Parcial": 1, "Pago": 1}
+
+
+async def test_empty_metrics_show_dash_for_every_indicator(catalog):
+    from assistencia_tech.presenters import EMPTY_METRICS
+
+    assert set(EMPTY_METRICS) == set(dashboard_metrics(catalog))
+    assert set(EMPTY_METRICS.values()) == {"—"}

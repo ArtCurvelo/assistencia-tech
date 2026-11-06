@@ -20,6 +20,7 @@ class OrderState(AdminState):
 
     new_client_id: str = ""
     new_equipment_id: str = ""
+    form_key: int = 0
 
     def _required_permission(self) -> Permission:
         return Permission.ORDERS_VIEW
@@ -71,6 +72,7 @@ class OrderState(AdminState):
             await self._reload()
             self.new_client_id = ""
             self.new_equipment_id = ""
+            self.form_key += 1
             yield self._succeed(f"Ordem {created.code} aberta com sucesso.")
             yield rx.redirect(f"/admin/ordens/{created.code}")
         except DataAccessError as error:

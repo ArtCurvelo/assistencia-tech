@@ -61,7 +61,8 @@ def _open_form() -> rx.Component:
             wrap="wrap",
         ),
         on_submit=OrderState.open_order,
-        reset_on_submit=True,
+        reset_on_submit=False,
+        key=OrderState.form_key,
         class_name="stack-form",
     )
 

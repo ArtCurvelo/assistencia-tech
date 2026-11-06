@@ -16,7 +16,16 @@ from ..data.errors import AuthenticationError, DataAccessError
 from ..data.factory import get_gateway
 from ..data.repositories import DataGateway
 from ..domain.permissions import Permission, Principal, has_permission, permissions_of
-from ..presenters import client_row, dashboard_metrics, equipment_row, order_row, status_counts
+from ..presenters import (
+    EMPTY_METRICS,
+    client_row,
+    dashboard_metrics,
+    equipment_row,
+    order_row,
+    payment_summary,
+    status_chart,
+    status_counts,
+)
 from ..services import AuthService, load_catalog
 
 logger = logging.getLogger(__name__)
@@ -50,6 +59,13 @@ class AppState(rx.State):
     is_loading: bool = False
     feedback_message: str = ""
     feedback_kind: str = ""
+    mobile_menu_open: bool = False
+
+    def toggle_mobile_menu(self):
+        self.mobile_menu_open = not self.mobile_menu_open
+
+    def close_mobile_menu(self):
+        self.mobile_menu_open = False
 
     # ------------------------------------------------------------------
     # Sessão
@@ -182,8 +198,10 @@ class AdminState(AppState):
     equipment: list[dict[str, str]] = []
     technicians: list[dict[str, str]] = []
     orders: list[dict[str, str]] = []
-    metrics: dict[str, str] = {}
+    metrics: dict[str, str] = EMPTY_METRICS
     status_summary: list[dict[str, str]] = []
+    status_data: list[dict] = []
+    payment_data: list[dict] = []
 
     def _required_permission(self) -> Permission:
         return Permission.DASHBOARD_VIEW
@@ -196,6 +214,8 @@ class AdminState(AppState):
         self.orders = [order_row(o, catalog) for o in catalog.orders]
         self.metrics = dashboard_metrics(catalog)
         self.status_summary = status_counts(catalog)
+        self.status_data = status_chart(catalog)
+        self.payment_data = payment_summary(catalog)
         self.data_error = ""
 
     async def load_admin_data(self):
@@ -209,6 +229,8 @@ class AdminState(AppState):
         except DataAccessError as error:
             # Mantém os dados já exibidos; nunca substitui por dados fictícios.
             self.data_error = error.user_message
+            if not self.orders:
+                self.metrics = EMPTY_METRICS
 
     @rx.var
     def client_options(self) -> list[dict[str, str]]:

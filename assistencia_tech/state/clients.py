@@ -13,6 +13,7 @@ from .base import AdminState
 
 class ClientState(AdminState):
     search: str = ""
+    form_key: int = 0  # muda só após sucesso: o formulário recusado mantém os dados
 
     def _required_permission(self) -> Permission:
         return Permission.CLIENTS_VIEW
@@ -40,6 +41,7 @@ class ClientState(AdminState):
         try:
             created = await ClientService(self._gateway(), await self._current()).create(form_data)
             await self._reload()
+            self.form_key += 1
             yield self._succeed(f"Cliente {created.name} cadastrado com sucesso.")
         except DataAccessError as error:
             yield self._fail(error)

@@ -74,30 +74,60 @@ def footer() -> rx.Component:
     )
 
 
+def skip_link() -> rx.Component:
+    return rx.el.a("Pular para o conteúdo", href="#conteudo", class_name="skip-link")
+
+
 def public_page(*children) -> rx.Component:
-    return rx.box(public_header(), *children, footer(), class_name="app-root")
+    return rx.box(
+        skip_link(),
+        public_header(),
+        rx.box(*children, id="conteudo", tab_index=-1),
+        footer(),
+        class_name="app-root",
+    )
+
+
+def _menu_toggle() -> rx.Component:
+    return rx.el.button(
+        rx.cond(AppState.mobile_menu_open, "✕", "☰"),
+        on_click=AppState.toggle_mobile_menu,
+        type="button",
+        class_name="menu-toggle",
+        aria_label=rx.cond(AppState.mobile_menu_open, "Fechar menu", "Abrir menu"),
+        aria_controls="admin-nav",
+        aria_expanded=rx.cond(AppState.mobile_menu_open, "true", "false"),
+    )
 
 
 def _sidebar() -> rx.Component:
     return rx.box(
-        brand(),
-        rx.text(rx.cond(AppState.is_demo, "GESTÃO • DEMO", "GESTÃO"), class_name="sidebar-caption"),
-        rx.vstack(
-            *[
-                rx.link(rx.text(icon, class_name="nav-icon"), rx.text(label), href=href, class_name="side-link")
-                for icon, label, href in ADMIN_NAV
-            ],
-            spacing="2",
-        ),
-        rx.spacer(),
+        rx.box(brand(), _menu_toggle(), class_name="sidebar-top"),
         rx.box(
-            rx.text(AppState.user_name, class_name="side-user-name"),
-            rx.text(AppState.user_role, class_name="side-user-role"),
-            rx.button("Sair", on_click=AppState.logout, class_name="btn-sm btn-sm-ghost side-logout"),
-            class_name="side-user",
+            rx.text(rx.cond(AppState.is_demo, "GESTÃO • DEMO", "GESTÃO"), class_name="sidebar-caption"),
+            rx.el.nav(
+                rx.vstack(
+                    *[
+                        rx.link(rx.text(icon, class_name="nav-icon"), rx.text(label), href=href,
+                                class_name="side-link", on_click=AppState.close_mobile_menu)
+                        for icon, label, href in ADMIN_NAV
+                    ],
+                    spacing="2",
+                ),
+                aria_label="Navegação administrativa",
+            ),
+            rx.spacer(),
+            rx.box(
+                rx.text(AppState.user_name, class_name="side-user-name"),
+                rx.text(AppState.user_role, class_name="side-user-role"),
+                rx.button("Sair", on_click=AppState.logout, class_name="btn-sm btn-sm-ghost side-logout"),
+                class_name="side-user",
+            ),
+            rx.link("← Voltar ao site", href="/", class_name="side-back"),
+            id="admin-nav",
+            class_name="sidebar-body",
         ),
-        rx.link("← Voltar ao site", href="/", class_name="side-back"),
-        class_name="sidebar",
+        class_name=rx.cond(AppState.mobile_menu_open, "sidebar sidebar-open", "sidebar"),
     )
 
 
@@ -106,6 +136,7 @@ def admin_shell(title, subtitle, *children, back: tuple[str, str] | None = None)
     if back:
         heading = [rx.link(f"← {back[0]}", href=back[1], class_name="back-link")]
     return rx.box(
+        skip_link(),
         rx.box(
             _sidebar(),
             rx.box(
@@ -115,6 +146,8 @@ def admin_shell(title, subtitle, *children, back: tuple[str, str] | None = None)
                     class_name="admin-topbar",
                 ),
                 rx.vstack(data_error_alert(), feedback_message(), *children, spacing="5", class_name="admin-content"),
+                id="conteudo",
+                tab_index=-1,
                 class_name="admin-main",
             ),
             class_name="admin-layout",
