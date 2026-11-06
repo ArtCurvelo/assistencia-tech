@@ -50,15 +50,21 @@ python -m pytest
 - `/admin/equipamentos`
 - `/admin/ordens`
 
+## Fonte de dados
+A aplicação usa uma camada de acesso a dados com duas fontes, escolhidas por variável de ambiente (veja `.env.example` e `docs/XANO_INTEGRATION.md`):
+- `demo` (padrão): dados fictícios em memória, sempre identificados como "Modo demonstração".
+- `xano`: backend Xano. Até a documentação oficial da API ser fornecida, as operações informam que a integração está pendente, sem enviar requisições e sem recorrer aos dados de demonstração.
+
 ## Limitações conhecidas
-- Os registros são fictícios e ficam no estado da aplicação; não existe persistência em banco.
+- No modo demonstração, os registros ficam em memória no processo da aplicação; não existe persistência em banco.
 - Login e cadastro não autenticam nem armazenam credenciais.
-- Não há conexão com o Xano. Os contratos reais da API ainda precisam ser fornecidos antes da integração.
+- A integração real com o Xano depende da documentação oficial da API (contratos ainda não fornecidos).
 
 ## Documentação
 - `docs/PROJECT.md` — contexto e escopo.
 - `docs/REQUIREMENTS.md` — requisitos funcionais e não funcionais.
 - `docs/OPEN_SPEC_APPROACH.md` — processo de especificação com OpenSpec.
+- `docs/XANO_INTEGRATION.md` — arquitetura de dados, configuração e registro de contratos do Xano.
 - `docs/CHANGELOG.md` — histórico de mudanças.
 - `openspec/specs/` — especificações vigentes.
 - `openspec/changes/` — mudanças em andamento (atualmente `integrate-xano-backend`).

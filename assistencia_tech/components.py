@@ -1,5 +1,7 @@
 import reflex as rx
 
+from .state import AppState
+
 def brand() -> rx.Component:
     return rx.link(
         rx.flex(
@@ -43,6 +45,49 @@ def field(label: str, child: rx.Component) -> rx.Component:
 def empty_state(message: str) -> rx.Component:
     return rx.box(rx.text(message, class_name="muted"), class_name="empty-state")
 
+def submit_button(label: str) -> rx.Component:
+    """Botão de envio que indica carregamento e evita envios duplicados."""
+    return rx.button(
+        label,
+        type="submit",
+        loading=AppState.is_loading,
+        disabled=AppState.is_loading,
+        class_name="btn btn-primary",
+    )
+
+
+def data_source_pill() -> rx.Component:
+    """Identifica a fonte de dados ativa; o modo demonstração é sempre destacado."""
+    return rx.text(
+        AppState.data_source_label,
+        class_name=rx.cond(AppState.is_demo, "demo-pill", "source-pill"),
+        title="Fonte de dados ativa",
+    )
+
+
+def data_error_alert() -> rx.Component:
+    return rx.cond(
+        AppState.data_error != "",
+        rx.box(
+            rx.text("Não foi possível carregar os dados", class_name="alert-title"),
+            rx.text(AppState.data_error),
+            class_name="alert alert-error",
+            role="alert",
+        ),
+    )
+
+
+def feedback_message() -> rx.Component:
+    return rx.cond(
+        AppState.feedback_message != "",
+        rx.text(
+            AppState.feedback_message,
+            class_name="feedback feedback-" + AppState.feedback_kind,
+            role="status",
+        ),
+    )
+
+
 def admin_shell(title: str, subtitle: str, *children) -> rx.Component:
     nav_items = [
         ("▦", "Visão geral", "/admin"),
@@ -52,10 +97,10 @@ def admin_shell(title: str, subtitle: str, *children) -> rx.Component:
     ]
     return rx.box(
         rx.box(
-            rx.box(brand(), rx.text("GESTÃO • DEMO", class_name="sidebar-caption"), rx.vstack(*[rx.link(rx.text(icon, class_name="nav-icon"), rx.text(label), href=href, class_name="side-link") for icon, label, href in nav_items], spacing="2"), rx.spacer(), rx.link("← Voltar ao site", href="/", class_name="side-back"), class_name="sidebar"),
+            rx.box(brand(), rx.text(rx.cond(AppState.is_demo, "GESTÃO • DEMO", "GESTÃO"), class_name="sidebar-caption"), rx.vstack(*[rx.link(rx.text(icon, class_name="nav-icon"), rx.text(label), href=href, class_name="side-link") for icon, label, href in nav_items], spacing="2"), rx.spacer(), rx.link("← Voltar ao site", href="/", class_name="side-back"), class_name="sidebar"),
             rx.box(
-                rx.box(rx.box(rx.text("PAINEL ADMINISTRATIVO", class_name="eyebrow"), rx.heading(title, size="8"), rx.text(subtitle, class_name="muted")), rx.box(rx.text("DEMO", class_name="demo-pill")), class_name="admin-topbar"),
-                rx.vstack(*children, spacing="5", class_name="admin-content"),
+                rx.box(rx.box(rx.text("PAINEL ADMINISTRATIVO", class_name="eyebrow"), rx.heading(title, size="8"), rx.text(subtitle, class_name="muted")), rx.box(data_source_pill()), class_name="admin-topbar"),
+                rx.vstack(data_error_alert(), feedback_message(), *children, spacing="5", class_name="admin-content"),
                 class_name="admin-main",
             ),
             class_name="admin-layout",

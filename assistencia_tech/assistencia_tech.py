@@ -1,8 +1,9 @@
 import reflex as rx
 from .state import AppState
+from .models import EQUIPMENT_KINDS, ORDER_STATUSES
 from .components import (
     brand, public_header, footer, button, stat_card, status_badge,
-    field, admin_shell, section_heading, empty_state
+    field, admin_shell, section_heading, empty_state, submit_button
 )
 
 def home_page() -> rx.Component:
@@ -76,7 +77,7 @@ def home_page() -> rx.Component:
                 rx.text("Código da Ordem de Serviço", class_name="form-label"),
                 rx.input(value=AppState.tracking_code, on_change=AppState.set_tracking_code, placeholder="Ex.: OS-2026-00125", class_name="input"),
                 rx.button("Consultar", on_click=AppState.lookup_order, class_name="btn btn-primary"),
-                rx.cond(AppState.tracking_message != "", rx.text(AppState.tracking_message, class_name="notice"), rx.box()),
+                rx.cond(AppState.tracking_message != "", rx.text(AppState.tracking_message, class_name="notice notice-" + AppState.tracking_kind, role="status"), rx.box()),
                 class_name="tracking-box",
             ),
             class_name="tracking page-width",
@@ -209,7 +210,7 @@ def order_row(order: dict) -> rx.Component:
         rx.table.cell(status_badge(order["status"])),
         rx.table.cell(
             rx.select(
-                ["Recebido", "Em análise", "Em reparo", "Concluído"],
+                list(ORDER_STATUSES),
                 value=order["status"],
                 on_change=lambda value: AppState.update_order_status(order["code"], value),
                 class_name="input status-select",
@@ -223,7 +224,7 @@ def dashboard_page() -> rx.Component:
         "Acompanhe a operação da assistência em um só lugar.",
         rx.grid(
             stat_card(AppState.orders.length(), "Ordens cadastradas"),
-            stat_card(str(AppState.open_orders), "Ordens em andamento"),
+            stat_card(AppState.open_orders, "Ordens em andamento"),
             stat_card(AppState.clients.length(), "Clientes"),
             stat_card(AppState.equipment.length(), "Equipamentos"),
             columns="4",
@@ -237,9 +238,10 @@ def dashboard_page() -> rx.Component:
                 width="100%",
                 variant="surface",
             ),
+            rx.cond(AppState.orders.length() == 0, empty_state("Nenhuma ordem de serviço registrada.")),
             class_name="panel-card",
         ),
-        rx.box(rx.text("Dados demonstrativos", class_name="demo-label"), rx.text("Os registros exibidos são fictícios e existem apenas no estado desta sessão.", class_name="muted tiny"), class_name="demo-notice"),
+        rx.cond(AppState.is_demo, rx.box(rx.text("Dados demonstrativos", class_name="demo-label"), rx.text("Os registros exibidos são fictícios e existem apenas enquanto a aplicação estiver em execução.", class_name="muted tiny"), class_name="demo-notice")),
     )
 
 def clients_page() -> rx.Component:
@@ -256,7 +258,7 @@ def clients_page() -> rx.Component:
                     columns="3",
                     spacing="3",
                 ),
-                rx.button("Adicionar cliente", type="submit", class_name="btn btn-primary"),
+                submit_button("Adicionar cliente"),
                 on_submit=AppState.add_client,
                 reset_on_submit=True,
             ),
@@ -284,12 +286,12 @@ def equipment_page() -> rx.Component:
             rx.form(
                 rx.grid(
                     rx.box(rx.text("Cliente", class_name="form-label"), rx.select(AppState.client_names, name="client", placeholder="Selecione o cliente", required=True, class_name="input")),
-                    rx.box(rx.text("Tipo", class_name="form-label"), rx.select(["Computador", "Notebook", "Console", "Celular", "Outro"], name="kind", placeholder="Tipo de aparelho", required=True, class_name="input")),
+                    rx.box(rx.text("Tipo", class_name="form-label"), rx.select(list(EQUIPMENT_KINDS), name="kind", placeholder="Tipo de aparelho", required=True, class_name="input")),
                     rx.box(rx.text("Marca/modelo", class_name="form-label"), rx.input(name="model", placeholder="Ex.: Lenovo IdeaPad", required=True, class_name="input")),
                     columns="3",
                     spacing="3",
                 ),
-                rx.button("Adicionar equipamento", type="submit", class_name="btn btn-primary"),
+                submit_button("Adicionar equipamento"),
                 on_submit=AppState.add_equipment,
                 reset_on_submit=True,
             ),
@@ -303,6 +305,7 @@ def equipment_page() -> rx.Component:
                 width="100%",
                 variant="surface",
             ),
+            rx.cond(AppState.equipment.length() == 0, empty_state("Nenhum equipamento cadastrado.")),
             class_name="panel-card",
         ),
     )
@@ -321,7 +324,7 @@ def orders_page() -> rx.Component:
                     columns="3",
                     spacing="3",
                 ),
-                rx.button("Criar ordem", type="submit", class_name="btn btn-primary"),
+                submit_button("Criar ordem"),
                 on_submit=AppState.add_order,
                 reset_on_submit=True,
             ),
@@ -348,7 +351,7 @@ app.add_page(home_page, route="/", title="Início | Assistência TECH")
 app.add_page(services_page, route="/servicos", title="Serviços | Assistência TECH")
 app.add_page(login_page, route="/login", title="Login | Assistência TECH")
 app.add_page(register_page, route="/cadastro", title="Cadastro | Assistência TECH")
-app.add_page(dashboard_page, route="/admin", title="Painel | Assistência TECH")
-app.add_page(clients_page, route="/admin/clientes", title="Clientes | Assistência TECH")
-app.add_page(equipment_page, route="/admin/equipamentos", title="Equipamentos | Assistência TECH")
-app.add_page(orders_page, route="/admin/ordens", title="Ordens de serviço | Assistência TECH")
+app.add_page(dashboard_page, route="/admin", title="Painel | Assistência TECH", on_load=AppState.load_admin_data)
+app.add_page(clients_page, route="/admin/clientes", title="Clientes | Assistência TECH", on_load=AppState.load_admin_data)
+app.add_page(equipment_page, route="/admin/equipamentos", title="Equipamentos | Assistência TECH", on_load=AppState.load_admin_data)
+app.add_page(orders_page, route="/admin/ordens", title="Ordens de serviço | Assistência TECH", on_load=AppState.load_admin_data)

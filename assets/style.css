@@ -1404,3 +1404,70 @@ textarea.input {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* =========================================================
+   FONTE DE DADOS, ALERTAS E FEEDBACK DE OPERAÇÕES
+   ========================================================= */
+
+.source-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 10px;
+  border: 1px solid rgba(8, 124, 255, 0.35);
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--blue-light);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+}
+
+.alert {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.alert-error {
+  border-color: rgba(255, 92, 92, 0.4);
+  background: rgba(255, 92, 92, 0.08);
+  color: #ffb4b4;
+}
+
+.alert-title {
+  margin-bottom: 2px;
+  color: #ffd2d2;
+  font-weight: 700;
+}
+
+.feedback {
+  width: 100%;
+  padding: 10px 14px;
+  border-left: 3px solid;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.feedback-success {
+  border-color: var(--green);
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.feedback-error,
+.notice-error {
+  border-color: #ff5c5c;
+  background: rgba(255, 92, 92, 0.08);
+  color: #ffb4b4;
+}
+
+.notice-error {
+  padding: 8px 10px;
+  border-left: 3px solid #ff5c5c;
+  border-radius: 6px;
+}
