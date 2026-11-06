@@ -1,0 +1,12 @@
+assets/external/
+.states
+*.py[cod]
+__pycache__/
+.web
+*.db
+.venv/
+venv/
+.env
+.pytest_cache/
+.coverage
+htmlcov/
