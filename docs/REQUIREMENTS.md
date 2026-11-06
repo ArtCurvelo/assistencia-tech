@@ -33,6 +33,11 @@ Visão geral rastreável dos requisitos. O comportamento detalhado, com cenário
 | RF25 | Restringir o técnico às ordens em que é o responsável | `access-control` |
 | RF26 | Oferecer ao cliente um portal com as próprias ordens, orçamento e andamento | `customer-portal` |
 | RF27 | Registrar no histórico o nome e o perfil do usuário autor de cada alteração | `access-control`, `service-orders` |
+| RF28 | Cadastrar colaboradores com cargo e senha provisória; técnicos ficam disponíveis para atribuição | `staff-management` |
+| RF29 | Editar cargo e dados, desativar, reativar e redefinir a senha de colaboradores | `staff-management` |
+| RF30 | Impedir autodesativação, a ausência de administrador ativo e a saída de técnico com ordens em aberto | `staff-management` |
+| RF31 | Exibir relatórios por período: volume de ordens, recebimentos por forma, ticket médio, produção por técnico e tempo médio de reparo | `operational-reports` |
+| RF32 | Exportar as ordens do período em CSV compatível com planilhas em português | `operational-reports` |
 
 ## Requisitos não funcionais
 

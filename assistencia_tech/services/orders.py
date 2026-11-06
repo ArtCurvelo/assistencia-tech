@@ -75,6 +75,8 @@ class OrderService:
         if not technician_id:
             raise ValidationError("Selecione um técnico.")
         technician = await self._technician(technician_id)
+        if technician is not None and not technician.active:
+            raise ValidationError(f"{technician.name} está inativo e não pode receber novas ordens.")
         order = await self._gw.orders.get_by_code(code)
         previous = await self._technician(order.technician_id)
         updated = ops.assign_technician(order, technician, previous, self._clock(), self._actor)

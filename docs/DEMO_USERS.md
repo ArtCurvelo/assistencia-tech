@@ -33,6 +33,8 @@ Novas contas de cliente podem ser criadas em `/cadastro`; a senha precisa ter no
 | Registrar aprovação (Aguardando aprovação → Em reparo) | ✓ | ✓ | — | — |
 | Registrar pagamentos e entregar | ✓ | ✓ | — | — |
 | Cancelar ordens | ✓ | ✓ | — | — |
+| Consultar relatórios e exportar CSV (`/admin/relatorios`) | ✓ | ✓ | — | — |
+| Gerenciar colaboradores (`/admin/colaboradores`) | ✓ | — | — | — |
 | Portal com as próprias ordens (`/minha-conta`) | — | — | — | ✓ |
 
 A matriz é definida em `assistencia_tech/domain/permissions.py` (`ROLE_PERMISSIONS`) e verificada em `tests/test_auth_domain.py`, que percorre cada célula. As permissões são aplicadas **nos serviços**: uma ação não permitida é recusada mesmo que a interface seja contornada.

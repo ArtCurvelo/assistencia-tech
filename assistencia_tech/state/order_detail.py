@@ -55,7 +55,9 @@ class OrderDetailState(AdminState):
         self.totals = totals_row(order)
         self.permissions = order_permissions(order, principal)
         self.next_status = next_statuses(order, principal)
-        self.technicians = [{"value": t.id, "label": f"{t.name} — {t.specialty}"} for t in catalog.technicians]
+        self.technicians = [
+            {"value": t.id, "label": f"{t.name} — {t.specialty}"} for t in catalog.technicians if t.active
+        ]
         self.found = True
 
     async def load_order(self):

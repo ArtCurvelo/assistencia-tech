@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
-from ..models import Client, ClientCreate, Equipment, EquipmentCreate, ServiceOrder, Technician, UserAccount
+from ..models import Client, ClientCreate, Equipment, EquipmentCreate, Role, ServiceOrder, Technician, UserAccount
 
 
 @runtime_checkable
@@ -45,7 +45,13 @@ class EquipmentRepository(Protocol):
 
 @runtime_checkable
 class TechnicianRepository(Protocol):
-    async def list(self) -> list[Technician]: ...
+    async def list(self) -> list[Technician]:
+        """Todos os técnicos, inclusive inativos (necessários para o histórico)."""
+        ...
+
+    async def create(self, name: str, specialty: str) -> Technician: ...
+
+    async def update(self, technician: Technician) -> Technician: ...
 
 
 @runtime_checkable
@@ -85,6 +91,18 @@ class AuthProvider(Protocol):
 
     async def register_client(self, client: Client, password: str) -> UserAccount:
         """Cria a conta com perfil Cliente associada a ``client``."""
+        ...
+
+    async def list_users(self) -> list[UserAccount]: ...
+
+    async def create_user(
+        self, name: str, email: str, role: Role, password: str, technician_id: str | None = None
+    ) -> UserAccount:
+        """Cria uma conta de colaborador; o hash é calculado pelo provedor."""
+        ...
+
+    async def update_user(self, user: UserAccount, new_password: str | None = None) -> UserAccount:
+        """Atualiza dados da conta e, opcionalmente, define uma nova senha."""
         ...
 
 

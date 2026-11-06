@@ -90,6 +90,7 @@ class Technician(_Model):
     id: Text
     name: Text
     specialty: str = ""
+    active: bool = True
 
 
 # ----------------------------------------------------------------------
@@ -197,6 +198,7 @@ class HistoryEvent(_Model):
     author: Text
     kind: Text
     description: Text
+    to_status: str = ""  # preenchido nas mudanças de status
 
 
 # ----------------------------------------------------------------------

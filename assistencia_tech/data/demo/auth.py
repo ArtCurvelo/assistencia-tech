@@ -43,12 +43,14 @@ class DemoAuthProvider:
     async def email_in_use(self, email: str) -> bool:
         return self._by_email(email) is not None
 
+    def _next_id(self) -> str:
+        return str(max((int(u.id) for u in self.users if u.id.isdigit()), default=0) + 1)
+
     async def register_client(self, client: Client, password: str) -> UserAccount:
         if await self.email_in_use(client.email):
             raise ValidationError(f"Já existe uma conta com o e-mail {client.email}.")
-        next_id = str(max((int(u.id) for u in self.users if u.id.isdigit()), default=0) + 1)
         user = UserAccount(
-            id=next_id,
+            id=self._next_id(),
             name=client.name,
             email=client.email,
             role=Role.CLIENT,
@@ -57,3 +59,31 @@ class DemoAuthProvider:
         )
         self.users.append(user)
         return user
+
+    async def list_users(self) -> list[UserAccount]:
+        return list(self.users)
+
+    async def create_user(
+        self, name: str, email: str, role: Role, password: str, technician_id: str | None = None
+    ) -> UserAccount:
+        if await self.email_in_use(email):
+            raise ValidationError(f"Já existe uma conta com o e-mail {email}.")
+        user = UserAccount(
+            id=self._next_id(),
+            name=name,
+            email=email,
+            role=role,
+            password_hash=hash_password(password, iterations=self._iterations),
+            technician_id=technician_id,
+        )
+        self.users.append(user)
+        return user
+
+    async def update_user(self, user: UserAccount, new_password: str | None = None) -> UserAccount:
+        current = await self.get_user(user.id)
+        changes = {"name": user.name, "role": user.role, "active": user.active, "technician_id": user.technician_id}
+        if new_password is not None:
+            changes["password_hash"] = hash_password(new_password, iterations=self._iterations)
+        updated = current.model_copy(update=changes)
+        self.users = [updated if u.id == user.id else u for u in self.users]
+        return updated

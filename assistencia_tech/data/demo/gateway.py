@@ -91,6 +91,17 @@ class DemoTechnicianRepository:
     async def list(self) -> list[Technician]:
         return list(self.items)
 
+    async def create(self, name: str, specialty: str) -> Technician:
+        technician = Technician(id=_next_id([t.id for t in self.items]), name=name, specialty=specialty)
+        self.items.append(technician)
+        return technician
+
+    async def update(self, technician: Technician) -> Technician:
+        if all(t.id != technician.id for t in self.items):
+            raise NotFoundError("Técnico não encontrado.")
+        self.items = [technician if t.id == technician.id else t for t in self.items]
+        return technician
+
 
 class DemoOrderRepository:
     def __init__(self, items: list[ServiceOrder], year_provider: YearProvider) -> None:

@@ -20,8 +20,8 @@ KIND_ITEM_REMOVED = "Item removido"
 KIND_PAYMENT = "Pagamento"
 
 
-def _event(kind: str, description: str, at: datetime, author: str) -> HistoryEvent:
-    return HistoryEvent(at=at, author=author, kind=kind, description=description)
+def _event(kind: str, description: str, at: datetime, author: str, to_status: str = "") -> HistoryEvent:
+    return HistoryEvent(at=at, author=author, kind=kind, description=description, to_status=to_status)
 
 
 def opened(problem: str, at: datetime, author: str) -> HistoryEvent:
@@ -32,7 +32,7 @@ def status_changed(previous: str, new: str, at: datetime, author: str, reason: s
     text = f"Status alterado de {previous} para {new}."
     if reason:
         text += f" Motivo: {reason}"
-    return _event(KIND_STATUS, text, at, author)
+    return _event(KIND_STATUS, text, at, author, to_status=str(new))
 
 
 def technician_assigned(name: str, previous: str | None, at: datetime, author: str) -> HistoryEvent:

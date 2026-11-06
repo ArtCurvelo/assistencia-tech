@@ -48,7 +48,7 @@ O administrador SHALL poder alterar nome, cargo e especialidade de um colaborado
 
 ### Requirement: Desativação e reativação
 
-O administrador SHALL poder desativar e reativar colaboradores, com confirmação. Um colaborador desativado MUST NOT conseguir entrar, e sua sessão ativa SHALL deixar de valer. Técnicos inativos MUST NOT ser oferecidos para novas atribuições, mas SHALL continuar exibidos no histórico das ordens.
+O administrador SHALL poder desativar e reativar colaboradores, com confirmação. Um colaborador desativado MUST NOT conseguir entrar, e sua sessão ativa SHALL deixar de valer. Um técnico com ordens em aberto MUST NOT ser desativado. Técnicos inativos MUST NOT ser oferecidos para novas atribuições, mas SHALL continuar exibidos no histórico das ordens.
 
 #### Scenario: Colaborador desativado
 - **WHEN** o administrador desativa um atendente com sessão aberta

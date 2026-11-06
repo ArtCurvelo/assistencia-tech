@@ -7,6 +7,7 @@ Páginas administrativas e do portal verificam sessão e permissão no
 import reflex as rx
 from reflex import constants
 
+from .pages.admin import reports_page, staff_page
 from .pages.clients import client_detail_page, clients_page
 from .pages.dashboard import dashboard_page
 from .pages.equipment import equipment_page
@@ -14,6 +15,7 @@ from .pages.order_detail import order_detail_page
 from .pages.orders import orders_page
 from .pages.portal import portal_order_page, portal_page
 from .pages.public import access_denied_page, home_page, login_page, not_found_page, register_page, services_page
+from .state.admin import ReportsState, StaffState
 from .state import (
     AdminState,
     AppState,
@@ -61,3 +63,5 @@ app.add_page(orders_page, route="/admin/ordens", title="Ordens de serviço" + SU
              on_load=OrderState.load_admin_data)
 app.add_page(order_detail_page, route="/admin/ordens/[codigo]", title="Ordem de serviço" + SUFFIX,
              on_load=OrderDetailState.load_order)
+app.add_page(reports_page, route="/admin/relatorios", title="Relatórios" + SUFFIX, on_load=ReportsState.load_reports)
+app.add_page(staff_page, route="/admin/colaboradores", title="Colaboradores" + SUFFIX, on_load=StaffState.load_staff)

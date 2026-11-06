@@ -155,6 +155,14 @@ class AppState(rx.State):
         return self._can(Permission.ORDERS_OPEN)
 
     @rx.var
+    def can_manage_staff(self) -> bool:
+        return self._can(Permission.STAFF_MANAGE)
+
+    @rx.var
+    def can_view_reports(self) -> bool:
+        return self._can(Permission.REPORTS_VIEW)
+
+    @rx.var
     def is_staff(self) -> bool:
         return self.is_authenticated and self.user_home == "/admin"
 
@@ -210,7 +218,9 @@ class AdminState(AppState):
         catalog = await load_catalog(self._gateway(), await self._current())
         self.clients = [client_row(c) for c in catalog.clients]
         self.equipment = [equipment_row(e, catalog) for e in catalog.equipment]
-        self.technicians = [{"value": t.id, "label": f"{t.name} — {t.specialty}"} for t in catalog.technicians]
+        self.technicians = [
+            {"value": t.id, "label": f"{t.name} — {t.specialty}"} for t in catalog.technicians if t.active
+        ]
         self.orders = [order_row(o, catalog) for o in catalog.orders]
         self.metrics = dashboard_metrics(catalog)
         self.status_summary = status_counts(catalog)

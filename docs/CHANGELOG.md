@@ -1,5 +1,13 @@
 # Changelog
 
+## Não lançado — Fase 5 (administração, mudança `add-admin-and-reports`)
+- Gestão de colaboradores: cadastro com senha provisória, edição de cargo e especialidade, redefinição de senha, desativação e reativação.
+- Regras: e-mail único, sem autodesativação, sempre um administrador ativo, técnico com ordens em aberto não muda de cargo nem é desativado; técnicos inativos fora das novas atribuições.
+- Relatórios por período (volume, recebimentos por forma, ticket médio, produção por técnico, tempo médio de reparo) e exportação CSV (`;`, vírgula decimal, UTF-8 com BOM).
+- Permissões `staff.manage` (Administrador) e `reports.view` (Administrador e Atendente); itens de menu conforme a permissão.
+- Eventos de status do histórico com o status de destino estruturado (`to_status`).
+- 312 testes automatizados.
+
 ## Não lançado — Fase 4 (frontend e responsividade, mudança `refine-frontend-experience`)
 - Correção da largura excedente no celular em clientes, equipamentos, ordens e detalhes (de até 754 px para 375 px): tabelas com rolagem própria.
 - Menu administrativo recolhível abaixo de 900 px, com `aria-expanded`; barra lateral mantida no computador.

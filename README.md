@@ -10,6 +10,7 @@ Aplicação acadêmica de gestão de assistência técnica, desenvolvida em Pyth
 - Ordens de serviço: fluxo de status com regras, técnico responsável, diagnóstico, orçamento de serviços e peças, pagamentos, cancelamento com motivo e linha do tempo.
 - Login, logout e cadastro de cliente; perfis Administrador, Atendente, Técnico e Cliente com permissões aplicadas nas operações.
 - Portal do cliente (`/minha-conta`) com as próprias ordens, orçamento e andamento.
+- Gestão de colaboradores (cargos, senha provisória, desativação) e relatórios por período com exportação CSV.
 
 ## Requisitos
 - Python 3.10+ (a `.venv` do projeto usa Python 3.14).
@@ -55,6 +56,8 @@ Públicas: `/`, `/servicos`, `/login`, `/cadastro`, `/acesso-negado`. Cliente: `
 - `/admin/clientes` e `/admin/clientes/[cliente_id]`
 - `/admin/equipamentos`
 - `/admin/ordens` e `/admin/ordens/[codigo]`
+- `/admin/relatorios` (Administrador e Atendente)
+- `/admin/colaboradores` (Administrador)
 
 ## Fonte de dados
 A aplicação usa uma camada de acesso a dados com duas fontes, escolhidas por variável de ambiente (veja `.env.example` e `docs/XANO_INTEGRATION.md`):
@@ -75,4 +78,4 @@ A aplicação usa uma camada de acesso a dados com duas fontes, escolhidas por v
 - `docs/XANO_INTEGRATION.md` — arquitetura de dados, configuração e registro de contratos do Xano.
 - `docs/CHANGELOG.md` — histórico de mudanças.
 - `openspec/specs/` — especificações vigentes.
-- `openspec/changes/` — mudanças em andamento (`integrate-xano-backend`, `expand-service-domain`, `add-auth-and-access-control` e `refine-frontend-experience`).
+- `openspec/changes/` — mudanças em andamento (`integrate-xano-backend`, `expand-service-domain`, `add-auth-and-access-control`, `refine-frontend-experience` e `add-admin-and-reports`).

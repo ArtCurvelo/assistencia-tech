@@ -37,6 +37,11 @@ OPERATIONS: dict[str, str] = {
     "auth.login": "entrar no sistema",
     "auth.register": "criar contas de acesso",
     "auth.me": "consultar a conta do usuário",
+    "users.list": "listar colaboradores",
+    "users.create": "cadastrar colaboradores",
+    "users.update": "atualizar colaboradores",
+    "technicians.create": "cadastrar técnicos",
+    "technicians.update": "atualizar técnicos",
 }
 
 

@@ -78,6 +78,12 @@ class XanoTechnicianRepository(_XanoRepository):
     async def list(self) -> list[Technician]:
         raise self._pending("list")
 
+    async def create(self, name: str, specialty: str) -> Technician:
+        raise self._pending("create")
+
+    async def update(self, technician: Technician) -> Technician:
+        raise self._pending("update")
+
 
 class XanoOrderRepository(_XanoRepository):
     prefix = "orders"
@@ -112,6 +118,22 @@ class XanoAuthProvider(_XanoRepository):
 
     async def register_client(self, client: Client, password: str) -> UserAccount:
         raise self._pending("register")
+
+    def _users_pending(self, action: str) -> ContractPendingError:
+        require_contract(f"users.{action}", self._registry)
+        return ContractPendingError(
+            "A integração com o Xano para esta operação ainda está em implementação.",
+            detail=f"contrato de 'users.{action}' registrado, mas sem mapeamento de resposta",
+        )
+
+    async def list_users(self) -> list[UserAccount]:
+        raise self._users_pending("list")
+
+    async def create_user(self, name, email, role, password, technician_id=None) -> UserAccount:
+        raise self._users_pending("create")
+
+    async def update_user(self, user: UserAccount, new_password: str | None = None) -> UserAccount:
+        raise self._users_pending("update")
 
 
 def build_xano_gateway(

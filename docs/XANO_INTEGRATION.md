@@ -27,6 +27,7 @@ DataGateway (data/repositories.py)   ← interfaces internas (Protocol)
 
 - As páginas **não** conhecem a fonte de dados, e as regras de negócio valem igualmente para o modo demonstração e para o Xano.
 - A autenticação fica atrás de `AuthProvider` (`data/repositories.py`): no modo demonstração, contas e hashes locais; no Xano, as operações `auth.login`, `auth.register` e `auth.me` aguardam o contrato oficial. Sessões, bloqueio de tentativas e permissões são da aplicação e independem da fonte.
+- A gestão de colaboradores usa `users.list`, `users.create`, `users.update`, `technicians.create` e `technicians.update`, também sem contrato registrado.
 - `data/factory.py` escolhe o gateway a partir da configuração.
 - Os modelos (`models/`) validam os dados de entrada e geram mensagens em português.
 - Os erros (`data/errors.py`) carregam uma mensagem segura para o usuário (`user_message`) e detalhes técnicos apenas para o log (`detail`).

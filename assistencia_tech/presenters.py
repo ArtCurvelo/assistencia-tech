@@ -303,3 +303,45 @@ def portal_timeline(order: ServiceOrder) -> list[Row]:
         for e in reversed(order.history)
         if e.kind in (KIND_OPENED, KIND_STATUS)
     ]
+
+
+# ----------------------------------------------------------------------
+# Colaboradores e relatórios
+# ----------------------------------------------------------------------
+def staff_row(user, technician, actor_id: str) -> Row:
+    return {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "role": user.role.value,
+        "specialty": technician.specialty if technician else "",
+        "specialty_display": technician.specialty if technician else "—",
+        "status": "Ativo" if user.active else "Inativo",
+        "status_class": "pay-badge pay-pago" if user.active else "pay-badge pay-nao-se-aplica",
+        "active": "1" if user.active else "",
+        "is_self": "1" if user.id == actor_id else "",
+    }
+
+
+def report_view(report) -> dict:
+    """Converte ``OperationalReport`` em textos e listas para a interface."""
+    v, r, t = report.volume, report.revenue, report.turnaround
+    return {
+        "summary": {
+            "opened": str(v.opened),
+            "delivered": str(v.delivered),
+            "cancelled": str(v.cancelled),
+            "in_progress": str(v.in_progress),
+            "received": format_brl(r.total),
+            "ticket": format_brl(r.average_ticket) if r.average_ticket is not None else "—",
+            "delivered_count": str(r.delivered_count),
+            "turnaround": f"{t.average_days:.1f}".replace(".", ",") + " dias" if t.average_days is not None else "—",
+            "turnaround_count": str(t.count),
+        },
+        "methods": [{"method": m, "amount": format_brl(a)} for m, a in r.by_method.items()],
+        "technicians": [
+            {"name": row.name, "assigned": str(row.assigned), "finished": str(row.finished),
+             "budget": format_brl(row.budget_total)}
+            for row in report.technicians
+        ],
+    }

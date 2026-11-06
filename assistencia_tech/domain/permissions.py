@@ -36,6 +36,8 @@ class Permission(StrEnum):
     ORDERS_DELIVER = "orders.deliver"
     ORDERS_CANCEL = "orders.cancel"
     PORTAL_VIEW = "portal.view"
+    STAFF_MANAGE = "staff.manage"
+    REPORTS_VIEW = "reports.view"
 
 
 P = Permission
@@ -58,6 +60,8 @@ PERMISSION_LABELS: dict[Permission, str] = {
     P.ORDERS_DELIVER: "registrar a entrega",
     P.ORDERS_CANCEL: "cancelar ordens de serviço",
     P.PORTAL_VIEW: "acessar o portal do cliente",
+    P.STAFF_MANAGE: "gerenciar colaboradores",
+    P.REPORTS_VIEW: "consultar relatórios",
 }
 
 _STAFF_VIEW = frozenset({P.DASHBOARD_VIEW, P.CLIENTS_VIEW, P.EQUIPMENT_VIEW, P.ORDERS_VIEW})
@@ -74,6 +78,7 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
         P.ORDERS_PAYMENTS,
         P.ORDERS_DELIVER,
         P.ORDERS_CANCEL,
+        P.REPORTS_VIEW,
     },
     Role.TECHNICIAN: _STAFF_VIEW | {P.ORDERS_DIAGNOSE, P.ORDERS_STATUS_TECHNICAL},
     Role.CLIENT: frozenset({P.PORTAL_VIEW}),

@@ -6,6 +6,8 @@ from .clients import ClientDetail, ClientService
 from .equipment import EquipmentService
 from .orders import OrderService
 from .portal import PortalOrder, PortalService
+from .reports import ReportService
+from .staff import StaffMember, StaffService
 
 __all__ = [
     "AuthService",
@@ -16,7 +18,10 @@ __all__ = [
     "OrderService",
     "PortalOrder",
     "PortalService",
+    "ReportService",
     "SessionResult",
+    "StaffMember",
+    "StaffService",
     "load_catalog",
     "reset_auth_state",
 ]

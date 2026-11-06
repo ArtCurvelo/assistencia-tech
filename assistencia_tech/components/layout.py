@@ -88,6 +88,11 @@ def public_page(*children) -> rx.Component:
     )
 
 
+def _nav_link(icon: str, label: str, href: str) -> rx.Component:
+    return rx.link(rx.text(icon, class_name="nav-icon"), rx.text(label), href=href, class_name="side-link",
+                   on_click=AppState.close_mobile_menu)
+
+
 def _menu_toggle() -> rx.Component:
     return rx.el.button(
         rx.cond(AppState.mobile_menu_open, "✕", "☰"),
@@ -112,6 +117,10 @@ def _sidebar() -> rx.Component:
                                 class_name="side-link", on_click=AppState.close_mobile_menu)
                         for icon, label, href in ADMIN_NAV
                     ],
+                    rx.cond(AppState.can_view_reports,
+                            _nav_link("▤", "Relatórios", "/admin/relatorios")),
+                    rx.cond(AppState.can_manage_staff,
+                            _nav_link("♟", "Colaboradores", "/admin/colaboradores")),
                     spacing="2",
                 ),
                 aria_label="Navegação administrativa",

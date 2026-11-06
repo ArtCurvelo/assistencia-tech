@@ -110,6 +110,7 @@ EXPECTED = {
     Role.ATTENDANT: {
         P.DASHBOARD_VIEW, P.CLIENTS_VIEW, P.EQUIPMENT_VIEW, P.ORDERS_VIEW, P.CLIENTS_MANAGE, P.EQUIPMENT_MANAGE,
         P.ORDERS_OPEN, P.ORDERS_ASSIGN, P.ORDERS_APPROVE, P.ORDERS_PAYMENTS, P.ORDERS_DELIVER, P.ORDERS_CANCEL,
+        P.REPORTS_VIEW,
     },
     Role.TECHNICIAN: {
         P.DASHBOARD_VIEW, P.CLIENTS_VIEW, P.EQUIPMENT_VIEW, P.ORDERS_VIEW, P.ORDERS_DIAGNOSE,
@@ -183,3 +184,8 @@ def test_principal_helpers():
     assert TECH.display_name == "Carlos (Técnico)"
     assert ADMIN.home_path == "/admin" and CLIENT.home_path == "/minha-conta"
     assert not CLIENT.is_staff
+
+
+def test_admin_only_permissions():
+    assert [r for r in Role if P.STAFF_MANAGE in ROLE_PERMISSIONS[r]] == [Role.ADMIN]
+    assert {r for r in Role if P.REPORTS_VIEW in ROLE_PERMISSIONS[r]} == {Role.ADMIN, Role.ATTENDANT}

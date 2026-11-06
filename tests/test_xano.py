@@ -14,11 +14,21 @@ from assistencia_tech.data.xano import (
 from datetime import datetime
 
 from assistencia_tech.domain.clock import BRT
-from assistencia_tech.models import Client, ClientCreate, Equipment, EquipmentCreate, ServiceOrder
+from assistencia_tech.models import (
+    Client,
+    ClientCreate,
+    Equipment,
+    EquipmentCreate,
+    Role,
+    ServiceOrder,
+    Technician,
+    UserAccount,
+)
 
 CLIENT_DATA = ClientCreate(name="Ana", cpf="52998224725", email="ana@exemplo.test", phone="11987654321")
 EQUIPMENT_DATA = EquipmentCreate(client_id="1", kind="Notebook", brand="Dell", model="Inspiron")
 _AT = datetime(2026, 11, 6, tzinfo=BRT)
+USER = UserAccount(id="1", name="Ana", email="a@x.test", role=Role.ADMIN, password_hash="x")
 ORDER = ServiceOrder(code="OS-2026-00001", client_id="1", equipment_id="1", problem="X", opened_at=_AT, updated_at=_AT)
 
 pytestmark = pytest.mark.anyio
@@ -144,6 +154,11 @@ async def test_xano_gateway_sends_no_requests_without_contracts():
         "auth.login": gateway.auth.authenticate("a@b.test", "x"),
         "auth.me": gateway.auth.get_user("1"),
         "auth.register": gateway.auth.register_client(client, "segredo123"),
+        "users.list": gateway.auth.list_users(),
+        "users.create": gateway.auth.create_user("Bruno", "b@x.test", Role.TECHNICIAN, "senha2026"),
+        "users.update": gateway.auth.update_user(USER),
+        "technicians.create": gateway.technicians.create("Bruno", "Redes"),
+        "technicians.update": gateway.technicians.update(Technician(id="1", name="Carlos")),
     }
     assert set(operations) == set(OPERATIONS)
     for name, operation in operations.items():
