@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import reflex as rx
 
-from ..components import button, public_page, section_heading, stat_card
-from ..state import AuthState, TrackingState
+from ..components import button, feedback_message, field, public_page, section_heading, stat_card
+from ..state import AppState, LoginState, RegisterState, TrackingState
 
 HOME_SERVICES = [
     ("💻", "Computadores", "Formatação, limpeza, upgrades e diagnóstico."),
@@ -162,53 +162,113 @@ def services_page() -> rx.Component:
     )
 
 
-def _auth_card(icon: str, title: str, subtitle: str, form: rx.Component, notice: str, switch) -> rx.Component:
+def _auth_card(icon: str, title: str, subtitle: str, *children) -> rx.Component:
     return rx.center(
         rx.box(
             rx.box(rx.text(icon, class_name="auth-icon"), rx.heading(title, size="7"),
                    rx.text(subtitle, class_name="muted"), class_name="auth-heading"),
-            form,
-            rx.text(AuthState.auth_message, class_name="notice"),
-            rx.text(notice, class_name="muted tiny"),
-            *switch,
+            feedback_message(),
+            *children,
             class_name="auth-card",
         ),
         class_name="auth-container",
     )
 
 
-def _auth_input(label: str, name: str, **props) -> list[rx.Component]:
-    return [rx.text(label, class_name="form-label"), rx.input(name=name, required=True, class_name="input", **props)]
+def _auth_input(label: str, name: str, hint: str = "", **props) -> rx.Component:
+    return field(label, rx.input(name=name, required=True, class_name="input", **props), hint)
+
+
+def _auth_submit(label: str) -> rx.Component:
+    return rx.button(label, type="submit", loading=AppState.is_loading, disabled=AppState.is_loading,
+                     class_name="btn btn-primary full-width")
+
+
+def _demo_card(account) -> rx.Component:
+    return rx.button(
+        rx.box(rx.text(account["label"], class_name="demo-account-role"),
+               rx.text(account["description"], class_name="muted tiny")),
+        on_click=LoginState.quick_login(account["key"]),
+        disabled=LoginState.is_loading,
+        type="button",
+        class_name="demo-account",
+        title=account["email"],
+    )
+
+
+def _demo_access() -> rx.Component:
+    return rx.cond(
+        LoginState.is_demo,
+        rx.box(
+            rx.text("ACESSO RÁPIDO • CONTAS DE DEMONSTRAÇÃO", class_name="demo-label"),
+            rx.grid(rx.foreach(LoginState.demo_accounts, _demo_card), columns="2", spacing="2", width="100%"),
+            rx.text("Disponível somente no modo demonstração. Senhas de teste em docs/DEMO_USERS.md.",
+                    class_name="muted tiny"),
+            class_name="demo-access",
+        ),
+    )
 
 
 def login_page() -> rx.Component:
     form = rx.form(
-        *_auth_input("E-mail", "email", type="email", placeholder="seu@email.com"),
-        *_auth_input("Senha", "senha", type="password", placeholder="Digite sua senha"),
-        rx.button("Entrar na demonstração", type="submit", class_name="btn btn-primary full-width"),
-        on_submit=AuthState.demo_login,
+        _auth_input("E-mail", "email", type="email", placeholder="seu@email.com", custom_attrs={"autocomplete": "username"}),
+        _auth_input("Senha", "password", type="password", placeholder="Digite sua senha",
+                    custom_attrs={"autocomplete": "current-password"}),
+        _auth_submit("Entrar"),
+        on_submit=LoginState.login,
         reset_on_submit=False,
+        class_name="stack-form",
     )
     return public_page(
-        _auth_card("⚡", "Bem-vindo de volta", "Entre na sua conta para acompanhar seus serviços.", form,
-                   "Autenticação real ainda não conectada às APIs.",
-                   [rx.text("Ainda não possui uma conta?"), rx.link("Criar conta", href="/cadastro",
-                                                                     class_name="accent-link")]),
+        _auth_card(
+            "⚡", "Bem-vindo de volta", "Entre para acessar sua área.",
+            rx.cond(LoginState.login_notice != "", rx.text(LoginState.login_notice, class_name="notice notice-error")),
+            form,
+            _demo_access(),
+            rx.flex(rx.text("Ainda não possui uma conta?"),
+                    rx.link("Criar conta", href="/cadastro", class_name="accent-link"), gap="2", wrap="wrap"),
+        ),
     )
 
 
 def register_page() -> rx.Component:
     form = rx.form(
-        *_auth_input("Nome completo", "nome", placeholder="Seu nome"),
-        *_auth_input("E-mail", "email", type="email", placeholder="seu@email.com"),
-        *_auth_input("Telefone", "telefone", placeholder="(11) 99999-9999"),
-        *_auth_input("Senha", "senha", type="password", placeholder="Crie uma senha"),
-        rx.button("Criar conta (demo)", type="submit", class_name="btn btn-primary full-width"),
-        on_submit=AuthState.demo_register,
+        _auth_input("Nome completo", "name", placeholder="Seu nome", custom_attrs={"autocomplete": "name"}),
+        _auth_input("CPF", "cpf", "Com ou sem pontuação.", placeholder="000.000.000-00"),
+        _auth_input("E-mail", "email", type="email", placeholder="seu@email.com", custom_attrs={"autocomplete": "email"}),
+        _auth_input("Telefone", "phone", "Com DDD.", placeholder="(11) 98765-4321", custom_attrs={"autocomplete": "tel"}),
+        _auth_input("Senha", "password", "Mínimo de 8 caracteres, com letras e números.", type="password",
+                    custom_attrs={"autocomplete": "new-password"}),
+        _auth_input("Confirme a senha", "password_confirm", type="password", custom_attrs={"autocomplete": "new-password"}),
+        _auth_submit("Criar conta"),
+        on_submit=RegisterState.register,
         reset_on_submit=False,
+        class_name="stack-form",
     )
     return public_page(
-        _auth_card("+", "Criar sua conta", "Cadastre-se para acompanhar seus equipamentos.", form,
-                   "Cadastro demonstrativo: os dados não são enviados a um servidor.",
-                   [rx.text("Já possui uma conta?"), rx.link("Entrar", href="/login", class_name="accent-link")]),
+        _auth_card(
+            "+", "Criar sua conta", "Acompanhe seus equipamentos e ordens de serviço.",
+            form,
+            rx.flex(rx.text("Já possui uma conta?"), rx.link("Entrar", href="/login", class_name="accent-link"),
+                    gap="2", wrap="wrap"),
+        ),
+    )
+
+
+def access_denied_page() -> rx.Component:
+    return public_page(
+        rx.center(
+            rx.box(
+                rx.text("🔒", class_name="auth-icon"),
+                rx.heading("Acesso negado", size="7"),
+                rx.text("Seu perfil não tem permissão para acessar esta página.", class_name="muted"),
+                rx.cond(
+                    AppState.is_authenticated,
+                    rx.link(button("Ir para a minha área"), href=AppState.user_home),
+                    rx.link(button("Entrar"), href="/login"),
+                ),
+                class_name="auth-card auth-heading",
+            ),
+            class_name="auth-container",
+        ),
     )

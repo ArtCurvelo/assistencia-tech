@@ -31,6 +31,18 @@ class UnauthorizedError(DataAccessError):
     default_message = "Acesso não autorizado. Verifique suas permissões."
 
 
+class AuthenticationError(DataAccessError):
+    """Sem sessão válida, sessão expirada ou credenciais recusadas."""
+
+    default_message = "Sua sessão não é válida. Entre novamente para continuar."
+
+
+class PermissionDeniedError(DataAccessError):
+    """Usuário autenticado sem permissão para a ação."""
+
+    default_message = "Seu perfil não tem permissão para esta ação."
+
+
 class NotFoundError(DataAccessError):
     default_message = "O registro solicitado não foi encontrado."
 

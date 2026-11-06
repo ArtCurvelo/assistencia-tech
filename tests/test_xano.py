@@ -141,6 +141,9 @@ async def test_xano_gateway_sends_no_requests_without_contracts():
         "orders.next_code": gateway.orders.next_code(),
         "orders.create": gateway.orders.create(ORDER),
         "orders.save": gateway.orders.save(ORDER),
+        "auth.login": gateway.auth.authenticate("a@b.test", "x"),
+        "auth.me": gateway.auth.get_user("1"),
+        "auth.register": gateway.auth.register_client(client, "segredo123"),
     }
     assert set(operations) == set(OPERATIONS)
     for name, operation in operations.items():

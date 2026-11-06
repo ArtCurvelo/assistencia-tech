@@ -49,8 +49,11 @@ def _client_row(client) -> rx.Component:
         rx.table.cell(client["phone"]),
         rx.table.cell(
             rx.flex(
-                small_button("Editar", on_click=ClientState.open_edit(client)),
-                small_button("Excluir", "danger", on_click=ClientState.ask_delete(client)),
+                rx.cond(ClientState.can_manage_clients,
+                        small_button("Editar", on_click=ClientState.open_edit(client))),
+                rx.cond(ClientState.can_delete_clients,
+                        small_button("Excluir", "danger", on_click=ClientState.ask_delete(client))),
+                rx.link("Ver", href="/admin/clientes/" + client["id"], class_name="btn-sm btn-sm-ghost"),
                 gap="2",
             )
         ),
@@ -61,14 +64,17 @@ def clients_page() -> rx.Component:
     return admin_shell(
         "Clientes",
         "Cadastre, consulte e mantenha os dados dos clientes.",
-        panel(
-            rx.heading("Novo cliente", size="4"),
-            rx.form(
-                _client_fields(),
-                submit_button("Adicionar cliente"),
-                on_submit=ClientState.add_client,
-                reset_on_submit=True,
-                class_name="stack-form",
+        rx.cond(
+            ClientState.can_manage_clients,
+            panel(
+                rx.heading("Novo cliente", size="4"),
+                rx.form(
+                    _client_fields(),
+                    submit_button("Adicionar cliente"),
+                    on_submit=ClientState.add_client,
+                    reset_on_submit=True,
+                    class_name="stack-form",
+                ),
             ),
         ),
         panel(

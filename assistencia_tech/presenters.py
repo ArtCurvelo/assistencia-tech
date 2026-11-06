@@ -11,7 +11,9 @@ import unicodedata
 from decimal import Decimal
 
 from .domain.clock import format_datetime
-from .domain.order_workflow import BUDGET_EDITABLE, OPEN_STATUSES, TECHNICIAN_LOCKED, allowed_next
+from .domain.history import KIND_OPENED, KIND_STATUS
+from .domain.order_workflow import BUDGET_EDITABLE, OPEN_STATUSES, TECHNICIAN_LOCKED
+from .domain.permissions import Permission, Principal, has_permission, is_own_order, transitions_for
 from .domain.pricing import compute_totals
 from .domain.validators import format_brl, format_cpf, format_phone, only_digits
 from .models import Client, Equipment, OrderStatus, ServiceOrder, Technician
@@ -163,19 +165,31 @@ def totals_row(order: ServiceOrder) -> Row:
     }
 
 
-def order_permissions(order: ServiceOrder) -> Row:
-    """Flags ("1" ou "") das ações permitidas no status atual."""
+def _flag(value: bool) -> str:
+    return "1" if value else ""
+
+
+def order_permissions(order: ServiceOrder, principal: Principal | None) -> Row:
+    """Flags ("1" ou "") das ações permitidas no status atual para este usuário."""
+    own = principal is not None and is_own_order(principal, order)
     return {
-        "budget_editable": "1" if order.status in BUDGET_EDITABLE else "",
-        "technician_changeable": "" if order.status in TECHNICIAN_LOCKED else "1",
-        "payments_allowed": "1"
-        if order.status != OrderStatus.CANCELLED and compute_totals(order).balance > 0
-        else "",
+        "budget_editable": _flag(
+            order.status in BUDGET_EDITABLE and own and has_permission(principal, Permission.ORDERS_DIAGNOSE)
+        ),
+        "technician_changeable": _flag(
+            order.status not in TECHNICIAN_LOCKED and has_permission(principal, Permission.ORDERS_ASSIGN)
+        ),
+        "payments_allowed": _flag(
+            order.status != OrderStatus.CANCELLED
+            and compute_totals(order).balance > 0
+            and has_permission(principal, Permission.ORDERS_PAYMENTS)
+        ),
+        "read_only_reason": "" if own else "Esta ordem pertence a outro técnico; você pode apenas consultá-la.",
     }
 
 
-def next_statuses(order: ServiceOrder) -> list[str]:
-    return [status.value for status in allowed_next(order.status)]
+def next_statuses(order: ServiceOrder, principal: Principal | None) -> list[str]:
+    return [status.value for status in transitions_for(principal, order)]
 
 
 def dashboard_metrics(catalog: Catalog) -> Row:
@@ -208,3 +222,48 @@ def status_counts(catalog: Catalog) -> list[Row]:
             }
         )
     return rows
+
+
+# ----------------------------------------------------------------------
+# Portal do cliente (sem autores, técnicos ou dados internos)
+# ----------------------------------------------------------------------
+def mask_cpf(cpf: str) -> str:
+    digits = only_digits(cpf)
+    return f"***.***.***-{digits[-2:]}" if len(digits) == 11 else "***"
+
+
+def account_row(client: Client) -> Row:
+    return {
+        "name": client.name,
+        "email": client.email,
+        "cpf": mask_cpf(client.cpf),
+        "phone": format_phone(client.phone),
+    }
+
+
+def portal_order_row(order: ServiceOrder, equipment: Equipment | None) -> Row:
+    totals = compute_totals(order)
+    payment = payment_label(order, totals.payment_status)
+    return {
+        "code": order.code,
+        "equipment": equipment.description if equipment else "Equipamento",
+        "problem": order.problem,
+        "diagnosis": order.diagnosis,
+        "status": order.status.value,
+        "status_class": status_class(order.status),
+        "opened_at": format_datetime(order.opened_at),
+        "updated_at": format_datetime(order.updated_at),
+        "total": format_brl(totals.total),
+        "balance": format_brl(totals.balance),
+        "payment_status": payment,
+        "payment_class": f"pay-badge pay-{slug(payment)}",
+    }
+
+
+def portal_timeline(order: ServiceOrder) -> list[Row]:
+    """Somente aberturas e mudanças de status, sem autor."""
+    return [
+        {"at": format_datetime(e.at), "description": e.description.split(" Problema relatado:")[0]}
+        for e in reversed(order.history)
+        if e.kind in (KIND_OPENED, KIND_STATUS)
+    ]

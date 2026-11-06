@@ -7,11 +7,15 @@ import reflex as rx
 from ..data.errors import DataAccessError, NotFoundError
 from ..presenters import client_row, equipment_row, matches, order_row
 from ..services import ClientService, load_catalog
+from ..domain.permissions import Permission
 from .base import AdminState
 
 
 class ClientState(AdminState):
     search: str = ""
+
+    def _required_permission(self) -> Permission:
+        return Permission.CLIENTS_VIEW
 
     edit_open: bool = False
     edit_id: str = ""
@@ -34,7 +38,7 @@ class ClientState(AdminState):
             return
         yield
         try:
-            created = await ClientService(self._gateway()).create(form_data)
+            created = await ClientService(self._gateway(), await self._current()).create(form_data)
             await self._reload()
             yield self._succeed(f"Cliente {created.name} cadastrado com sucesso.")
         except DataAccessError as error:
@@ -57,7 +61,7 @@ class ClientState(AdminState):
             return
         yield
         try:
-            updated = await ClientService(self._gateway()).update(self.edit_id, form_data)
+            updated = await ClientService(self._gateway(), await self._current()).update(self.edit_id, form_data)
             await self._reload()
             self.edit_open = False
             yield self._succeed(f"Dados de {updated.name} atualizados.")
@@ -81,7 +85,7 @@ class ClientState(AdminState):
             return
         yield
         try:
-            removed = await ClientService(self._gateway()).delete(self.delete_id)
+            removed = await ClientService(self._gateway(), await self._current()).delete(self.delete_id)
             await self._reload()
             yield self._succeed(f"Cliente {removed.name} excluído.")
         except DataAccessError as error:
@@ -100,11 +104,14 @@ class ClientDetailState(AdminState):
     async def load_client(self):
         self._clear_feedback()
         self.found = False
+        redirect = await self._guard(Permission.CLIENTS_VIEW)
+        if redirect is not None:
+            return redirect
         client_id = str(self.router.page.params.get("cliente_id", ""))
         try:
             gateway = self._gateway()
-            detail = await ClientService(gateway).detail(client_id)
-            catalog = await load_catalog(gateway)
+            detail = await ClientService(gateway, await self._current()).detail(client_id)
+            catalog = await load_catalog(gateway, await self._current())
         except NotFoundError:
             self.data_error = ""
             return

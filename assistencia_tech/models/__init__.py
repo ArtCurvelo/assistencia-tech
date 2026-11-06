@@ -21,6 +21,7 @@ from .entities import (
     Technician,
     serial_key,
 )
+from .users import Role, UserAccount
 from .validation import parse_model
 
 __all__ = [
@@ -40,8 +41,10 @@ __all__ = [
     "Payment",
     "PaymentCreate",
     "PublicOrderView",
+    "Role",
     "ServiceOrder",
     "Technician",
+    "UserAccount",
     "parse_model",
     "serial_key",
 ]

@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from ..data.repositories import DataGateway
+from ..domain.permissions import Permission, Principal, require
 from ..models import Client, Equipment, ServiceOrder, Technician
 
 
@@ -24,7 +25,8 @@ class Catalog:
         object.__setattr__(self, "technicians_by_id", {t.id: t for t in self.technicians})
 
 
-async def load_catalog(gateway: DataGateway) -> Catalog:
+async def load_catalog(gateway: DataGateway, principal: Principal | None) -> Catalog:
+    require(principal, Permission.DASHBOARD_VIEW)
     return Catalog(
         clients=await gateway.clients.list(),
         equipment=await gateway.equipment.list(),

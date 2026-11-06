@@ -11,7 +11,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 from ...config import DATA_SOURCE_XANO, Settings
-from ...models import Client, ClientCreate, Equipment, EquipmentCreate, ServiceOrder, Technician
+from ...models import Client, ClientCreate, Equipment, EquipmentCreate, ServiceOrder, Technician, UserAccount
 from ..errors import ContractPendingError
 from ..repositories import DataGateway
 from .client import XanoClient
@@ -98,6 +98,22 @@ class XanoOrderRepository(_XanoRepository):
         raise self._pending("save")
 
 
+class XanoAuthProvider(_XanoRepository):
+    prefix = "auth"
+
+    async def authenticate(self, email: str, password: str) -> UserAccount:
+        raise self._pending("login")
+
+    async def get_user(self, user_id: str) -> UserAccount:
+        raise self._pending("me")
+
+    async def email_in_use(self, email: str) -> bool:
+        raise self._pending("register")
+
+    async def register_client(self, client: Client, password: str) -> UserAccount:
+        raise self._pending("register")
+
+
 def build_xano_gateway(
     settings: Settings,
     *,
@@ -113,4 +129,5 @@ def build_xano_gateway(
         equipment=XanoEquipmentRepository(client, registry),
         technicians=XanoTechnicianRepository(client, registry),
         orders=XanoOrderRepository(client, registry),
+        auth=XanoAuthProvider(client, registry),
     )

@@ -16,6 +16,8 @@ from ...models import Client, ClientCreate, Equipment, EquipmentCreate, ServiceO
 from ..errors import NotFoundError, ValidationError
 from ..repositories import DataGateway
 from . import seed
+from .auth import DemoAuthProvider
+from .users import seed_users
 
 YearProvider = Callable[[], int]
 _CODE_RE = re.compile(r"^OS-(\d{4})-(\d+)$")
@@ -132,4 +134,5 @@ def build_demo_gateway(year_provider: YearProvider | None = None) -> DataGateway
         equipment=DemoEquipmentRepository(seed.seed_equipment()),
         technicians=DemoTechnicianRepository(seed.seed_technicians()),
         orders=DemoOrderRepository(seed.seed_orders(), year_provider or (lambda: date.today().year)),
+        auth=DemoAuthProvider(seed_users()),
     )

@@ -71,7 +71,7 @@ def orders_page() -> rx.Component:
     return admin_shell(
         "Ordens de serviço",
         "Abra ordens, acompanhe o andamento e acesse o detalhe de cada atendimento.",
-        panel(rx.heading("Abrir ordem de serviço", size="4"), _open_form()),
+        rx.cond(OrderState.can_open_orders, panel(rx.heading("Abrir ordem de serviço", size="4"), _open_form())),
         panel(
             panel_header(
                 "Ordens registradas",

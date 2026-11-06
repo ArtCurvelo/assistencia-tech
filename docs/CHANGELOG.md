@@ -1,5 +1,16 @@
 # Changelog
 
+## Não lançado — Fase 3 (autenticação e acesso, mudança `add-auth-and-access-control`)
+- Login e logout com sessão no servidor (token opaco em cookie `SameSite=Strict`, expiração após 2 h sem atividade).
+- Senhas com PBKDF2-SHA256 e sal; política de senha; bloqueio de 5 minutos após 5 tentativas; mensagem genérica de credenciais inválidas.
+- Cadastro de cliente com conta de acesso e entrada automática no portal.
+- Perfis Administrador, Atendente, Técnico e Cliente; matriz de permissões em `domain/permissions.py`, aplicada nos serviços e na interface; escopo do técnico às próprias ordens; permissões por transição de status.
+- Proteção de todas as rotas `/admin`, retorno seguro à página pretendida e página de acesso negado.
+- Portal do cliente (`/minha-conta`) com as próprias ordens, sem dados internos.
+- Histórico da OS com o nome e o perfil do autor real.
+- Contas de demonstração com acesso rápido no login (somente no modo demonstração) e `docs/DEMO_USERS.md`.
+- 268 testes automatizados.
+
 ## Não lançado — Fase 2 (domínio completo, mudança `expand-service-domain`)
 - Regras de negócio em funções puras (`domain/`): validação de CPF, telefone e reais; fluxo de status com transições e pré-condições; cálculo de valores; histórico imutável.
 - Serviços de aplicação (`services/`) para clientes, equipamentos e ordens; repositórios restritos à persistência.

@@ -36,16 +36,26 @@ def public_header() -> rx.Component:
             rx.flex(
                 rx.link("Início", href="/"),
                 rx.link("Serviços", href="/servicos"),
-                rx.link("Painel", href="/admin"),
                 class_name="public-nav",
                 gap="28px",
             ),
             rx.spacer(),
-            rx.flex(
-                rx.link(button("Entrar", outline=True), href="/login"),
-                rx.link(button("Criar conta"), href="/cadastro"),
-                class_name="header-actions",
-                gap="10px",
+            rx.cond(
+                AppState.is_authenticated,
+                rx.flex(
+                    rx.text(AppState.user_name, class_name="header-user"),
+                    rx.link(button("Minha área", outline=True), href=AppState.user_home),
+                    button("Sair", on_click=AppState.logout),
+                    class_name="header-actions",
+                    gap="10px",
+                    align="center",
+                ),
+                rx.flex(
+                    rx.link(button("Entrar", outline=True), href="/login"),
+                    rx.link(button("Criar conta"), href="/cadastro"),
+                    class_name="header-actions",
+                    gap="10px",
+                ),
             ),
             class_name="header-inner page-width",
         ),
@@ -80,6 +90,12 @@ def _sidebar() -> rx.Component:
             spacing="2",
         ),
         rx.spacer(),
+        rx.box(
+            rx.text(AppState.user_name, class_name="side-user-name"),
+            rx.text(AppState.user_role, class_name="side-user-role"),
+            rx.button("Sair", on_click=AppState.logout, class_name="btn-sm btn-sm-ghost side-logout"),
+            class_name="side-user",
+        ),
         rx.link("← Voltar ao site", href="/", class_name="side-back"),
         class_name="sidebar",
     )

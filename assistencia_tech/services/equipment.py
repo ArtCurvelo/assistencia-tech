@@ -7,14 +7,18 @@ from typing import Any
 
 from ..data.errors import ValidationError
 from ..data.repositories import DataGateway
+from ..domain.permissions import Permission as P
+from ..domain.permissions import Principal, require
 from ..models import Equipment, EquipmentCreate, ServiceOrder, parse_model, serial_key
 
 
 class EquipmentService:
-    def __init__(self, gateway: DataGateway) -> None:
+    def __init__(self, gateway: DataGateway, principal: Principal | None) -> None:
         self._gw = gateway
+        self._principal = principal
 
     async def list(self) -> list[Equipment]:
+        require(self._principal, P.EQUIPMENT_VIEW)
         return await self._gw.equipment.list()
 
     async def _orders_of(self, equipment_id: str) -> list[ServiceOrder]:
@@ -30,12 +34,14 @@ class EquipmentService:
                 raise ValidationError(f"O número de série {data.serial_number} já está cadastrado.")
 
     async def create(self, form: Mapping[str, Any]) -> Equipment:
+        require(self._principal, P.EQUIPMENT_MANAGE)
         data = parse_model(EquipmentCreate, form)
         await self._gw.clients.get(data.client_id)
         await self._ensure_serial_unique(data)
         return await self._gw.equipment.create(data)
 
     async def update(self, equipment_id: str, form: Mapping[str, Any]) -> Equipment:
+        require(self._principal, P.EQUIPMENT_MANAGE)
         current = await self._gw.equipment.get(equipment_id)
         data = parse_model(EquipmentCreate, form)
         if data.client_id != current.client_id:
@@ -48,6 +54,7 @@ class EquipmentService:
         return await self._gw.equipment.update(Equipment(id=equipment_id, **data.model_dump()))
 
     async def delete(self, equipment_id: str) -> Equipment:
+        require(self._principal, P.EQUIPMENT_DELETE)
         equipment = await self._gw.equipment.get(equipment_id)
         orders = await self._orders_of(equipment_id)
         if orders:
@@ -58,5 +65,6 @@ class EquipmentService:
         return equipment
 
     async def history(self, equipment_id: str) -> tuple[Equipment, list[ServiceOrder]]:
+        require(self._principal, P.EQUIPMENT_VIEW)
         equipment = await self._gw.equipment.get(equipment_id)
         return equipment, await self._orders_of(equipment_id)

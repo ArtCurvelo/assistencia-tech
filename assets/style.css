@@ -1607,3 +1607,44 @@ textarea.input { width: 100%; }
 
 .pay-nao-se-aplica { background: rgba(145, 164, 186, 0.1); color: var(--text-muted); }
 .code-link { white-space: nowrap; }
+
+/* =========================================================
+   FASE 3 — AUTENTICAÇÃO, USUÁRIO E PORTAL
+   ========================================================= */
+.header-user { color: var(--text-secondary); font-size: 13px; font-weight: 600; }
+.side-user {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 18px 0 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--input-bg);
+}
+.side-user-name { color: var(--text); font-size: 13px; font-weight: 700; }
+.side-user-role { color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: 0.04em; }
+.side-logout { align-self: flex-start; margin-top: 8px; }
+
+.demo-access {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--border-strong);
+}
+.demo-account {
+  width: 100%;
+  height: auto;
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--input-bg);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.demo-account:hover:not(:disabled) { border-color: var(--green); }
+.demo-account-role { font-weight: 700; font-size: 13px; }
+.portal-content { padding-bottom: 60px; }

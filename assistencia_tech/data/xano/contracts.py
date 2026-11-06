@@ -34,6 +34,9 @@ OPERATIONS: dict[str, str] = {
     "orders.next_code": "gerar o código da ordem de serviço",
     "orders.create": "abrir ordens de serviço",
     "orders.save": "atualizar a ordem de serviço",
+    "auth.login": "entrar no sistema",
+    "auth.register": "criar contas de acesso",
+    "auth.me": "consultar a conta do usuário",
 }
 
 

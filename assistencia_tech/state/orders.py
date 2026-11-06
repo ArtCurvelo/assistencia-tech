@@ -7,6 +7,7 @@ import reflex as rx
 from ..data.errors import DataAccessError
 from ..presenters import matches
 from ..services import OrderService
+from ..domain.permissions import Permission
 from .base import AdminState
 
 ALL = "todos"
@@ -19,6 +20,9 @@ class OrderState(AdminState):
 
     new_client_id: str = ""
     new_equipment_id: str = ""
+
+    def _required_permission(self) -> Permission:
+        return Permission.ORDERS_VIEW
 
     @rx.var
     def filtered_orders(self) -> list[dict[str, str]]:
@@ -63,7 +67,7 @@ class OrderState(AdminState):
                 "equipment_id": self.new_equipment_id,
                 "problem": form_data.get("problem", ""),
             }
-            created = await OrderService(self._gateway()).open(form)
+            created = await OrderService(self._gateway(), await self._current()).open(form)
             await self._reload()
             self.new_client_id = ""
             self.new_equipment_id = ""

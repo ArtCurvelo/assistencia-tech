@@ -8,7 +8,8 @@ Aplicação acadêmica de gestão de assistência técnica, desenvolvida em Pyth
 - Clientes: CPF e telefone validados, unicidade de CPF e e-mail, edição, exclusão controlada e histórico de atendimentos.
 - Equipamentos: vínculo com cliente, número de série único, filtros, edição, exclusão controlada e histórico de manutenção.
 - Ordens de serviço: fluxo de status com regras, técnico responsável, diagnóstico, orçamento de serviços e peças, pagamentos, cancelamento com motivo e linha do tempo.
-- Formulários demonstrativos de login e cadastro (autenticação real em mudança futura).
+- Login, logout e cadastro de cliente; perfis Administrador, Atendente, Técnico e Cliente com permissões aplicadas nas operações.
+- Portal do cliente (`/minha-conta`) com as próprias ordens, orçamento e andamento.
 
 ## Requisitos
 - Python 3.10+ (a `.venv` do projeto usa Python 3.14).
@@ -35,12 +36,17 @@ reflex run
 
 A aplicação normalmente abre em `http://localhost:3000`.
 
+## Acesso de demonstração
+Na tela `/login`, use o bloco **Acesso rápido** para entrar como Administrador, Atendente, Técnico ou Cliente. As contas e senhas de teste estão em `docs/DEMO_USERS.md`.
+
 ## Testes
 ```powershell
 python -m pytest
 ```
 
 ## Rotas
+Públicas: `/`, `/servicos`, `/login`, `/cadastro`, `/acesso-negado`. Cliente: `/minha-conta` e `/minha-conta/ordens/[codigo]`. Administração (exige login):
+
 - `/`
 - `/servicos`
 - `/login`
@@ -57,15 +63,16 @@ A aplicação usa uma camada de acesso a dados com duas fontes, escolhidas por v
 
 ## Limitações conhecidas
 - No modo demonstração, os registros ficam em memória no processo da aplicação; não existe persistência em banco.
-- Login e cadastro não autenticam nem armazenam credenciais.
+- Contas, sessões e bloqueios de login ficam em memória no modo demonstração e se perdem ao reiniciar o servidor.
 - A integração real com o Xano depende da documentação oficial da API (contratos ainda não fornecidos).
 
 ## Documentação
 - `docs/PROJECT.md` — contexto e escopo.
 - `docs/REQUIREMENTS.md` — requisitos funcionais e não funcionais.
 - `docs/DATA_MODEL.md` — diagrama entidade-relacionamento e ciclo de vida da OS.
+- `docs/DEMO_USERS.md` — contas de demonstração (senhas de teste) e matriz de permissões.
 - `docs/OPEN_SPEC_APPROACH.md` — processo de especificação com OpenSpec.
 - `docs/XANO_INTEGRATION.md` — arquitetura de dados, configuração e registro de contratos do Xano.
 - `docs/CHANGELOG.md` — histórico de mudanças.
 - `openspec/specs/` — especificações vigentes.
-- `openspec/changes/` — mudanças em andamento (`integrate-xano-backend` e `expand-service-domain`).
+- `openspec/changes/` — mudanças em andamento (`integrate-xano-backend`, `expand-service-domain` e `add-auth-and-access-control`).

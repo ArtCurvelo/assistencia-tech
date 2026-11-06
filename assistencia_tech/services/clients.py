@@ -9,6 +9,8 @@ from typing import Any
 from ..data.errors import ValidationError
 from ..data.repositories import DataGateway
 from ..domain.validators import format_cpf
+from ..domain.permissions import Permission as P
+from ..domain.permissions import Principal, require
 from ..models import Client, ClientCreate, Equipment, ServiceOrder, parse_model
 
 
@@ -24,13 +26,16 @@ def _plural(count: int, singular: str, plural: str) -> str:
 
 
 class ClientService:
-    def __init__(self, gateway: DataGateway) -> None:
+    def __init__(self, gateway: DataGateway, principal: Principal | None) -> None:
         self._gw = gateway
+        self._principal = principal
 
     async def list(self) -> list[Client]:
+        require(self._principal, P.CLIENTS_VIEW)
         return await self._gw.clients.list()
 
     async def get(self, client_id: str) -> Client:
+        require(self._principal, P.CLIENTS_VIEW)
         return await self._gw.clients.get(client_id)
 
     async def _ensure_unique(self, data: ClientCreate, exclude_id: str | None = None) -> None:
@@ -43,17 +48,20 @@ class ClientService:
                 raise ValidationError(f"Já existe um cliente com o e-mail {data.email}.")
 
     async def create(self, form: Mapping[str, Any]) -> Client:
+        require(self._principal, P.CLIENTS_MANAGE)
         data = parse_model(ClientCreate, form)
         await self._ensure_unique(data)
         return await self._gw.clients.create(data)
 
     async def update(self, client_id: str, form: Mapping[str, Any]) -> Client:
+        require(self._principal, P.CLIENTS_MANAGE)
         await self._gw.clients.get(client_id)
         data = parse_model(ClientCreate, form)
         await self._ensure_unique(data, exclude_id=client_id)
         return await self._gw.clients.update(Client(id=client_id, **data.model_dump()))
 
     async def delete(self, client_id: str) -> Client:
+        require(self._principal, P.CLIENTS_DELETE)
         client = await self._gw.clients.get(client_id)
         equipment = [e for e in await self._gw.equipment.list() if e.client_id == client_id]
         orders = [o for o in await self._gw.orders.list() if o.client_id == client_id]
@@ -70,6 +78,7 @@ class ClientService:
         return client
 
     async def detail(self, client_id: str) -> ClientDetail:
+        require(self._principal, P.CLIENTS_VIEW)
         client = await self._gw.clients.get(client_id)
         equipment = [e for e in await self._gw.equipment.list() if e.client_id == client_id]
         orders = sorted(

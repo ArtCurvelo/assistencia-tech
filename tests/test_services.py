@@ -7,11 +7,13 @@ import pytest
 from assistencia_tech.data.demo import build_demo_gateway
 from assistencia_tech.data.errors import NotFoundError, ValidationError
 from assistencia_tech.domain.clock import BRT
+from assistencia_tech.domain.permissions import Principal, Role
 from assistencia_tech.models import OrderStatus
 from assistencia_tech.services import ClientService, EquipmentService, OrderService, load_catalog
 
 pytestmark = pytest.mark.anyio
 NOW = datetime(2026, 11, 6, 15, 30, tzinfo=BRT)
+ADMIN = Principal("1", "Ana Ribeiro", "admin@assistencia.test", Role.ADMIN)
 NEW_CLIENT = {"name": "Ana Costa", "cpf": "52998224725", "email": "ana@exemplo.test", "phone": "11987654321"}
 
 
@@ -22,17 +24,17 @@ def gw():
 
 @pytest.fixture
 def clients(gw):
-    return ClientService(gw)
+    return ClientService(gw, ADMIN)
 
 
 @pytest.fixture
 def equipment(gw):
-    return EquipmentService(gw)
+    return EquipmentService(gw, ADMIN)
 
 
 @pytest.fixture
 def orders(gw):
-    return OrderService(gw, clock=lambda: NOW, actor="Atendente")
+    return OrderService(gw, ADMIN, clock=lambda: NOW)
 
 
 # ---------------------------------------------------------------- clientes
@@ -53,7 +55,7 @@ async def test_edit_client_keeps_links_and_checks_uniqueness(gw, clients):
     updated = await clients.update("1", {"name": "Marina O. Silva", "cpf": "39053344705",
                                          "email": "marina@example.test", "phone": "11988881001"})
     assert updated.name == "Marina O. Silva"
-    catalog = await load_catalog(gw)
+    catalog = await load_catalog(gw, ADMIN)
     assert catalog.clients_by_id[catalog.orders[1].client_id].name == "Marina O. Silva"
     with pytest.raises(ValidationError, match="e-mail"):
         await clients.update("1", {"name": "Marina", "cpf": "39053344705",
@@ -128,7 +130,7 @@ async def test_open_order_generates_code_and_history(orders):
     order = await orders.open({"client_id": "1", "equipment_id": "8", "problem": "Controle sem resposta"})
     assert order.code == "OS-2026-00127"
     assert order.status == OrderStatus.RECEIVED and order.opened_at == NOW
-    assert order.history[0].author == "Atendente"
+    assert order.history[0].author == "Ana Ribeiro (Administrador)"
 
 
 async def test_full_flow_through_service(orders):

@@ -7,6 +7,7 @@ import reflex as rx
 from ..data.errors import DataAccessError
 from ..presenters import matches, order_row
 from ..services import EquipmentService, load_catalog
+from ..domain.permissions import Permission
 from .base import AdminState
 
 ALL_KINDS = "Todos"
@@ -28,6 +29,9 @@ class EquipmentState(AdminState):
     history_title: str = ""
     history_orders: list[dict[str, str]] = []
 
+    def _required_permission(self) -> Permission:
+        return Permission.EQUIPMENT_VIEW
+
     @rx.var
     def filtered_equipment(self) -> list[dict[str, str]]:
         return [
@@ -47,7 +51,7 @@ class EquipmentState(AdminState):
             return
         yield
         try:
-            created = await EquipmentService(self._gateway()).create(form_data)
+            created = await EquipmentService(self._gateway(), await self._current()).create(form_data)
             await self._reload()
             yield self._succeed(f"Equipamento {created.description} cadastrado.")
         except DataAccessError as error:
@@ -76,7 +80,7 @@ class EquipmentState(AdminState):
             return
         yield
         try:
-            updated = await EquipmentService(self._gateway()).update(self.edit_id, form_data)
+            updated = await EquipmentService(self._gateway(), await self._current()).update(self.edit_id, form_data)
             await self._reload()
             self.edit_open = False
             yield self._succeed(f"Equipamento {updated.description} atualizado.")
@@ -99,7 +103,7 @@ class EquipmentState(AdminState):
             return
         yield
         try:
-            removed = await EquipmentService(self._gateway()).delete(self.delete_id)
+            removed = await EquipmentService(self._gateway(), await self._current()).delete(self.delete_id)
             await self._reload()
             yield self._succeed(f"Equipamento {removed.description} excluído.")
         except DataAccessError as error:
@@ -112,8 +116,8 @@ class EquipmentState(AdminState):
         self._clear_feedback()
         try:
             gateway = self._gateway()
-            item, orders = await EquipmentService(gateway).history(equipment["id"])
-            catalog = await load_catalog(gateway)
+            item, orders = await EquipmentService(gateway, await self._current()).history(equipment["id"])
+            catalog = await load_catalog(gateway, await self._current())
         except DataAccessError as error:
             yield self._fail(error)
             return

@@ -18,6 +18,7 @@ from ..presenters import (
     totals_row,
 )
 from ..services import OrderService, load_catalog
+from ..domain.permissions import Permission
 from .base import AdminState
 
 CANCELLED = OrderStatus.CANCELLED.value
@@ -40,7 +41,8 @@ class OrderDetailState(AdminState):
     cancel_open: bool = False
 
     async def _show(self, order: ServiceOrder) -> None:
-        catalog = await load_catalog(self._gateway())
+        principal = await self._current()
+        catalog = await load_catalog(self._gateway(), principal)
         self.code = order.code
         self.order = order_row(order, catalog)
         self.diagnosis = order.diagnosis
@@ -49,17 +51,20 @@ class OrderDetailState(AdminState):
         self.payments = payment_rows(order)
         self.timeline = list(reversed(history_rows(order)))
         self.totals = totals_row(order)
-        self.permissions = order_permissions(order)
-        self.next_status = next_statuses(order)
+        self.permissions = order_permissions(order, principal)
+        self.next_status = next_statuses(order, principal)
         self.technicians = [{"value": t.id, "label": f"{t.name} — {t.specialty}"} for t in catalog.technicians]
         self.found = True
 
     async def load_order(self):
         self._clear_feedback()
         self.found = False
+        redirect = await self._guard(Permission.ORDERS_VIEW)
+        if redirect is not None:
+            return redirect
         code = str(self.router.page.params.get("codigo", ""))
         try:
-            order = await OrderService(self._gateway()).get(code)
+            order = await OrderService(self._gateway(), await self._current()).get(code)
             await self._show(order)
             self.data_error = ""
         except NotFoundError:
@@ -78,7 +83,7 @@ class OrderDetailState(AdminState):
             return
         yield
         try:
-            order = await action(OrderService(self._gateway()))
+            order = await action(OrderService(self._gateway(), await self._current()))
             await self._show(order)
             if close_cancel:
                 self.cancel_open = False

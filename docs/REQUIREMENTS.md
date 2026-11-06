@@ -8,7 +8,7 @@ Visão geral rastreável dos requisitos. O comportamento detalhado, com cenário
 |---|---|---|
 | RF01 | Exibir página inicial com a identidade visual Assistência TECH | `design-system` |
 | RF02 | Listar os serviços oferecidos | `design-system` |
-| RF03 | Apresentar formulários demonstrativos de login e cadastro | — (autenticação real em mudança futura) |
+| RF03 | Autenticar usuários por e-mail e senha, com logout e sessão com expiração | `user-auth` |
 | RF04 | Consultar publicamente uma OS pelo código, sem expor dados pessoais | `service-orders` |
 | RF05 | Exibir painel com indicadores (abertas, aguardando aprovação, prontas, valor a receber) e ordens recentes | `service-orders` |
 | RF06 | Cadastrar clientes com CPF, e-mail e telefone validados e únicos | `client-management` |
@@ -26,6 +26,13 @@ Visão geral rastreável dos requisitos. O comportamento detalhado, com cenário
 | RF18 | Registrar histórico imutável de alterações da OS | `service-orders` |
 | RF19 | Filtrar ordens por status e técnico e pesquisar por código, cliente ou equipamento | `service-orders` |
 | RF20 | Selecionar a fonte de dados (demonstração ou Xano) por configuração, identificando a fonte ativa | `data-source` |
+| RF21 | Permitir o cadastro de cliente com conta de acesso e política de senha | `user-auth` |
+| RF22 | Bloquear temporariamente o login após tentativas malsucedidas | `user-auth` |
+| RF23 | Controlar o acesso por perfis (Administrador, Atendente, Técnico, Cliente) e matriz de permissões | `access-control` |
+| RF24 | Proteger as rotas administrativas e exibir página de acesso negado | `access-control` |
+| RF25 | Restringir o técnico às ordens em que é o responsável | `access-control` |
+| RF26 | Oferecer ao cliente um portal com as próprias ordens, orçamento e andamento | `customer-portal` |
+| RF27 | Registrar no histórico o nome e o perfil do usuário autor de cada alteração | `access-control`, `service-orders` |
 
 ## Requisitos não funcionais
 
@@ -36,12 +43,15 @@ Visão geral rastreável dos requisitos. O comportamento detalhado, com cenário
 | RNF03 | Adaptar o layout a telas menores | `responsive-interface` |
 | RNF04 | Manter arquivos Python com menos de 1000 linhas (meta: 400) | contagem registrada nas tarefas |
 | RNF05 | Identificar claramente o caráter demonstrativo dos dados | `data-source` |
-| RNF06 | Não afirmar persistência ou autenticação reais | `data-source` |
+| RNF06 | Não afirmar persistência real no modo demonstração (dados, contas e sessões ficam em memória) | `data-source` |
 | RNF07 | Nunca inventar contratos da API do Xano; operações sem contrato falham de forma explícita | `backend-integration` |
 | RNF08 | Não versionar credenciais; configuração por variáveis de ambiente | `backend-integration` |
 | RNF09 | Mensagens de erro compreensíveis, sem detalhes técnicos | `data-source`, `design-system` |
 | RNF10 | Regras de negócio isoladas em funções puras e cobertas por testes automatizados | `tests/` |
 | RNF11 | Valores monetários com `Decimal`, sem `float` | `domain/validators.py` |
+| RNF12 | Senhas armazenadas apenas como hash PBKDF2-SHA256 com sal; nunca em logs | `user-auth` |
+| RNF13 | Permissões verificadas nos serviços, independentemente da interface | `access-control` |
+| RNF14 | Mensagens de login que não revelam a existência de contas; redirecionamento somente para caminhos internos | `user-auth` |
 
 ## Critérios de aceitação gerais
 

@@ -70,7 +70,11 @@ def _workflow() -> rx.Component:
         rx.cond(
             S.next_status.length() > 0,
             rx.flex(rx.foreach(S.next_status, _status_button), gap="3", wrap="wrap"),
-            rx.text("Ordem finalizada: não há próximos status.", class_name="muted"),
+            rx.text(
+                rx.cond(S.permissions["read_only_reason"] != "", S.permissions["read_only_reason"],
+                        "Não há próximos status disponíveis para o seu perfil."),
+                class_name="muted",
+            ),
         ),
         rx.box(
             rx.text("Técnico responsável", class_name="form-label"),

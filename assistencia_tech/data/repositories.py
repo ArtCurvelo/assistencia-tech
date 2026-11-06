@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
-from ..models import Client, ClientCreate, Equipment, EquipmentCreate, ServiceOrder, Technician
+from ..models import Client, ClientCreate, Equipment, EquipmentCreate, ServiceOrder, Technician, UserAccount
 
 
 @runtime_checkable
@@ -69,6 +69,25 @@ class OrderRepository(Protocol):
         ...
 
 
+@runtime_checkable
+class AuthProvider(Protocol):
+    """Autenticação e contas de acesso (credenciais nunca saem deste provedor)."""
+
+    async def authenticate(self, email: str, password: str) -> UserAccount:
+        """Retorna a conta ou lança ``AuthenticationError`` com mensagem genérica."""
+        ...
+
+    async def get_user(self, user_id: str) -> UserAccount:
+        """Retorna a conta ou lança ``NotFoundError``."""
+        ...
+
+    async def email_in_use(self, email: str) -> bool: ...
+
+    async def register_client(self, client: Client, password: str) -> UserAccount:
+        """Cria a conta com perfil Cliente associada a ``client``."""
+        ...
+
+
 @dataclass(frozen=True)
 class DataGateway:
     """Agrupa os repositórios de uma fonte de dados."""
@@ -80,3 +99,4 @@ class DataGateway:
     equipment: EquipmentRepository
     technicians: TechnicianRepository
     orders: OrderRepository
+    auth: AuthProvider

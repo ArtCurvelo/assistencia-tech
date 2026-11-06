@@ -55,8 +55,10 @@ def _row(equipment) -> rx.Component:
         rx.table.cell(
             rx.flex(
                 small_button("Histórico", on_click=EquipmentState.open_history(equipment)),
-                small_button("Editar", on_click=EquipmentState.open_edit(equipment)),
-                small_button("Excluir", "danger", on_click=EquipmentState.ask_delete(equipment)),
+                rx.cond(EquipmentState.can_manage_equipment,
+                        small_button("Editar", on_click=EquipmentState.open_edit(equipment))),
+                rx.cond(EquipmentState.can_delete_equipment,
+                        small_button("Excluir", "danger", on_click=EquipmentState.ask_delete(equipment))),
                 gap="2",
             )
         ),
@@ -76,10 +78,13 @@ def equipment_page() -> rx.Component:
     return admin_shell(
         "Equipamentos",
         "Registre os aparelhos recebidos e consulte o histórico de manutenção.",
-        panel(
-            rx.heading("Cadastrar equipamento", size="4"),
-            rx.form(_equipment_fields(), submit_button("Adicionar equipamento"),
-                    on_submit=EquipmentState.add_equipment, reset_on_submit=True, class_name="stack-form"),
+        rx.cond(
+            EquipmentState.can_manage_equipment,
+            panel(
+                rx.heading("Cadastrar equipamento", size="4"),
+                rx.form(_equipment_fields(), submit_button("Adicionar equipamento"),
+                        on_submit=EquipmentState.add_equipment, reset_on_submit=True, class_name="stack-form"),
+            ),
         ),
         panel(
             panel_header(
