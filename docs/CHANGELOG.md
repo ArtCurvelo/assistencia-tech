@@ -1,5 +1,11 @@
 # Changelog
 
+## Não lançado — Fase 7 (entrega acadêmica, mudança `prepare-academic-delivery`)
+- `ARCHITECTURE.md`, `DEMO_SCRIPT.md` e `ACADEMIC_REPORT.md`; roteiro automatizado em `tests/test_demo_script.py`.
+- Cobertura medida com `pytest-cov`: 97% nas camadas testáveis e 69% no total.
+- Revisão de `README.md`, `PROJECT.md` e `OPEN_SPEC_APPROACH.md`.
+- 313 testes automatizados.
+
 ## Não lançado — Fase 5 (administração, mudança `add-admin-and-reports`)
 - Gestão de colaboradores: cadastro com senha provisória, edição de cargo e especialidade, redefinição de senha, desativação e reativação.
 - Regras: e-mail único, sem autodesativação, sempre um administrador ativo, técnico com ordens em aberto não muda de cargo nem é desativado; técnicos inativos fora das novas atribuições.

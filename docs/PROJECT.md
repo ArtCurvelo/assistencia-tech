@@ -1,7 +1,7 @@
 # Assistência TECH — contexto do projeto
 
 ## Objetivo
-Protótipo acadêmico de uma aplicação para assistência técnica, reconstruindo em Reflex a identidade visual dos HTMLs originais.
+Aplicação acadêmica de gestão de assistência técnica em Python/Reflex: atendimento, equipamentos, ordens de serviço, portal do cliente, equipe e relatórios, preservando a identidade visual dos HTMLs originais. Visão técnica em `ARCHITECTURE.md` e relatório em `ACADEMIC_REPORT.md`.
 
 ## Referências recebidas
 - `base.html`: marca, navegação, rodapé e fonte Inter.
@@ -11,7 +11,7 @@ Protótipo acadêmico de uma aplicação para assistência técnica, reconstruin
 - CSS enviado na conversa: fundo `#030b16`, cards `#081a2f`, verde `#39ff5a`, azul `#087cff`, fonte Inter e layouts responsivos.
 
 ## Limite explícito
-Esta versão utiliza dados fictícios no estado da aplicação. Não foi fornecido um contrato verificável das APIs nesta etapa, portanto nenhuma integração real foi inventada ou implementada.
+A fonte de dados padrão é o modo demonstração (dados fictícios em memória, sempre identificados como tal). A integração com o Xano está preparada, mas nenhum contrato da API foi fornecido; por isso nenhum endpoint foi inventado, e as operações no modo Xano informam que a integração está pendente.
 
 ## Processo de especificação
 

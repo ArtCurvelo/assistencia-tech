@@ -43,6 +43,7 @@ Na tela `/login`, use o bloco **Acesso rápido** para entrar como Administrador,
 ## Testes
 ```powershell
 python -m pytest
+python -m pytest --cov=assistencia_tech   # cobertura (pytest-cov)
 ```
 
 ## Rotas
@@ -70,6 +71,9 @@ A aplicação usa uma camada de acesso a dados com duas fontes, escolhidas por v
 - A integração real com o Xano depende da documentação oficial da API (contratos ainda não fornecidos).
 
 ## Documentação
+- `docs/ACADEMIC_REPORT.md` — relatório técnico (requisitos, metodologia, arquitetura, segurança, métricas e limitações).
+- `docs/ARCHITECTURE.md` — camadas, fluxo de uma operação, decisões e estratégia de testes.
+- `docs/DEMO_SCRIPT.md` — roteiro de demonstração (≈ 15 min), automatizado em `tests/test_demo_script.py`.
 - `docs/PROJECT.md` — contexto e escopo.
 - `docs/REQUIREMENTS.md` — requisitos funcionais e não funcionais.
 - `docs/DATA_MODEL.md` — diagrama entidade-relacionamento e ciclo de vida da OS.
@@ -78,4 +82,4 @@ A aplicação usa uma camada de acesso a dados com duas fontes, escolhidas por v
 - `docs/XANO_INTEGRATION.md` — arquitetura de dados, configuração e registro de contratos do Xano.
 - `docs/CHANGELOG.md` — histórico de mudanças.
 - `openspec/specs/` — especificações vigentes.
-- `openspec/changes/` — mudanças em andamento (`integrate-xano-backend`, `expand-service-domain`, `add-auth-and-access-control`, `refine-frontend-experience` e `add-admin-and-reports`).
+- `openspec/changes/` — mudanças em andamento (veja o estado de cada uma em `docs/OPEN_SPEC_APPROACH.md`).

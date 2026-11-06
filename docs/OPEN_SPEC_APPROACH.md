@@ -24,7 +24,14 @@ Este projeto utiliza a ferramenta **OpenSpec** (CLI `openspec`, versão 1.14.3, 
 ## Mudanças
 
 - `redesign-interface` — arquivada em 2026-10-29. Observação: foi arquivada com parte das tarefas de verificação manual ainda abertas (revisão completa de rotas e tamanhos de tela). Essas verificações foram incorporadas aos grupos de verificação das mudanças seguintes.
-- `integrate-xano-backend` — em andamento: camada de acesso a dados, modo demonstração, cliente Xano e integração real (esta última bloqueada até a documentação oficial da API).
+- `integrate-xano-backend` — grupos 1 a 5 concluídos (camada de dados, modo demonstração, cliente Xano); grupo 6 (contratos reais) bloqueado até a documentação oficial da API.
+- `expand-service-domain` — concluída: domínio de clientes, equipamentos e ordens.
+- `add-auth-and-access-control` — concluída: autenticação, perfis, permissões e portal.
+- `refine-frontend-experience` — 10 de 12 tarefas: responsividade, gráficos e usabilidade (2 verificações visuais de acessibilidade pendentes).
+- `add-admin-and-reports` — concluída: colaboradores, relatórios e CSV.
+- `prepare-academic-delivery` — documentação de arquitetura, roteiro de demonstração e relatório técnico.
+
+As mudanças concluídas ainda não foram arquivadas; o arquivamento incorpora os deltas às especificações vigentes e será feito após a revisão.
 
 ## Fluxo de trabalho adotado
 
