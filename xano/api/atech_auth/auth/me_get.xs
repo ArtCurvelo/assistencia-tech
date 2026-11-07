@@ -6,16 +6,13 @@ query "auth/me" verb=GET {
   stack {
     function.run "atech_usuario_autorizado" {
       input = {user_id: $auth.id, roles: ["admin", "atendente", "tecnico", "cliente"]}
+    }
+    db.get "user" {
+      field_name = "id"
+      field_value = $auth.id
+      output = ["id", "name", "email", "role", "cliente_id", "especialidade", "ativo"]
     } as $usuario
   }
-  response = {
-    id: $usuario.id,
-    name: $usuario.name,
-    email: $usuario.email,
-    role: $usuario.role,
-    cliente_id: $usuario.cliente_id,
-    especialidade: $usuario.especialidade,
-    ativo: $usuario.ativo
-  }
+  response = $usuario
   guid = "NMPas5mZBy287Bd2YbOgewXDp5U"
 }

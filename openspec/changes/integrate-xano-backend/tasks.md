@@ -38,7 +38,7 @@
 - [x] 6.0 Obter a documentação OpenAPI dos grupos e analisar a compatibilidade; verificado com as cópias em `docs/xano-openapi/` e a análise em `docs/XANO_CONTRACT_ANALYSIS.md` (grupo Sistema de Gestão: HTTP 403).
 - [x] 6.0a Definir o contrato-alvo (`docs/XANO_BACKEND_SPEC.md`, `tools/xano_target_contract.py`) e o verificador `tools/xano_contract_check.py`; verificado com `tests/test_xano_contract_check.py` (6 testes) e a execução online: 1 de 27 endpoints atendidos em 07/11/2026.
 - [x] 6.0b Usar o repositório de certificados do sistema no cliente Xano (`truststore`); verificado baixando a documentação com verificação TLS ativa.
-- [ ] 6.1 (BLOQUEADO: ajustes no Xano pelo usuário) Obter `OK` nos 27 endpoints do verificador; verificar executando `python -m tools.xano_contract_check` e registrando a saída.
+- [x] 6.1 Obter `OK` nos 27 endpoints do verificador; verificar executando `python -m tools.xano_contract_check` e registrando a saída. (Backend próprio em XanoScript no workspace 170741, grupos `assistencia-tech-auth`, `-cliente` e `-os`: 27 de 27 em 07/11/2026.)
 - [ ] 6.2 Registrar em `CONTRACTS` cada operação interna com o endpoint documentado e implementar o mapeamento das respostas para os modelos internos; verificar com testes usando os esquemas da documentação.
 - [ ] 6.3 Implementar a sessão com o JWT do Xano (D12) e os perfis vindos de `GET /auth/me`; verificar com testes simulados e um login real no workspace.
 - [ ] 6.4 Implementar o agregado da OS sobre `os_servicos`, `os_itens`, `pagamentos` e `os_historico` (D13), a consulta pública e o portal (D14); verificar com testes simulados.

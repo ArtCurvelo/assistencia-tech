@@ -5,25 +5,27 @@ query "consulta_publica/{os_servicos_id}" verb=GET {
     int os_servicos_id
   }
   stack {
-    db.get "os_servicos" {
-      field_name = "id"
-      field_value = $input.os_servicos_id
+    db.query "os_servicos" {
+      join = {
+        item_cliente: {
+          table: "item_cliente",
+          type: "inner",
+          where: $db.os_servicos.item_cliente_id == $db.item_cliente.id
+        }
+      }
+      eval = {
+        aparelho: $db.item_cliente.aparelho,
+        modelo: $db.item_cliente.modelo
+      }
+      where = $db.os_servicos.id == $input.os_servicos_id
+      return = {type: "single"}
+      output = ["id", "status", "atualizado_em", "aparelho", "modelo"]
     } as $ordem
     precondition ($ordem != null) {
       error_type = "notfound"
       error = "Ordem de serviço não encontrada."
     }
-    db.get "item_cliente" {
-      field_name = "id"
-      field_value = $ordem.item_cliente_id
-    } as $aparelho
   }
-  response = {
-    id: $ordem.id,
-    status: $ordem.status,
-    aparelho: $aparelho.aparelho,
-    modelo: $aparelho.modelo,
-    atualizado_em: $ordem.atualizado_em
-  }
+  response = $ordem
   guid = "nlz7Z1_UGxTGovPDIUw3VRIlUdQ"
 }

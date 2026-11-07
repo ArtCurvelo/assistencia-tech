@@ -11,8 +11,9 @@ query "tecnicos" verb=GET {
       where = $db.user.role == "tecnico"
       sort = {name: "asc"}
       return = {type: "list"}
+      output = ["id", "name", "role", "especialidade", "ativo"]
     } as $tecnicos
   }
-  response = $tecnicos|map:($$|unset:"password"|unset:"email"|unset:"cliente_id")
+  response = $tecnicos
   guid = "rV6FqEIEahlgppLLLdZqNOiJfpY"
 }

@@ -37,6 +37,14 @@ xano workspace push -d ./xano --dry-run    # simula o envio
 - **Não** use `--env` nem `--records` no `pull`: variáveis de ambiente podem conter segredos, e os registros contêm dados pessoais (CPF, e-mail). Somente o código e a estrutura vão para o git.
 - Envie (`push` sem `--dry-run`) apenas depois de revisar o `git diff` e a simulação, de preferência primeiro para um branch ou sandbox do Xano.
 - Depois de cada envio, confira o contrato com `python -m tools.xano_contract_check`.
+- Verificador do backend próprio (workspace 170741):
+  `python -m tools.xano_contract_check --instance https://x8ki-letl-twmt.n7.xano.io --auth assistencia-tech-auth --cliente assistencia-tech-cliente --os assistencia-tech-os`
+  (resultado em 07/11/2026: 27 de 27).
+- Para o Swagger documentar a resposta, devolva o resultado direto de `db.get`/`db.query` e escolha os campos com `output = [...]`; respostas montadas com `map`/`unset`, objetos literais, resultado de função ou variáveis definidas dentro de `conditional` aparecem sem esquema.
+
+### Cuidado: `xano workspace edit`
+
+Em 07/11/2026, `xano workspace edit -w 170741 --swagger --no-require-token` (CLI 1.3.4) ligou o Swagger, mas renomeou o workspace e o deixou com o modelo inicial do Xano no lugar do backend enviado. O backend foi restaurado com `xano workspace push -d ./xano --sync --delete` (após simulação e autorização). Depois de qualquer `workspace edit`, confira com `xano workspace pull` para uma pasta temporária e rode o verificador; prefira alterar configurações do workspace pelo painel.
 
 ## Segurança
 

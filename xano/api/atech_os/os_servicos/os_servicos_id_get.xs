@@ -11,9 +11,19 @@ query "os_servicos/{os_servicos_id}" verb=GET {
     function.run "atech_usuario_autorizado" {
       input = {user_id: $auth.id, roles: ["admin", "atendente", "tecnico"]}
     }
-    function.run "atech_ordem_completa" {
-      input = {os_servicos_id: $input.os_servicos_id}
+    db.query "os_servicos" {
+      where = $db.os_servicos.id == $input.os_servicos_id
+      return = {type: "single"}
+      addon = [
+        {name: "atech_itens_da_os", input: {os_servicos_id: $output.id}, as: "_itens"}
+        {name: "atech_pagamentos_da_os", input: {os_servicos_id: $output.id}, as: "_pagamentos"}
+        {name: "atech_historico_da_os", input: {os_servicos_id: $output.id}, as: "_historico"}
+      ]
     } as $ordem
+    precondition ($ordem != null) {
+      error_type = "notfound"
+      error = "Ordem de serviço não encontrada."
+    }
   }
   response = $ordem
   guid = "BI12zg0W53_XvyUKigJX9j7XqCg"

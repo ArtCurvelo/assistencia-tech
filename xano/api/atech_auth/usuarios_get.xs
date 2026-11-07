@@ -10,8 +10,9 @@ query "usuarios" verb=GET {
     db.query "user" {
       sort = {name: "asc"}
       return = {type: "list"}
+      output = ["id", "created_at", "name", "email", "role", "cliente_id", "especialidade", "ativo"]
     } as $usuarios
   }
-  response = $usuarios|map:($$|unset:"password")
+  response = $usuarios
   guid = "Tb8IsYwyBYf4iJp3tGv_e5wkPqk"
 }
