@@ -14,4 +14,5 @@ query "tecnicos" verb=GET {
     } as $tecnicos
   }
   response = $tecnicos|map:($$|unset:"password"|unset:"email"|unset:"cliente_id")
+  guid = "rV6FqEIEahlgppLLLdZqNOiJfpY"
 }

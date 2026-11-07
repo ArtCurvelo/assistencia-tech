@@ -34,4 +34,5 @@ function "atech_saldo_da_os" {
     }
   }
   response = {total: $total, pago: $pago, saldo: $total - $pago, quantidade_itens: $itens|count}
+  guid = "YkI8V-Y-4q80lDo5hLQrfddmuWk"
 }

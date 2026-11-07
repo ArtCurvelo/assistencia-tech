@@ -174,4 +174,5 @@ query "os_servicos/{os_servicos_id}" verb=PATCH {
     } as $ordem
   }
   response = $ordem
+  guid = "KLA_6aOWohwbu_K_xaHCSaoEufI"
 }

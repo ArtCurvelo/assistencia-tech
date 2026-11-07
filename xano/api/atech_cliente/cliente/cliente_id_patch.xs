@@ -55,4 +55,5 @@ query "cliente/{cliente_id}" verb=PATCH {
     } as $cliente
   }
   response = $cliente
+  guid = "RBZgi-DygH8mGobs7cl8aW-nPxs"
 }

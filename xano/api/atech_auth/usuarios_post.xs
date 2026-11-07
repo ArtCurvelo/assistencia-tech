@@ -37,4 +37,5 @@ query "usuarios" verb=POST {
     } as $novo
   }
   response = $novo|unset:"password"
+  guid = "CLLGHeo1SwxLwjIpAUDcPkmaSNM"
 }

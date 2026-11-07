@@ -25,4 +25,5 @@ query "consulta_publica/{os_servicos_id}" verb=GET {
     modelo: $aparelho.modelo,
     atualizado_em: $ordem.atualizado_em
   }
+  guid = "nlz7Z1_UGxTGovPDIUw3VRIlUdQ"
 }

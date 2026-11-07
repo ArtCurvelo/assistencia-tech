@@ -26,4 +26,5 @@ table "user" {
     {type: "btree|unique", field: [{name: "email"}]}
     {type: "btree", field: [{name: "role"}]}
   ]
+  guid = "1UfqDq6JQz-EqgGPmhL9qKQ7EWM"
 }

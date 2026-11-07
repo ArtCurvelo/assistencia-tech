@@ -24,4 +24,5 @@ function "atech_usuario_autorizado" {
     }
   }
   response = $usuario|unset:"password"
+  guid = "oRw_8MrRgM3tOiD77Mdw60OJ0Hg"
 }

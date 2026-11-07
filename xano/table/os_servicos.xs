@@ -28,4 +28,5 @@ table "os_servicos" {
     {type: "btree", field: [{name: "user_id"}]}
     {type: "btree", field: [{name: "status"}]}
   ]
+  guid = "-b1_liVZK_UlppVLL-FaHHozOhs"
 }

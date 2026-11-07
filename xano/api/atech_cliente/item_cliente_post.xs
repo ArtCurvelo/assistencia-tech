@@ -36,4 +36,5 @@ query "item_cliente" verb=POST {
     } as $aparelho
   }
   response = $aparelho
+  guid = "nWW9GepjrpJXb5WR6bLdbrKkHD8"
 }

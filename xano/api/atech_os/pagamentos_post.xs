@@ -56,4 +56,5 @@ query "pagamentos" verb=POST {
     }
   }
   response = $pagamento
+  guid = "DSRq-UXwuvItcmiOlGwumqS8ZNc"
 }

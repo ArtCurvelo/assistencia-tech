@@ -63,4 +63,5 @@ query "os_itens" verb=POST {
     }
   }
   response = $item
+  guid = "6grGXRQatg1njM_Q2Y-Q_BEgvHU"
 }

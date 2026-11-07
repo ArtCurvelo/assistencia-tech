@@ -28,4 +28,5 @@ query "cliente" verb=GET {
     }
   }
   response = $clientes
+  guid = "qHY8or6-cN1rtpMM6xwnmzkDOr8"
 }

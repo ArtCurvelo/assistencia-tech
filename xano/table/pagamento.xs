@@ -17,4 +17,5 @@ table "pagamento" {
     {type: "primary", field: [{name: "id"}]}
     {type: "btree", field: [{name: "os_servicos_id"}]}
   ]
+  guid = "AuATcFKSVfuaZYApyuF2hnXweCQ"
 }

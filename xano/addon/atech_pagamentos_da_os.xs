@@ -9,4 +9,5 @@ addon atech_pagamentos_da_os {
       return = {type: "list"}
     }
   }
+  guid = "yJhPu0JFNpWqBHiFBgx4VUZbfhs"
 }

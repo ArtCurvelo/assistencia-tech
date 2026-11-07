@@ -25,4 +25,5 @@ query "item_cliente/{item_cliente_id}" verb=DELETE {
     }
   }
   response = {success: true}
+  guid = "65RB4zPL7YiVKrlF-PrSW-EW_Pg"
 }

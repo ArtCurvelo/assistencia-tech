@@ -42,4 +42,5 @@ query "os_itens/{os_itens_id}" verb=DELETE {
     }
   }
   response = {success: true}
+  guid = "8KlMkQ_IIoWiUtYK3d-LixAgAp0"
 }

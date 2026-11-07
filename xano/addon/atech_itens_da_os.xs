@@ -9,4 +9,5 @@ addon atech_itens_da_os {
       return = {type: "list"}
     }
   }
+  guid = "NTHaS74SocKa_-gHgF8dpYbPkW0"
 }

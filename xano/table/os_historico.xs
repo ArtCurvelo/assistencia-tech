@@ -16,4 +16,5 @@ table "os_historico" {
     {type: "primary", field: [{name: "id"}]}
     {type: "btree", field: [{name: "os_servicos_id"}, {name: "created_at"}]}
   ]
+  guid = "7M4TxPu8Y88M9rzGNolpkysTHIs"
 }

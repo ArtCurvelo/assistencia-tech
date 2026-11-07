@@ -17,4 +17,5 @@ query "auth/me" verb=GET {
     especialidade: $usuario.especialidade,
     ativo: $usuario.ativo
   }
+  guid = "NMPas5mZBy287Bd2YbOgewXDp5U"
 }

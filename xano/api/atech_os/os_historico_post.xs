@@ -38,4 +38,5 @@ query "os_historico" verb=POST {
     } as $evento
   }
   response = $evento
+  guid = "8sPDPBeiDPSh9BDz6jW6_Xz67Y8"
 }

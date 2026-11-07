@@ -29,4 +29,5 @@ query "cliente/{cliente_id}" verb=DELETE {
     }
   }
   response = {success: true}
+  guid = "_Jqmy0tCzlEM5_FZS3AvtQ70eog"
 }

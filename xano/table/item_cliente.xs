@@ -19,4 +19,5 @@ table "item_cliente" {
     {type: "primary", field: [{name: "id"}]}
     {type: "btree", field: [{name: "cliente_id"}]}
   ]
+  guid = "giw97OkXbLo0zNSVK99o2YUinGg"
 }

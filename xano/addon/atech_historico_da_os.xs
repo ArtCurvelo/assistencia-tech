@@ -9,4 +9,5 @@ addon atech_historico_da_os {
       return = {type: "list"}
     }
   }
+  guid = "we0msKsTUSIjykDNVtP-TmasNJM"
 }

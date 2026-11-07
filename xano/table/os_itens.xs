@@ -18,4 +18,5 @@ table "os_itens" {
     {type: "primary", field: [{name: "id"}]}
     {type: "btree", field: [{name: "os_servicos_id"}]}
   ]
+  guid = "C7FdQg5ri9lpC4nV6VMCdtbr-H0"
 }

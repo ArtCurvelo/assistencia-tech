@@ -13,4 +13,5 @@ query "usuarios" verb=GET {
     } as $usuarios
   }
   response = $usuarios|map:($$|unset:"password")
+  guid = "Tb8IsYwyBYf4iJp3tGv_e5wkPqk"
 }

@@ -16,4 +16,5 @@ query "os_servicos/{os_servicos_id}" verb=GET {
     } as $ordem
   }
   response = $ordem
+  guid = "BI12zg0W53_XvyUKigJX9j7XqCg"
 }

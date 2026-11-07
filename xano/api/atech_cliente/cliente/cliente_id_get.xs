@@ -21,4 +21,5 @@ query "cliente/{cliente_id}" verb=GET {
     }
   }
   response = $cliente
+  guid = "c1cc-w6MF-xqlYnpAl0bGVWR3GM"
 }

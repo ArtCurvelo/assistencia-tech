@@ -65,4 +65,5 @@ query "auth/signup_cliente" verb=POST {
     } as $token
   }
   response = {authToken: $token, user_id: $usuario.id}
+  guid = "koOb62-IjS9KDcFj1wPM5umGsqE"
 }

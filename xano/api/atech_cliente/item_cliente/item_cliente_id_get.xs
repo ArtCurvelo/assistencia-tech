@@ -21,4 +21,5 @@ query "item_cliente/{item_cliente_id}" verb=GET {
     }
   }
   response = $aparelho
+  guid = "0EqJasFzyPdQVvA-PLdojCxMDdI"
 }

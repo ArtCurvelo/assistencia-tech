@@ -23,4 +23,5 @@ query "portal/minhas_ordens" verb=GET {
     } as $ordens
   }
   response = $ordens
+  guid = "9-JWY8bmEZrEMC4dNDdi4OWAneQ"
 }

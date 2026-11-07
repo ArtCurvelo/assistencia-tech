@@ -77,4 +77,5 @@ query "usuarios/{user_id}" verb=PATCH {
     } as $atualizado
   }
   response = $atualizado|unset:"password"
+  guid = "1d9Py6n1WT7UB0k4jo541KlHTfM"
 }

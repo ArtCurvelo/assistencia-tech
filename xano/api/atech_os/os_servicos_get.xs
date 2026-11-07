@@ -18,4 +18,5 @@ query "os_servicos" verb=GET {
     } as $ordens
   }
   response = $ordens
+  guid = "uDqen-IF3Nm3t7Gl8ZO9ZmUU4Xo"
 }

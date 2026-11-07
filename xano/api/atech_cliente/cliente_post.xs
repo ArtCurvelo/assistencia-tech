@@ -42,4 +42,5 @@ query "cliente" verb=POST {
     } as $cliente
   }
   response = $cliente
+  guid = "Y4-aDpc1yldcM4MklosquBUG_qE"
 }

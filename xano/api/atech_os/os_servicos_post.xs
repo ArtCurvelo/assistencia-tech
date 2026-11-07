@@ -49,4 +49,5 @@ query "os_servicos" verb=POST {
     } as $ordem
   }
   response = $ordem
+  guid = "SVfsp-P70qIOHWZL8l42uZj1tQ8"
 }

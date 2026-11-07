@@ -29,4 +29,5 @@ function "atech_ordem_completa" {
     } as $historico
   }
   response = $ordem|set:"_itens":$itens|set:"_pagamentos":$pagamentos|set:"_historico":$historico
+  guid = "HAARWH4GB_oG1DvopJZ-TY_1ojw"
 }

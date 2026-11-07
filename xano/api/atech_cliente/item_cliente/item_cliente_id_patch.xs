@@ -41,4 +41,5 @@ query "item_cliente/{item_cliente_id}" verb=PATCH {
     } as $aparelho
   }
   response = $aparelho
+  guid = "Q8fmsKlZvF-6HF_-gykhJ8f8Seg"
 }

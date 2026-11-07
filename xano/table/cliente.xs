@@ -20,4 +20,5 @@ table "cliente" {
     {type: "btree|unique", field: [{name: "Cpf"}]}
     {type: "btree|unique", field: [{name: "email"}]}
   ]
+  guid = "JpMnaBLVHTv5ctbIBR7dB8XkrfI"
 }
