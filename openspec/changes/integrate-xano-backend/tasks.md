@@ -40,10 +40,23 @@
 - [x] 6.0b Usar o repositório de certificados do sistema no cliente Xano (`truststore`); verificado baixando a documentação com verificação TLS ativa.
 - [x] 6.1 Obter `OK` nos 27 endpoints do verificador; verificar executando `python -m tools.xano_contract_check` e registrando a saída. (Backend próprio em XanoScript no workspace 170741, grupos `assistencia-tech-auth`, `-cliente` e `-os`: 27 de 27 em 07/11/2026.)
 - [x] 6.2 Registrar em `CONTRACTS` cada operação interna com o endpoint documentado e implementar o mapeamento das respostas para os modelos internos; verificar com testes usando os esquemas da documentação. (28 contratos; `tests/test_xano.py` e `tests/test_xano_repositories.py`.)
-- [ ] 6.3 Implementar a sessão com o JWT do Xano (D12) e os perfis vindos de `GET /auth/me`; verificar com testes simulados e um login real no workspace. (Implementado e testado com servidor simulado; falta o login real, que depende do primeiro administrador.)
+- [x] 6.3 Implementar a sessão com o JWT do Xano (D12) e os perfis vindos de `GET /auth/me`; verificar com testes simulados e um login real no workspace. (Login real do administrador e da cliente de teste em 07/11/2026; o JWT fica na sessão do servidor.)
 - [x] 6.4 Implementar o agregado da OS sobre `os_servicos`, `os_itens`, `pagamentos` e `os_historico` (D13), a consulta pública e o portal (D14); verificar com testes simulados. (`data/xano/orders.py`; o portal usa `GET /portal/minha_conta` e o *addon* `_aparelho`, acrescentados ao contrato-alvo e enviados ao Xano; verificador: 28 de 28 em 07/11/2026.)
-- [ ] 6.5 Executar no navegador, com `ASSISTENCIA_DATA_SOURCE=xano`, o roteiro de `docs/DEMO_SCRIPT.md` contra o workspace e registrar os resultados neste arquivo.
+- [x] 6.5 Executar no navegador, com `ASSISTENCIA_DATA_SOURCE=xano`, o roteiro de `docs/DEMO_SCRIPT.md` contra o workspace e registrar os resultados neste arquivo.
   - Parcial (07/11/2026, `reflex-xano` em `.claude/launch.json`): consulta pública com código inexistente → "Código não encontrado" (resposta real do Xano); login com conta inexistente → "E-mail ou senha inválidos."; sem acesso rápido às contas de demonstração. Corrigido o selo da página inicial, que dizia "dados fictícios" também no modo Xano. Falta o roteiro completo, que depende do primeiro administrador e do envio de `GET /portal/minha_conta`.
+  - Completo (07/11/2026, administrador real no Chrome; cliente de teste no navegador do app). Registros de teste no Xano: Paula Atendente (teste), Carlos Mendes (teste, técnico), Joana Teixeira (cliente), Notebook Dell Inspiron 15 e **OS-2026-00001**. Senhas de teste geradas aleatoriamente e mantidas fora do repositório.
+    - Cadastro público da cliente → cliente e conta criados juntos; portal com CPF mascarado.
+    - Colaboradores e equipamento cadastrados pelo administrador; técnico listado por `GET /tecnicos`.
+    - OS aberta; "Em análise" sem técnico → recusada; técnico atribuído → "Em análise".
+    - "Aguardando aprovação" sem diagnóstico → "Registre o diagnóstico técnico antes de enviar para aprovação."
+    - Diagnóstico, serviço R$ 150,00 e peça R$ 180,00 → aprovação → "Em reparo" → "Concluído".
+    - "Entregue" com saldo → "Há saldo a receber de R$ 330,00."; pagamentos de R$ 130,00 (PIX) e R$ 200,00 (crédito) → "Pago" → "Entregue", sem próximos status.
+    - Consulta pública → somente código, status, aparelho e data.
+    - Portal da cliente → orçamento, pagamentos e andamento sem autores internos; `/admin/clientes` → "Acesso negado"; o Xano recusa o token da cliente em `cliente`, `os_servicos` e `usuarios` (403).
+  - Defeitos encontrados e corrigidos durante a execução:
+    - Limite do plano gratuito do Xano (10 requisições a cada 20 s) derrubava a sessão → cache curto de leituras, ritmo de requisições e indisponibilidade sem logout (`data/xano/limits.py`).
+    - Listagens sem paginação usavam `as: "items._itens"` nos *addons* e chegavam sem itens, pagamentos e aparelho → `as: "_itens"` em `GET /os_servicos` e `GET /portal/minhas_ordens`; teste estático `tests/test_xanoscript_static.py`.
+  - Observações: cada edição de arquivo do projeto reinicia o backend do Reflex em desenvolvimento e encerra as sessões em memória; a data do pagamento é só a data (exibida com 00:00).
 
 ## 7. Verificação integrada
 

@@ -16,10 +16,10 @@ query "portal/minhas_ordens" verb=GET {
       sort = {id: "desc"}
       return = {type: "list"}
       addon = [
-        {name: "atech_itens_da_os", input: {os_servicos_id: $output.id}, as: "items._itens"}
-        {name: "atech_pagamentos_da_os", input: {os_servicos_id: $output.id}, as: "items._pagamentos"}
-        {name: "atech_historico_da_os", input: {os_servicos_id: $output.id}, as: "items._historico"}
-        {name: "atech_aparelho_da_os", input: {item_cliente_id: $output.item_cliente_id}, as: "items._aparelho"}
+        {name: "atech_itens_da_os", input: {os_servicos_id: $output.id}, as: "_itens"}
+        {name: "atech_pagamentos_da_os", input: {os_servicos_id: $output.id}, as: "_pagamentos"}
+        {name: "atech_historico_da_os", input: {os_servicos_id: $output.id}, as: "_historico"}
+        {name: "atech_aparelho_da_os", input: {item_cliente_id: $output.item_cliente_id}, as: "_aparelho"}
       ]
     } as $ordens
   }

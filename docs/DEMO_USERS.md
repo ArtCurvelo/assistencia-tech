@@ -46,3 +46,16 @@ A matriz é definida em `assistencia_tech/domain/permissions.py` (`ROLE_PERMISSI
 - A sessão é identificada por um token aleatório em cookie `SameSite=Strict`, validado no servidor, e expira após 2 horas sem atividade.
 - O parâmetro `proximo` do login aceita somente caminhos internos (evita redirecionamento aberto).
 - Limitação conhecida: o cookie não é `HttpOnly`, porque o Reflex lê cookies pelo navegador; o token é opaco, revogável no logout e não carrega dados pessoais.
+
+
+## Contas de teste no Xano (workspace 170741)
+
+Criadas na verificação de 07/11/2026 (tarefa 6.5 de `integrate-xano-backend`). As senhas foram geradas aleatoriamente e **não** são versionadas; o administrador pode redefini-las em Colaboradores → Senha.
+
+| Nome | E-mail | Perfil |
+|---|---|---|
+| Paula Atendente (teste) | atendente.roteiro@exemplo.test | Atendente |
+| Carlos Mendes (teste) | tecnico.roteiro@exemplo.test | Técnico (Notebooks) |
+| Joana Teixeira | joana.roteiro@exemplo.test | Cliente |
+
+O domínio `exemplo.test` não recebe e-mails.

@@ -11,9 +11,9 @@ query "os_servicos" verb=GET {
       sort = {id: "desc"}
       return = {type: "list"}
       addon = [
-        {name: "atech_itens_da_os", input: {os_servicos_id: $output.id}, as: "items._itens"}
-        {name: "atech_pagamentos_da_os", input: {os_servicos_id: $output.id}, as: "items._pagamentos"}
-        {name: "atech_historico_da_os", input: {os_servicos_id: $output.id}, as: "items._historico"}
+        {name: "atech_itens_da_os", input: {os_servicos_id: $output.id}, as: "_itens"}
+        {name: "atech_pagamentos_da_os", input: {os_servicos_id: $output.id}, as: "_pagamentos"}
+        {name: "atech_historico_da_os", input: {os_servicos_id: $output.id}, as: "_historico"}
       ]
     } as $ordens
   }
