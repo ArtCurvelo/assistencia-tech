@@ -141,6 +141,12 @@ class PortalRepository(Protocol):
         """Status público da ordem, sem dados pessoais nem valores; ou ``NotFoundError``."""
         ...
 
+    async def save_client_decision(
+        self, client_id: str, order: ServiceOrder, approve: bool, reason: str
+    ) -> ServiceOrder:
+        """Grava a decisão do cliente sobre o orçamento; ``order`` já vem atualizada pelo domínio."""
+        ...
+
 
 @dataclass(frozen=True)
 class DataGateway:

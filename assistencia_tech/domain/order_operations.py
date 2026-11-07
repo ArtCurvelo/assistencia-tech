@@ -104,6 +104,27 @@ def add_payment(order: ServiceOrder, data: PaymentCreate, at: datetime, author: 
     return history.append(order, history.payment_recorded(payment, at, author), payments=(*order.payments, payment))
 
 
+NOT_AWAITING_DECISION = "Esta ordem não está aguardando a sua aprovação."
+REFUSAL_REASON_REQUIRED = "Informe o motivo da recusa."
+
+
+def refusal_reason(reason: str) -> str:
+    return f"Orçamento recusado pelo cliente: {reason.strip()}"
+
+
+def client_decision(order: ServiceOrder, approve: bool, reason: str, at: datetime, author: str) -> ServiceOrder:
+    """O cliente aprova (→ Em reparo) ou recusa com motivo (→ Cancelado) o orçamento."""
+    if order.status != OrderStatus.AWAITING_APPROVAL:
+        raise ValidationError(NOT_AWAITING_DECISION)
+    reason = (reason or "").strip()
+    if not approve and not reason:
+        raise ValidationError(REFUSAL_REASON_REQUIRED)
+    decided = history.append(order, history.client_decision(approve, reason, at, author))
+    if approve:
+        return change_status(decided, OrderStatus.REPAIR, at, author)
+    return change_status(decided, OrderStatus.CANCELLED, at, author, refusal_reason(reason))
+
+
 def change_status(
     order: ServiceOrder,
     target: str | OrderStatus,

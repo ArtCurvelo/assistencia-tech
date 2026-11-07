@@ -11,7 +11,7 @@ Depois de cada rodada de ajustes no Xano, rode o verificador (para outra instân
 python -m tools.xano_contract_check
 ```
 
-Ele baixa a documentação publicada pelo Xano (sem chamar endpoints de dados) e mostra `OK` ou o que falta em cada um dos 28 endpoints. O backend foi implementado em XanoScript na pasta `xano/` (workspace 170741, grupos `assistencia-tech-auth`, `assistencia-tech-cliente` e `assistencia-tech-os`). Situação em 07/11/2026: **28 de 28** (inclui `GET /portal/minha_conta`, o *addon* `_aparelho` e `created_at` na consulta pública, acrescentados na integração da aplicação). Cópias da documentação em `docs/xano-openapi/*-assistencia-tech-*.json` (`--offline`).
+Ele baixa a documentação publicada pelo Xano (sem chamar endpoints de dados) e mostra `OK` ou o que falta em cada um dos 29 endpoints. O backend foi implementado em XanoScript na pasta `xano/` (workspace 170741, grupos `assistencia-tech-auth`, `assistencia-tech-cliente` e `assistencia-tech-os`). Situação em 07/11/2026: **28 de 28** (inclui `GET /portal/minha_conta`, o *addon* `_aparelho` e `created_at` na consulta pública, acrescentados na integração da aplicação). Cópias da documentação em `docs/xano-openapi/*-assistencia-tech-*.json` (`--offline`).
 
 > **Regras gerais**
 > 1. Todo endpoint marcado com **token** deve exigir autenticação (*Authentication: user*) e retornar 401 sem token válido.
@@ -122,6 +122,7 @@ O `POST /auth/signup` atual cria usuários `member` sem vínculo: remova-o ou re
 | `GET /consulta_publica/{os_servicos_id}` | **público** | — | **somente** `id`, `created_at`, `status`, `aparelho`, `modelo`, `atualizado_em` (`created_at` confere o ano do código) |
 | `GET /portal/minhas_ordens` | token: cliente | — | as ordens cujo `cliente_id` é o do usuário do token, com `_itens`, `_pagamentos`, `_historico` e `_aparelho` |
 | `GET /portal/minha_conta` | token: cliente | — | o cadastro (`cliente`) vinculado ao usuário do token |
+| `POST /portal/decisao_orcamento` | token: cliente | `os_servicos_id`, `aprovar`, `motivo` | a ordem atualizada; somente ordem própria em `aguardando_aprovacao`; recusa exige `motivo`; grava a decisão e o status no histórico numa transação |
 
 **Importante para a privacidade:** o `GET /consulta_publica` não pode devolver nome, CPF, telefone, valores ou diagnóstico. O `GET /portal/minhas_ordens` deve filtrar no servidor pelo `cliente_id` do token, nunca por um parâmetro enviado pelo navegador.
 

@@ -131,5 +131,8 @@ TARGET: dict[str, tuple[Endpoint, ...]] = {
                  purpose="Perfil cliente: somente as ordens do cliente vinculado ao token, com o aparelho."),
         Endpoint("get", "/portal/minha_conta", "bearer", (), CLIENT_FIELDS,
                  purpose="Perfil cliente: o cadastro do cliente vinculado ao token."),
+        Endpoint("post", "/portal/decisao_orcamento", "bearer", ("os_servicos_id", "aprovar", "motivo"), ORDER_FIELDS,
+                 {"status": ORDER_STATUS_VALUES},
+                 purpose="Perfil cliente: aprova ou recusa (com motivo) o orçamento de uma ordem própria."),
     ),
 }

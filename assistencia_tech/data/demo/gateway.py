@@ -158,6 +158,14 @@ class DemoPortalRepository:
         orders = [o for o in await self._orders.list() if o.client_id == client_id]
         return [(o, await self._equipment_of(o.equipment_id)) for o in orders]
 
+    async def save_client_decision(
+        self, client_id: str, order: ServiceOrder, approve: bool, reason: str
+    ) -> ServiceOrder:
+        current = await self._orders.get_by_code(order.code)
+        if current.client_id != client_id:
+            raise NotFoundError("Ordem de serviço não encontrada.")
+        return await self._orders.save(order)
+
     async def public_order(self, code: str) -> PublicOrderView:
         order = await self._orders.get_by_code(code)
         equipment = await self._equipment_of(order.equipment_id)

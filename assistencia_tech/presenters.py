@@ -11,7 +11,7 @@ import unicodedata
 from decimal import Decimal
 
 from .domain.clock import format_datetime
-from .domain.history import KIND_OPENED, KIND_STATUS
+from .domain.history import KIND_CLIENT_DECISION, KIND_OPENED, KIND_STATUS
 from .domain.order_workflow import BUDGET_EDITABLE, OPEN_STATUSES, TECHNICIAN_LOCKED
 from .domain.permissions import Permission, Principal, has_permission, is_own_order, transitions_for
 from .domain.pricing import compute_totals
@@ -297,11 +297,11 @@ def portal_order_row(order: ServiceOrder, equipment: Equipment | None) -> Row:
 
 
 def portal_timeline(order: ServiceOrder) -> list[Row]:
-    """Somente aberturas e mudanças de status, sem autor."""
+    """Aberturas, mudanças de status e decisões do cliente, sem autor."""
     return [
         {"at": format_datetime(e.at), "description": e.description.split(" Problema relatado:")[0]}
         for e in reversed(order.history)
-        if e.kind in (KIND_OPENED, KIND_STATUS)
+        if e.kind in (KIND_OPENED, KIND_STATUS, KIND_CLIENT_DECISION)
     ]
 
 

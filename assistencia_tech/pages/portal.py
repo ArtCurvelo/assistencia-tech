@@ -7,6 +7,9 @@ import reflex as rx
 from ..components import (
     button,
     data_error_alert,
+    dialog_actions,
+    field,
+    form_dialog,
     empty_state,
     panel,
     panel_header,
@@ -96,6 +99,44 @@ def _event(event) -> rx.Component:
     )
 
 
+def _decision_panel() -> rx.Component:
+    t = PortalOrderState.totals
+    return rx.cond(
+        PortalOrderState.can_decide,
+        panel(
+            panel_header("Orçamento aguardando a sua aprovação"),
+            rx.text("Confira os itens abaixo. Ao aprovar, o reparo é iniciado; ao recusar, a ordem é cancelada "
+                    "e o equipamento fica disponível para retirada.", class_name="muted"),
+            rx.text("Total do orçamento: ", rx.el.strong(t["total"])),
+            rx.flex(
+                button("Aprovar orçamento", on_click=PortalOrderState.approve_budget,
+                       loading=PortalOrderState.is_loading, disabled=PortalOrderState.is_loading),
+                button("Recusar orçamento", outline=True, on_click=PortalOrderState.set_refuse_open(True),
+                       disabled=PortalOrderState.is_loading),
+                gap="3",
+                wrap="wrap",
+            ),
+            class_name="decision-panel",
+        ),
+    )
+
+
+def _refuse_dialog() -> rx.Component:
+    return form_dialog(
+        "Recusar orçamento",
+        "Conte o motivo da recusa. A ordem será cancelada e o motivo fica registrado.",
+        PortalOrderState.refuse_open,
+        PortalOrderState.set_refuse_open,
+        rx.form(
+            field("Motivo da recusa", rx.text_area(name="reason", class_name="input",
+                                                   placeholder="Ex.: o valor ficou acima do esperado")),
+            dialog_actions("Confirmar recusa"),
+            on_submit=PortalOrderState.confirm_refusal,
+            class_name="stack-form",
+        ),
+    )
+
+
 def portal_order_page() -> rx.Component:
     o, t = PortalOrderState.order, PortalOrderState.totals
     return _portal_shell(
@@ -113,6 +154,8 @@ def portal_order_page() -> rx.Component:
                             columns=rx.breakpoints(initial="1", md="3"), spacing="4", width="100%"),
                     rx.cond(o["diagnosis"] != "", rx.box(_info("Diagnóstico", o["diagnosis"]))),
                 ),
+                _decision_panel(),
+                _refuse_dialog(),
                 panel(
                     panel_header("Orçamento"),
                     table(["Tipo", "Descrição", "Qtd.", "Valor unitário", "Subtotal"], PortalOrderState.items,

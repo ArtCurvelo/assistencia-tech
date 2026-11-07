@@ -52,6 +52,7 @@ OPERATIONS: dict[str, str] = {
     "portal.public_order": "consultar o status público da ordem",
     "portal.client_orders": "listar as ordens do cliente",
     "portal.client_account": "consultar o cadastro do cliente",
+    "portal.client_decision": "registrar a decisão do cliente sobre o orçamento",
 }
 
 
@@ -97,6 +98,7 @@ CONTRACTS: dict[str, EndpointContract] = {
     "portal.public_order": _c("GET", GROUP_OS, "/consulta_publica/{os_servicos_id}", public=True),
     "portal.client_orders": _c("GET", GROUP_OS, "/portal/minhas_ordens"),
     "portal.client_account": _c("GET", GROUP_OS, "/portal/minha_conta"),
+    "portal.client_decision": _c("POST", GROUP_OS, "/portal/decisao_orcamento"),
 }
 
 

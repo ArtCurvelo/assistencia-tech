@@ -18,6 +18,7 @@ KIND_DIAGNOSIS = "Diagnóstico"
 KIND_ITEM_ADDED = "Item adicionado"
 KIND_ITEM_REMOVED = "Item removido"
 KIND_PAYMENT = "Pagamento"
+KIND_CLIENT_DECISION = "Decisão do cliente"
 
 
 def _event(kind: str, description: str, at: datetime, author: str, to_status: str = "") -> HistoryEvent:
@@ -33,6 +34,13 @@ def status_changed(previous: str, new: str, at: datetime, author: str, reason: s
     if reason:
         text += f" Motivo: {reason}"
     return _event(KIND_STATUS, text, at, author, to_status=str(new))
+
+
+def client_decision(approved: bool, reason: str, at: datetime, author: str) -> HistoryEvent:
+    """Decisão do cliente sobre o orçamento (mesmo texto gravado pelo backend Xano)."""
+    if approved:
+        return _event(KIND_CLIENT_DECISION, "Orçamento aprovado pelo cliente.", at, author)
+    return _event(KIND_CLIENT_DECISION, f"Orçamento recusado pelo cliente. Motivo: {reason}", at, author)
 
 
 def technician_assigned(name: str, previous: str | None, at: datetime, author: str) -> HistoryEvent:

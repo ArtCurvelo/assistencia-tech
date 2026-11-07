@@ -1739,3 +1739,13 @@ textarea:focus-visible,
 
 /* Página não encontrada */
 .not-found-code { color: var(--green); font-size: 56px; font-weight: 800; line-height: 1; }
+
+/* Portal: decisão do orçamento pelo cliente (add-client-budget-approval) */
+.decision-panel {
+  border-color: var(--green) !important;
+  background: linear-gradient(180deg, var(--green-soft), transparent 70%) !important;
+}
+.decision-panel strong {
+  color: var(--green);
+  font-size: 1.15rem;
+}

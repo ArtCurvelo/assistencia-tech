@@ -116,6 +116,18 @@ class XanoPortalRepository(XanoRepository):
             pairs.append((order, mappers.equipment_from(device) if isinstance(device, dict) else None))
         return pairs
 
+    async def save_client_decision(
+        self, client_id: str, order: ServiceOrder, approve: bool, reason: str
+    ) -> ServiceOrder:
+        # O backend repete as validações e grava decisão, status e histórico numa transação.
+        order_id = int(mappers.order_id_of(order))
+        payload = {"os_servicos_id": order_id, "aprovar": approve, "motivo": reason}
+        await self._call("portal.client_decision", json=payload)
+        for refreshed, _ in await self.client_orders(client_id):
+            if refreshed.code == order.code:
+                return refreshed
+        raise NotFoundError("Ordem de serviço não encontrada.")
+
     async def public_order(self, code: str) -> PublicOrderView:
         _, order_id = mappers.parse_order_code(code)
         record = await self._record("portal.public_order", path_params={"os_servicos_id": order_id})

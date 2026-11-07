@@ -6,6 +6,7 @@ import reflex as rx
 
 from ..data.errors import DataAccessError, NotFoundError
 from ..domain.permissions import Permission
+from ..models import OrderStatus
 from ..presenters import account_row, item_rows, payment_rows, portal_order_row, portal_timeline, totals_row
 from ..services import PortalService
 from .base import AppState
@@ -37,6 +38,8 @@ class PortalState(AppState):
 
 class PortalOrderState(PortalState):
     found: bool = False
+    can_decide: bool = False
+    refuse_open: bool = False
     order: dict[str, str] = {}
     items: list[dict[str, str]] = []
     payments: list[dict[str, str]] = []
@@ -58,6 +61,13 @@ class PortalOrderState(PortalState):
         except DataAccessError as error:
             self.data_error = error.user_message
             return
+        self._show(item)
+
+    def _show(self, item) -> None:
+        self.can_decide = (
+            item.order.status == OrderStatus.AWAITING_APPROVAL
+            and Permission.PORTAL_DECIDE_BUDGET.value in self.user_permissions
+        )
         self.order = portal_order_row(item.order, item.equipment)
         self.items = item_rows(item.order)
         self.payments = payment_rows(item.order)
@@ -65,3 +75,30 @@ class PortalOrderState(PortalState):
         self.totals = totals_row(item.order)
         self.found = True
         self.data_error = ""
+
+    def set_refuse_open(self, value: bool):
+        self.refuse_open = value
+
+    async def _decide(self, approve: bool, reason: str, message: str):
+        if not self._start():
+            return
+        yield
+        try:
+            service = PortalService(self._gateway(), await self._current())
+            item = await service.decide_budget(self.order.get("code", ""), approve, reason)
+            self._show(item)
+            self.refuse_open = False
+            yield self._succeed(message)
+        except DataAccessError as error:
+            yield self._fail(error)
+        finally:
+            self.is_loading = False
+
+    async def approve_budget(self):
+        async for event in self._decide(True, "", "Orçamento aprovado. O reparo será iniciado."):
+            yield event
+
+    async def confirm_refusal(self, form_data: dict):
+        reason = str(form_data.get("reason", ""))
+        async for event in self._decide(False, reason, "Orçamento recusado. A ordem foi cancelada."):
+            yield event
