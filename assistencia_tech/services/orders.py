@@ -8,6 +8,7 @@ from typing import Any
 
 from ..data.errors import NotFoundError, ValidationError
 from ..data.repositories import DataGateway
+from ..domain import deadlines
 from ..domain import order_operations as ops
 from ..domain.inventory import ensure_available
 from .inventory import parse_quantity
@@ -50,7 +51,31 @@ class OrderService:
 
     async def open(self, form: Mapping[str, Any]) -> ServiceOrder:
         require(self._principal, P.ORDERS_OPEN)
-        data = parse_model(OrderCreate, form)
+        # O vínculo de garantia só nasce por ``open_warranty``, a partir da ordem original.
+        data = parse_model(OrderCreate, {k: v for k, v in form.items() if k != "warranty_of"})
+        return await self._open(data)
+
+    async def open_warranty(self, original_code: str, form: Mapping[str, Any]) -> ServiceOrder:
+        """Ordem em garantia: mesmo cliente e equipamento da original, dentro de 90 dias da entrega."""
+        require(self._principal, P.ORDERS_OPEN)
+        original = await self._gw.orders.get_by_code(original_code)
+        data = parse_model(OrderCreate, {
+            "client_id": original.client_id,
+            "equipment_id": original.equipment_id,
+            "problem": form.get("problem", ""),
+            "due_date": form.get("due_date") or None,
+            "warranty_of": original.code,
+        })
+        deadlines.ensure_warranty_eligible(original, data.client_id, data.equipment_id, self._clock().date())
+        return await self._open(data)
+
+    async def set_due_date(self, code: str, value: Any) -> ServiceOrder:
+        require(self._principal, P.ORDERS_ASSIGN)
+        due = parse_model(OrderCreate, {"client_id": "-", "equipment_id": "-", "problem": "-",
+                                        "due_date": value}).due_date
+        return await self._mutate(code, P.ORDERS_ASSIGN, lambda o, at: ops.set_due_date(o, due, at, self._actor))
+
+    async def _open(self, data: OrderCreate) -> ServiceOrder:
         client = await self._gw.clients.get(data.client_id)
         equipment = await self._gw.equipment.get(data.equipment_id)
         if equipment.client_id != client.id:

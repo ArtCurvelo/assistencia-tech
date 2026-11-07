@@ -1779,3 +1779,25 @@ textarea:focus-visible,
 .move-devolucao { background: rgba(255, 184, 77, 0.12); color: #ffb84d; }
 .qty-text { font-weight: 700; font-variant-numeric: tabular-nums; }
 .code-text { font-family: ui-monospace, monospace; font-size: 12px; }
+
+/* Prazos e garantia (add-deadlines-and-warranty) */
+.late-badge, .warranty-badge {
+  display: inline-flex;
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.late-badge { background: rgba(255, 92, 92, 0.14); color: #ff8a8a; }
+.warranty-badge { background: rgba(120, 160, 255, 0.14); color: #9db8ff; }
+.pay-garantia { background: rgba(120, 160, 255, 0.14); color: #9db8ff; }
+.deadline-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.date-input { color-scheme: dark; max-width: 220px; }

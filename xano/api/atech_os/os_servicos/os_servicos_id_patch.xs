@@ -17,6 +17,7 @@ query "os_servicos/{os_servicos_id}" verb=PATCH {
     timestamp? atualizado_em? {
       description = "Ignorado: o servidor sempre grava o horário atual."
     }
+    date? previsao_entrega?
   }
   stack {
     function.run "atech_usuario_autorizado" {
@@ -92,6 +93,27 @@ query "os_servicos/{os_servicos_id}" verb=PATCH {
         }
         var.update $diagnostico_final {
           value = $input.diagnostico
+        }
+      }
+    }
+
+    // Previsão de entrega: admin e atendente, fora de entregue/cancelado (add-deadlines-and-warranty).
+    conditional {
+      if ($input.previsao_entrega != null && $input.previsao_entrega != $atual.previsao_entrega) {
+        precondition ($eu.role != "tecnico") {
+          error_type = "accessdenied"
+          error = "O perfil tecnico não tem permissão para alterar a previsão de entrega."
+        }
+        precondition ($atual.status != "entregue" && $atual.status != "cancelado") {
+          error_type = "inputerror"
+          error = "A previsão de entrega não pode ser alterada com a ordem entregue ou cancelada."
+        }
+        precondition ($input.previsao_entrega >= ($atual.created_at|format_timestamp:"Y-m-d":"America/Sao_Paulo")) {
+          error_type = "inputerror"
+          error = "A previsão de entrega não pode ser anterior à data de abertura."
+        }
+        var.update $updates.previsao_entrega {
+          value = $input.previsao_entrega
         }
       }
     }

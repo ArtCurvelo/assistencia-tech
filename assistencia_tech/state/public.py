@@ -45,6 +45,7 @@ class TrackingState(AppState):
             "status": view.status,
             "equipment": view.equipment,
             "updated_at": format_datetime(view.updated_at),
+            "due_date": f"{view.due_date:%d/%m/%Y}" if view.due_date else "",
         }
         self.has_result = True
         self.tracking_message = "Consulta demonstrativa." if gateway.is_demo else ""

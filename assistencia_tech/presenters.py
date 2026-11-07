@@ -10,7 +10,8 @@ from __future__ import annotations
 import unicodedata
 from decimal import Decimal
 
-from .domain.clock import format_datetime
+from .domain.clock import format_datetime, now_brt
+from .domain import deadlines
 from .domain.inventory import stock_level
 from .domain.history import KIND_CLIENT_DECISION, KIND_OPENED, KIND_STATUS
 from .domain.order_workflow import BUDGET_EDITABLE, OPEN_STATUSES, TECHNICIAN_LOCKED
@@ -97,6 +98,21 @@ def payment_label(order: ServiceOrder, status: str) -> str:
     return status
 
 
+def deadline_fields(order: ServiceOrder, today=None) -> Row:
+    """Previsão, atraso e garantia (add-deadlines-and-warranty)."""
+    today = today or now_brt().date()
+    late = deadlines.days_late(order, today)
+    until = deadlines.warranty_until(order)
+    return {
+        "due_date": f"{order.due_date:%d/%m/%Y}" if order.due_date else "—",
+        "due_input": order.due_date.isoformat() if order.due_date else "",
+        "late": (f"Atrasada há {late} dia" + ("s" if late > 1 else "")) if late else "",
+        "warranty_until": f"{until:%d/%m/%Y}" if until else "",
+        "in_warranty": "1" if until and today <= until else "",
+        "warranty_of": order.warranty_of,
+    }
+
+
 def order_row(order: ServiceOrder, catalog: Catalog) -> Row:
     client = catalog.clients_by_id.get(order.client_id)
     equipment = catalog.equipment_by_id.get(order.equipment_id)
@@ -122,6 +138,7 @@ def order_row(order: ServiceOrder, catalog: Catalog) -> Row:
         "opened_at": format_datetime(order.opened_at),
         "updated_at": format_datetime(order.updated_at),
         "search": search_key(order.code, client_name, equipment_name),
+        **deadline_fields(order),
     }
 
 
@@ -186,6 +203,12 @@ def order_permissions(order: ServiceOrder, principal: Principal | None) -> Row:
             and has_permission(principal, Permission.ORDERS_PAYMENTS)
         ),
         "read_only_reason": "" if own else "Esta ordem pertence a outro técnico; você pode apenas consultá-la.",
+        "due_editable": _flag(
+            order.status not in deadlines.FINAL_STATUSES and has_permission(principal, Permission.ORDERS_ASSIGN)
+        ),
+        "warranty_openable": _flag(
+            deadlines.in_warranty(order, now_brt().date()) and has_permission(principal, Permission.ORDERS_OPEN)
+        ),
     }
 
 
@@ -207,6 +230,7 @@ PAYMENT_COLORS: dict[str, str] = {"Pendente": "#ffbe46", "Parcial": "#25a7ff", "
 
 EMPTY_METRICS: Row = {
     "open": "—", "awaiting": "—", "ready": "—", "receivable": "—", "clients": "—", "equipment": "—", "orders": "—",
+    "overdue": "—",
 }
 
 
@@ -220,6 +244,7 @@ def dashboard_metrics(catalog: Catalog) -> Row:
         "awaiting": str(sum(1 for o in catalog.orders if o.status == OrderStatus.AWAITING_APPROVAL)),
         "ready": str(sum(1 for o in catalog.orders if o.status == OrderStatus.DONE)),
         "receivable": format_brl(receivable),
+        "overdue": str(sum(1 for o in catalog.orders if deadlines.is_overdue(o, now_brt().date()))),
         "clients": str(len(catalog.clients)),
         "equipment": str(len(catalog.equipment)),
         "orders": str(len(catalog.orders)),
@@ -294,6 +319,7 @@ def portal_order_row(order: ServiceOrder, equipment: Equipment | None) -> Row:
         "balance": format_brl(totals.balance),
         "payment_status": payment,
         "payment_class": f"pay-badge pay-{slug(payment)}",
+        **deadline_fields(order),
     }
 
 

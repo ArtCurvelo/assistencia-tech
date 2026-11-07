@@ -86,6 +86,14 @@ def dashboard_page() -> rx.Component:
             class_name="metrics-grid",
         ),
         rx.cond(
+            (m["overdue"] != "0") & (m["overdue"] != "—"),
+            rx.link(
+                rx.text("⏰ ", m["overdue"], " ordem(ns) atrasada(s): previsão de entrega vencida. Ver ordens →"),
+                href="/admin/ordens",
+                class_name="notice notice-error stock-alert",
+            ),
+        ),
+        rx.cond(
             AdminState.low_stock_count > 0,
             rx.link(
                 rx.text("⚠ ", AdminState.low_stock_count,

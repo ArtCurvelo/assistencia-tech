@@ -47,8 +47,10 @@ ORDER_FIELDS = (
     "diagnostico",
     "motivo_cancelamento",
     "status",
+    "previsao_entrega",
+    "garantia_de",
 )
-ORDER_WITH_ADDONS = ORDER_FIELDS + ("_itens", "_pagamentos", "_historico")
+ORDER_WITH_ADDONS = ORDER_FIELDS + ("_itens", "_pagamentos", "_historico", "_garantia")
 
 
 @dataclass(frozen=True)
@@ -113,10 +115,12 @@ TARGET: dict[str, tuple[Endpoint, ...]] = {
                  purpose="Colaboradores: todas as ordens com itens, pagamentos e histórico."),
         Endpoint("get", "/os_servicos/{os_servicos_id}", "bearer", (), ORDER_WITH_ADDONS,
                  {"status": ORDER_STATUS_VALUES}),
-        Endpoint("post", "/os_servicos", "bearer", ("cliente_id", "item_cliente_id", "descricao_problema", "status"),
+        Endpoint("post", "/os_servicos", "bearer",
+                 ("cliente_id", "item_cliente_id", "descricao_problema", "status", "previsao_entrega", "garantia_de"),
                  ORDER_FIELDS, {"status": ORDER_STATUS_VALUES}),
         Endpoint("patch", "/os_servicos/{os_servicos_id}", "bearer",
-                 ("status", "user_id", "diagnostico", "motivo_cancelamento", "atualizado_em"), ORDER_FIELDS,
+                 ("status", "user_id", "diagnostico", "motivo_cancelamento", "atualizado_em", "previsao_entrega"),
+                 ORDER_FIELDS,
                  {"status": ORDER_STATUS_VALUES}),
         Endpoint("post", "/os_itens", "bearer",
                  ("os_servicos_id", "tipo", "descricao", "quantidade", "valor_unitario", "peca_id"),
@@ -127,7 +131,7 @@ TARGET: dict[str, tuple[Endpoint, ...]] = {
         Endpoint("post", "/pagamentos", "bearer",
                  ("os_servicos_id", "valor_a_ser_pago", "forma_de_pagamento", "data_do_pagamento"), PAYMENT_FIELDS),
         Endpoint("get", "/consulta_publica/{os_servicos_id}", "public", (),
-                 ("id", "created_at", "status", "aparelho", "modelo", "atualizado_em"), {"status": ORDER_STATUS_VALUES},
+                 ("id", "created_at", "status", "aparelho", "modelo", "atualizado_em", "previsao_entrega"), {"status": ORDER_STATUS_VALUES},
                  purpose="Consulta pública: somente estes campos, sem dados pessoais nem valores."),
         Endpoint("get", "/portal/minhas_ordens", "bearer", (), ORDER_WITH_ADDONS + ("_aparelho",),
                  {"status": ORDER_STATUS_VALUES},

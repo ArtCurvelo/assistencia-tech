@@ -4,7 +4,7 @@ Os registros seguem os esquemas publicados pelo backend (``docs/XANO_BACKEND_SPE
 """
 
 import json
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 
 import httpx
@@ -272,7 +272,10 @@ async def test_open_order_creates_record_and_history():
     )
     assert order.code == "OS-2026-00012"
     post = fake.calls[2]
-    assert post[3] == {"cliente_id": 7, "item_cliente_id": 5, "descricao_problema": "Não liga", "status": "recebido"}
+    body = dict(post[3])
+    due = body.pop("previsao_entrega")  # previsão padrão: abertura + 7 dias (add-deadlines-and-warranty)
+    assert body == {"cliente_id": 7, "item_cliente_id": 5, "descricao_problema": "Não liga", "status": "recebido"}
+    assert date.fromisoformat(due) > date.today()
     history = fake.calls[3]
     assert history[2] == "/os_historico" and history[3]["os_servicos_id"] == 12
 

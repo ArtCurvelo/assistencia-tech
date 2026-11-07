@@ -173,7 +173,7 @@ async def test_remove_item_via_service(orders):
 async def test_public_view_has_no_personal_data(orders):
     view = await orders.public_view(" os-2026-00125 ")
     dumped = view.model_dump()
-    assert set(dumped) == {"code", "status", "equipment", "updated_at"}
+    assert set(dumped) == {"code", "status", "equipment", "updated_at", "due_date"}  # previsão: add-deadlines-and-warranty
     assert dumped["status"] == "Em reparo" and dumped["equipment"] == "Notebook Lenovo IdeaPad 3"
     assert "Marina" not in str(dumped)
     with pytest.raises(NotFoundError):

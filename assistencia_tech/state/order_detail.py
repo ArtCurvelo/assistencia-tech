@@ -40,6 +40,7 @@ class OrderDetailState(AdminState):
     permissions: dict[str, str] = {}
     next_status: list[str] = []
     item_kind: str = "Serviço"
+    warranty_open: bool = False
     item_part: str = LOOSE_PART  # peça do estoque escolhida (add-parts-inventory)
     item_form_key: int = 0
     payment_form_key: int = 0
@@ -106,6 +107,28 @@ class OrderDetailState(AdminState):
     async def assign_technician(self, technician_id: str):
         async for event in self._run(lambda s: s.assign_technician(self.code, technician_id), "Técnico atualizado."):
             yield event
+
+    async def save_due_date(self, form_data: dict):
+        value = form_data.get("due_date", "")
+        async for event in self._run(lambda s: s.set_due_date(self.code, value), "Previsão de entrega atualizada."):
+            yield event
+
+    def set_warranty_open(self, value: bool):
+        self.warranty_open = value
+
+    async def confirm_warranty(self, form_data: dict):
+        if not self._start():
+            return
+        yield
+        try:
+            created = await OrderService(self._gateway(), await self._current()).open_warranty(self.code, form_data)
+            self.warranty_open = False
+            yield [self._succeed(f"Ordem em garantia {created.code} aberta."),
+                   rx.redirect(f"/admin/ordens/{created.code}")]
+        except DataAccessError as error:
+            yield self._fail(error)
+        finally:
+            self.is_loading = False
 
     async def save_diagnosis(self, form_data: dict):
         text = form_data.get("diagnosis", "")

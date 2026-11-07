@@ -64,7 +64,7 @@ async def test_permissions_and_next_statuses(catalog):
     assert next_statuses(by_code["OS-2026-00120"], ADMIN) == []
     repair = order_permissions(by_code["OS-2026-00125"], ADMIN)
     assert repair == {"budget_editable": "1", "technician_changeable": "1", "payments_allowed": "1",
-                      "read_only_reason": ""}
+                      "read_only_reason": "", "due_editable": "1", "warranty_openable": ""}
     delivered = order_permissions(by_code["OS-2026-00120"], ADMIN)
     assert delivered["budget_editable"] == delivered["technician_changeable"] == delivered["payments_allowed"] == ""
     # Técnica responsável por outra ordem: somente consulta.

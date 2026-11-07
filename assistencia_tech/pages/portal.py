@@ -42,6 +42,8 @@ def _order_row(order) -> rx.Component:
         rx.table.cell(rx.link(order["code"], href="/minha-conta/ordens/" + order["code"], class_name="code-link")),
         rx.table.cell(order["equipment"]),
         rx.table.cell(status_badge(order["status"], order["status_class"])),
+        rx.table.cell(rx.cond(order["warranty_until"] != "", rx.text("Garantia até ", order["warranty_until"]),
+                              order["due_date"])),
         rx.table.cell(order["updated_at"]),
         rx.table.cell(order["total"]),
         rx.table.cell(order["balance"]),
@@ -62,7 +64,7 @@ def portal_page() -> rx.Component:
             panel_header("Minhas ordens de serviço"),
             rx.cond(
                 PortalState.my_orders.length() > 0,
-                table(["Código", "Equipamento", "Status", "Atualização", "Total", "Saldo", "Pagamento"],
+                table(["Código", "Equipamento", "Status", "Previsão / garantia", "Atualização", "Total", "Saldo", "Pagamento"],
                       PortalState.my_orders, _order_row, "Nenhuma ordem de serviço."),
                 rx.box(
                     empty_state("Você ainda não possui ordens de serviço."),
@@ -151,6 +153,9 @@ def portal_order_page() -> rx.Component:
                             payment_badge(o["payment_status"], o["payment_class"]), gap="3"),
                     rx.grid(_info("Equipamento", o["equipment"]), _info("Problema relatado", o["problem"]),
                             _info("Última atualização", o["updated_at"]),
+                            _info("Previsão de entrega", o["due_date"]),
+                            rx.cond(o["warranty_until"] != "", _info("Garantia até", o["warranty_until"])),
+                            rx.cond(o["warranty_of"] != "", _info("Atendimento em garantia da", o["warranty_of"])),
                             columns=rx.breakpoints(initial="1", md="3"), spacing="4", width="100%"),
                     rx.cond(o["diagnosis"] != "", rx.box(_info("Diagnóstico", o["diagnosis"]))),
                 ),

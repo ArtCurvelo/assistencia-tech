@@ -8,7 +8,7 @@ pagamentos e histórico.
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from enum import StrEnum
 from typing import Annotated, ClassVar
@@ -205,16 +205,37 @@ class HistoryEvent(_Model):
 # ----------------------------------------------------------------------
 # Ordem de serviço (agregado)
 # ----------------------------------------------------------------------
+def parse_optional_date(value: object) -> object:
+    """Aceita ``AAAA-MM-DD`` (campo de data do navegador) ou ``dd/mm/aaaa``; vazio vira ``None``."""
+    if value is None or isinstance(value, date):
+        return value
+    text = str(value).strip()
+    if not text:
+        return None
+    for fmt in ("%Y-%m-%d", "%d/%m/%Y"):
+        try:
+            return datetime.strptime(text, fmt).date()
+        except ValueError:
+            continue
+    raise ValueError("informe uma data válida (dd/mm/aaaa)")
+
+
+OptionalDate = Annotated[date | None, BeforeValidator(parse_optional_date)]
+
+
 class OrderCreate(_Model):
     field_labels: ClassVar[dict[str, str]] = {
         "client_id": "Cliente",
         "equipment_id": "Equipamento",
         "problem": "Problema relatado",
+        "due_date": "Previsão de entrega",
     }
 
     client_id: Text
     equipment_id: Text
     problem: Text
+    due_date: OptionalDate = None  # sem previsão, a abertura usa +7 dias (add-deadlines-and-warranty)
+    warranty_of: str = ""  # código da ordem original, nas ordens em garantia
 
 
 class ServiceOrder(OrderCreate):
@@ -237,3 +258,4 @@ class PublicOrderView(_Model):
     status: str
     equipment: str
     updated_at: datetime
+    due_date: date | None = None

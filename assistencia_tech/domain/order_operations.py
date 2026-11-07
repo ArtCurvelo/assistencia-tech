@@ -21,7 +21,7 @@ from ..models.entities import (
     ServiceOrder,
     Technician,
 )
-from . import history
+from . import deadlines, history
 from .order_workflow import (
     check_transition,
     ensure_budget_editable,
@@ -35,6 +35,8 @@ def _next_id(ids: list[str]) -> str:
 
 
 def open_order(code: str, data: OrderCreate, at: datetime, author: str) -> ServiceOrder:
+    due = data.due_date or deadlines.default_due_date(at)
+    deadlines.ensure_valid_due_date(due, at)
     return ServiceOrder(
         code=code,
         client_id=data.client_id,
@@ -43,8 +45,20 @@ def open_order(code: str, data: OrderCreate, at: datetime, author: str) -> Servi
         status=OrderStatus.RECEIVED,
         opened_at=at,
         updated_at=at,
-        history=(history.opened(data.problem, at, author),),
+        due_date=due,
+        warranty_of=data.warranty_of,
+        history=(history.opened(data.problem, at, author, data.warranty_of),),
     )
+
+
+def set_due_date(order: ServiceOrder, due, at: datetime, author: str) -> ServiceOrder:
+    deadlines.ensure_due_date_editable(order)
+    if due is None:
+        raise ValidationError("Informe a nova previsão de entrega.")
+    deadlines.ensure_valid_due_date(due, order.opened_at)
+    if due == order.due_date:
+        raise ValidationError("A previsão informada é igual à atual.")
+    return history.append(order, history.due_date_changed(due, at, author), due_date=due)
 
 
 def assign_technician(

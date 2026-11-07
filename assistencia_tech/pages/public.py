@@ -78,6 +78,8 @@ def _tracking() -> rx.Component:
                     rx.text(result["code"], class_name="tracking-code"),
                     rx.text(result["status"], class_name="tracking-status"),
                     rx.text(result["equipment"], class_name="muted"),
+                    rx.cond(result["due_date"] != "",
+                            rx.text("Previsão de entrega: ", result["due_date"], class_name="muted")),
                     rx.text("Última atualização: ", result["updated_at"], class_name="muted tiny"),
                     class_name="tracking-result",
                     role="status",

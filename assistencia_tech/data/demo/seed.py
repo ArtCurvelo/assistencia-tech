@@ -12,6 +12,7 @@ from datetime import datetime
 
 from ...domain import order_operations as ops
 from ...domain.clock import BRT, DEFAULT_ACTOR
+from ...domain.deadlines import default_due_date
 from ...models import (
     Client,
     Equipment,
@@ -151,4 +152,5 @@ def seed_orders() -> list[ServiceOrder]:
     received = _Order("OS-2026-00126", "5", "7", "Não reconhece o chip", _at(17, 16))
 
     orders = [received, repair, analysis, awaiting, done_partial, cancelled, delivered]
-    return [o.order for o in orders]
+    # Previsão padrão de 7 dias (add-deadlines-and-warranty).
+    return [o.order.model_copy(update={"due_date": default_due_date(o.order.opened_at)}) for o in orders]

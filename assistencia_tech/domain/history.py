@@ -19,14 +19,20 @@ KIND_ITEM_ADDED = "Item adicionado"
 KIND_ITEM_REMOVED = "Item removido"
 KIND_PAYMENT = "Pagamento"
 KIND_CLIENT_DECISION = "Decisão do cliente"
+KIND_DUE_DATE = "Prazo"
 
 
 def _event(kind: str, description: str, at: datetime, author: str, to_status: str = "") -> HistoryEvent:
     return HistoryEvent(at=at, author=author, kind=kind, description=description, to_status=to_status)
 
 
-def opened(problem: str, at: datetime, author: str) -> HistoryEvent:
-    return _event(KIND_OPENED, f"Ordem aberta. Problema relatado: {problem}", at, author)
+def opened(problem: str, at: datetime, author: str, warranty_of: str = "") -> HistoryEvent:
+    prefix = f"Ordem aberta em garantia da {warranty_of}." if warranty_of else "Ordem aberta."
+    return _event(KIND_OPENED, f"{prefix} Problema relatado: {problem}", at, author)
+
+
+def due_date_changed(due, at: datetime, author: str) -> HistoryEvent:
+    return _event(KIND_DUE_DATE, f"Previsão de entrega alterada para {due:%d/%m/%Y}.", at, author)
 
 
 def status_changed(previous: str, new: str, at: datetime, author: str, reason: str = "") -> HistoryEvent:

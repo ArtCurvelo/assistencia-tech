@@ -52,6 +52,8 @@ class XanoOrderRepository(XanoRepository):
                 "item_cliente_id": int(order.equipment_id),
                 "descricao_problema": order.problem,
                 "status": mappers.STATUS_TO_XANO[order.status],
+                **({"previsao_entrega": order.due_date.isoformat()} if order.due_date else {}),
+                **({"garantia_de": mappers.parse_order_code(order.warranty_of)[1]} if order.warranty_of else {}),
             },
         )
         order_id = str(record.get("id"))
@@ -65,6 +67,8 @@ class XanoOrderRepository(XanoRepository):
             changes["user_id"] = int(new.technician_id)
         if new.diagnosis != current.diagnosis:
             changes["diagnostico"] = new.diagnosis
+        if new.due_date and new.due_date != current.due_date:
+            changes["previsao_entrega"] = new.due_date.isoformat()
         if new.status != current.status:
             changes["status"] = mappers.STATUS_TO_XANO[new.status]
             if new.cancel_reason:

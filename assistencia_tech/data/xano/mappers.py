@@ -295,6 +295,19 @@ def _records(value: Any) -> list[Record]:
     return [r for r in value if isinstance(r, dict)] if isinstance(value, list) else []
 
 
+def to_date(value: Any) -> date | None:
+    if isinstance(value, str) and value.strip():
+        return date.fromisoformat(value.strip()[:10])
+    return None
+
+
+def _linked_code(record: Any) -> str:
+    """Código de uma ordem a partir do resumo (id e created_at) devolvido por um *addon*."""
+    if isinstance(record, dict) and record.get("id") and record.get("created_at"):
+        return order_code(record["id"], _required_datetime(record["created_at"]))
+    return ""
+
+
 def order_id_of(order: ServiceOrder) -> str:
     return str(parse_order_code(order.code)[1])
 
@@ -316,6 +329,8 @@ def order_from(record: Record) -> ServiceOrder:
         items=tuple(item_from(r) for r in _records(record.get("_itens"))),
         payments=tuple(payment_from(r) for r in _records(record.get("_pagamentos"))),
         history=history,
+        due_date=to_date(record.get("previsao_entrega")),
+        warranty_of=_linked_code(record.get("_garantia")),
     )
 
 
@@ -327,4 +342,5 @@ def public_view_from(record: Record) -> PublicOrderView:
         status=status_from(record.get("status")).value,
         equipment=equipment or "Equipamento",
         updated_at=to_datetime(record.get("atualizado_em")) or opened,
+        due_date=to_date(record.get("previsao_entrega")),
     )

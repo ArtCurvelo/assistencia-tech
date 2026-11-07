@@ -52,6 +52,63 @@ def _summary() -> rx.Component:
             width="100%",
         ),
         rx.cond(S.cancel_reason != "", rx.text("Motivo do cancelamento: ", S.cancel_reason, class_name="notice-error")),
+        _deadlines(),
+    )
+
+
+def _deadlines() -> rx.Component:
+    """Previsão, atraso e garantia (add-deadlines-and-warranty)."""
+    o = S.order
+    return rx.box(
+        rx.grid(
+            _info("Previsão de entrega", rx.flex(
+                rx.text(o["due_date"]),
+                rx.cond(o["late"] != "", rx.text(o["late"], class_name="late-badge")),
+                gap="2", align="center", wrap="wrap",
+            )),
+            rx.cond(o["warranty_until"] != "", _info("Garantia até", o["warranty_until"])),
+            rx.cond(o["warranty_of"] != "", _info("Ordem em garantia da", rx.link(
+                o["warranty_of"], href="/admin/ordens/" + o["warranty_of"], class_name="code-link"))),
+            columns=rx.breakpoints(initial="1", md="3"),
+            spacing="4",
+            width="100%",
+        ),
+        rx.cond(
+            S.permissions["due_editable"] == "1",
+            rx.form(
+                rx.flex(
+                    rx.input(type="date", name="due_date", default_value=o["due_input"], key=o["due_input"],
+                             class_name="input date-input", aria_label="Nova previsão de entrega"),
+                    rx.button("Alterar previsão", type="submit", loading=S.is_loading, class_name="btn-sm btn-sm-ghost"),
+                    gap="2", align="center", wrap="wrap",
+                ),
+                on_submit=S.save_due_date,
+                reset_on_submit=False,
+            ),
+        ),
+        rx.cond(
+            S.permissions["warranty_openable"] == "1",
+            rx.button("Abrir ordem em garantia", on_click=S.set_warranty_open(True), class_name="btn btn-outline"),
+        ),
+        class_name="deadline-box",
+    )
+
+
+def _warranty_dialog() -> rx.Component:
+    return form_dialog(
+        "Abrir ordem em garantia",
+        "Mesmo cliente e equipamento desta ordem. O atendimento em garantia não gera cobrança.",
+        S.warranty_open,
+        S.set_warranty_open,
+        rx.form(
+            field("Problema relatado", rx.text_area(name="problem", class_name="input", required=True,
+                                                    placeholder="Ex.: o defeito voltou após a entrega")),
+            field("Previsão de entrega", rx.input(type="date", name="due_date", class_name="input"),
+                  "Opcional; sem informar, 7 dias."),
+            dialog_actions("Abrir em garantia"),
+            on_submit=S.confirm_warranty,
+            class_name="stack-form",
+        ),
     )
 
 
@@ -262,6 +319,7 @@ def order_detail_page() -> rx.Component:
                 _payments(),
                 _timeline(),
                 _cancel_dialog(),
+                _warranty_dialog(),
                 spacing="5",
                 width="100%",
             ),

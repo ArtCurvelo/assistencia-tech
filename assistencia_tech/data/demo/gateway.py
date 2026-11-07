@@ -188,6 +188,7 @@ class DemoPortalRepository:
             status=order.status,
             equipment=equipment.description if equipment else "Equipamento",
             updated_at=order.updated_at,
+            due_date=order.due_date,
         )
 
 
