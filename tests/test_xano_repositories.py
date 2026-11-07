@@ -169,6 +169,21 @@ async def test_backend_401_ends_the_session():
     assert (await service.resolve(token)).principal is None
 
 
+async def test_backend_unavailable_keeps_the_session():
+    state = {"me": (200, ADMIN)}
+    fake = FakeXano({
+        ("POST", "/auth/login"): (200, {"authToken": "jwt", "user_id": 1}),
+        ("GET", "/auth/me"): lambda body: state["me"],
+    })
+    service = AuthService(gateway_for(fake))
+    token, _ = await service.login("ana@exemplo.test", "senha")
+    state["me"] = (503, {"code": "ERROR_CODE_SERVICE_UNAVAILABLE", "message": "down"})
+    with pytest.raises(errors.ServiceUnavailableError):
+        await service.resolve(token)
+    state["me"] = (200, ADMIN)
+    assert (await service.resolve(token)).principal.user_id == "1"
+
+
 async def test_signup_creates_client_and_account_in_one_call():
     fake = FakeXano({
         ("POST", "/auth/signup_cliente"): (200, {"authToken": "jwt-maria", "user_id": 3}),
