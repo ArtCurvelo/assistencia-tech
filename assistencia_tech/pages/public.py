@@ -43,7 +43,8 @@ def _hero() -> rx.Component:
             class_name="hero-content",
         ),
         rx.box(
-            rx.box(rx.box(class_name="status-dot"), rx.text("Demonstração acadêmica • dados fictícios"),
+            rx.box(rx.box(class_name="status-dot"), rx.text(rx.cond(AppState.is_demo, "Demonstração acadêmica • dados fictícios",
+                                                                     "Projeto acadêmico • dados do Xano")),
                    class_name="status-line"),
             rx.text("🛠️", class_name="hero-emoji"),
             rx.heading("Diagnóstico técnico", size="6"),

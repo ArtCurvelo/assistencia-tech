@@ -43,6 +43,7 @@
 - [ ] 6.3 Implementar a sessão com o JWT do Xano (D12) e os perfis vindos de `GET /auth/me`; verificar com testes simulados e um login real no workspace. (Implementado e testado com servidor simulado; falta o login real, que depende do primeiro administrador.)
 - [x] 6.4 Implementar o agregado da OS sobre `os_servicos`, `os_itens`, `pagamentos` e `os_historico` (D13), a consulta pública e o portal (D14); verificar com testes simulados. (`data/xano/orders.py`; o portal usa `GET /portal/minha_conta` e o *addon* `_aparelho`, acrescentados ao contrato-alvo — envio ao Xano pendente de autorização.)
 - [ ] 6.5 Executar no navegador, com `ASSISTENCIA_DATA_SOURCE=xano`, o roteiro de `docs/DEMO_SCRIPT.md` contra o workspace e registrar os resultados neste arquivo.
+  - Parcial (07/11/2026, `reflex-xano` em `.claude/launch.json`): consulta pública com código inexistente → "Código não encontrado" (resposta real do Xano); login com conta inexistente → "E-mail ou senha inválidos."; sem acesso rápido às contas de demonstração. Corrigido o selo da página inicial, que dizia "dados fictícios" também no modo Xano. Falta o roteiro completo, que depende do primeiro administrador e do envio de `GET /portal/minha_conta`.
 
 ## 7. Verificação integrada
 
