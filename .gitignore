@@ -10,3 +10,6 @@ venv/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Xano CLI: estado local de sincronização
+xano/.xano/

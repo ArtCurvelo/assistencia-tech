@@ -71,6 +71,7 @@ A aplicação usa uma camada de acesso a dados com duas fontes, escolhidas por v
 - A integração real com o Xano depende da documentação oficial da API (contratos ainda não fornecidos).
 
 ## Documentação
+- `docs/XANO_DEV_ENV.md` — Xano CLI, Developer MCP e fluxo de sincronização do backend.
 - `docs/XANO_BACKEND_SPEC.md` — ajustes a fazer no Xano (contrato-alvo); verifique com `python -m tools.xano_contract_check`.
 - `docs/XANO_CONTRACT_ANALYSIS.md` — análise da documentação atual do Xano.
 - `docs/ACADEMIC_REPORT.md` — relatório técnico (requisitos, metodologia, arquitetura, segurança, métricas e limitações).

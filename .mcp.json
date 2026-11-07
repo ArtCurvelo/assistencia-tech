@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "xano": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@xano/developer-mcp@2.2.6"]
+    }
+  }
+}
