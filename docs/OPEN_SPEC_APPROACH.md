@@ -20,18 +20,24 @@ Este projeto utiliza a ferramenta **OpenSpec** (CLI `openspec`, versão 1.14.3, 
 
 - `design-system` — consistência visual, elementos interativos e feedback de estado.
 - `responsive-interface` — adaptação a telas, navegação e formulários em telas pequenas.
+- `client-management`, `equipment-management`, `service-orders` — domínio da assistência.
+- `user-auth`, `access-control`, `customer-portal` — autenticação, permissões e portal do cliente.
+- `staff-management`, `operational-reports` — administração.
+
+As capacidades `data-source` e `backend-integration` (integração com o Xano) e os novos requisitos de `design-system` e `responsive-interface` (fase 4) ainda estão em mudanças abertas e passarão às especificações vigentes quando forem arquivados.
 
 ## Mudanças
 
 - `redesign-interface` — arquivada em 2026-10-29. Observação: foi arquivada com parte das tarefas de verificação manual ainda abertas (revisão completa de rotas e tamanhos de tela). Essas verificações foram incorporadas aos grupos de verificação das mudanças seguintes.
 - `integrate-xano-backend` — grupos 1 a 5 concluídos (camada de dados, modo demonstração, cliente Xano); grupo 6 (contratos reais) bloqueado até a documentação oficial da API.
-- `expand-service-domain` — concluída: domínio de clientes, equipamentos e ordens.
-- `add-auth-and-access-control` — concluída: autenticação, perfis, permissões e portal.
-- `refine-frontend-experience` — 10 de 12 tarefas: responsividade, gráficos e usabilidade (2 verificações visuais de acessibilidade pendentes).
-- `add-admin-and-reports` — concluída: colaboradores, relatórios e CSV.
-- `prepare-academic-delivery` — documentação de arquitetura, roteiro de demonstração e relatório técnico.
+- `expand-service-domain` — arquivada em 2026-11-06: domínio de clientes, equipamentos e ordens.
+- `add-auth-and-access-control` — arquivada em 2026-11-06: autenticação, perfis, permissões e portal.
+- `add-admin-and-reports` — arquivada em 2026-11-06: colaboradores, relatórios e CSV.
+- `prepare-academic-delivery` — arquivada em 2026-11-06 (somente documentação, sem deltas).
+- `refine-frontend-experience` — em andamento (10 de 12 tarefas): faltam 2 verificações visuais de acessibilidade.
+- `integrate-xano-backend` — em andamento: grupo 6 (contratos reais) bloqueado até a documentação oficial da API.
 
-As mudanças concluídas ainda não foram arquivadas; o arquivamento incorpora os deltas às especificações vigentes e será feito após a revisão.
+O arquivamento (`openspec archive <mudança>`) moveu cada mudança concluída para `openspec/changes/archive/` e incorporou seus requisitos às especificações vigentes, que hoje somam 10 capacidades.
 
 ## Fluxo de trabalho adotado
 

@@ -84,7 +84,7 @@ O modelo, com diagrama entidade-relacionamento e diagrama de estados em `docs/DA
 
 ## 8. Qualidade e métricas
 
-Valores medidos em 06/11/2026 (registrados em `openspec/changes/prepare-academic-delivery/tasks.md`):
+Valores medidos em 06/11/2026 (registrados em `openspec/changes/archive/2026-11-06-prepare-academic-delivery/tasks.md`):
 
 | Métrica | Valor |
 |---|---|

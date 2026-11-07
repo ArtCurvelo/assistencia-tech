@@ -35,7 +35,7 @@ Roteiro para apresentar o Assistência TECH ao professor. Os passos 1 a 9 são e
 | 8 | 1,5 min | Administrador (acesso rápido) | Painel: gráficos por status e pagamentos. Relatórios: período padrão; mostre recebimentos (R$ 655,00) e produção por técnico; clique em "Exportar CSV" e abra no Excel. | Indicadores calculados por funções puras testadas; CSV com `;`, vírgula decimal e acentos corretos. |
 | 9 | 1 min | Administrador | Colaboradores: tente desativar Carlos (recusado: ordens em aberto); cadastre **Bruno Alves**, Técnico, "Impressoras", senha `bruno2026`. | Regras de proteção da gestão; o novo técnico fica disponível para atribuição. |
 | 10 | 1 min | Qualquer | Mostre o painel em 375 px: barra superior, menu recolhível, tabelas com rolagem própria. | Responsividade medida (nenhuma página excede a largura da tela). |
-| 11 | 1,5 min | — | No terminal: `python -m pytest`; `openspec list`; abra `openspec/changes/add-auth-and-access-control/specs/access-control/spec.md`. | Testes automatizados; processo spec-driven com requisitos, cenários e registro de verificação. |
+| 11 | 1,5 min | — | No terminal: `python -m pytest`; `openspec list`; `openspec list --specs`; abra `openspec/specs/access-control/spec.md` e o registro de verificação em `openspec/changes/archive/2026-11-06-add-auth-and-access-control/tasks.md`. | Testes automatizados; processo spec-driven: especificações vigentes, mudanças arquivadas e registro de verificação. |
 
 ## Plano de contingência
 

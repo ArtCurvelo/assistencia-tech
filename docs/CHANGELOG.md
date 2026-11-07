@@ -1,5 +1,9 @@
 # Changelog
 
+## Não lançado — Arquivamento no OpenSpec (2026-11-06)
+- Arquivadas `expand-service-domain`, `add-auth-and-access-control`, `add-admin-and-reports` e `prepare-academic-delivery`; 62 requisitos incorporados às especificações vigentes (10 capacidades).
+- Mantidas abertas `refine-frontend-experience` (2 verificações pendentes) e `integrate-xano-backend` (contratos do Xano pendentes).
+
 ## Não lançado — Fase 7 (entrega acadêmica, mudança `prepare-academic-delivery`)
 - `ARCHITECTURE.md`, `DEMO_SCRIPT.md` e `ACADEMIC_REPORT.md`; roteiro automatizado em `tests/test_demo_script.py`.
 - Cobertura medida com `pytest-cov`: 97% nas camadas testáveis e 69% no total.

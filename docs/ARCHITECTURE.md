@@ -1,6 +1,6 @@
 # Arquitetura
 
-Visão técnica do Assistência TECH: como o código está organizado, como uma operação atravessa as camadas e quais decisões sustentam a solução. As decisões detalhadas, com alternativas consideradas, estão nos `design.md` de cada mudança em `openspec/changes/`.
+Visão técnica do Assistência TECH: como o código está organizado, como uma operação atravessa as camadas e quais decisões sustentam a solução. As decisões detalhadas, com alternativas consideradas, estão nos `design.md` de cada mudança, em `openspec/changes/` (em andamento) e `openspec/changes/archive/` (concluídas).
 
 ## Visão geral em camadas
 
@@ -101,15 +101,15 @@ Todos os arquivos Python ficam abaixo de 350 linhas (limite do projeto: 1000).
 
 | Decisão | Motivo | Onde |
 |---|---|---|
-| Padrão Repository com `Protocol` e `DataGateway` | Trocar demonstração por Xano sem alterar páginas nem regras | `integrate-xano-backend/design.md` D1 |
+| Padrão Repository com `Protocol` e `DataGateway` | Trocar demonstração por Xano sem alterar páginas nem regras | `openspec/changes/integrate-xano-backend/design.md` D1 |
 | Registro explícito de contratos do Xano, vazio | Impede inventar endpoints; operações sem contrato falham sem enviar requisições | idem D5 |
-| Regras em funções puras + serviços de aplicação | Regras testáveis e reaproveitadas por qualquer fonte de dados | `expand-service-domain/design.md` D1 |
+| Regras em funções puras + serviços de aplicação | Regras testáveis e reaproveitadas por qualquer fonte de dados | `openspec/changes/archive/2026-11-06-expand-service-domain/design.md` D1 |
 | Ordem de serviço como agregado imutável | Itens, pagamentos e histórico sempre consistentes; histórico só cresce | idem D2 |
 | Status e transições como tabela de dados | Regras visíveis, verificáveis e usadas também para montar a interface | idem D4 |
 | `Decimal` para dinheiro | Sem erros de arredondamento de `float` | idem D5 |
-| Matriz de permissões única, aplicada nos serviços | A interface esconde ações, mas a proteção real está no servidor | `add-auth-and-access-control/design.md` D5–D6 |
+| Matriz de permissões única, aplicada nos serviços | A interface esconde ações, mas a proteção real está no servidor | `openspec/changes/archive/2026-11-06-add-auth-and-access-control/design.md` D5–D6 |
 | Sessão no servidor com token opaco | Revogável no logout e na desativação; nenhum dado pessoal no navegador | idem D3 |
-| Relatórios como funções puras sobre o agregado | Números verificáveis por teste com dados conhecidos | `add-admin-and-reports/design.md` D5 |
+| Relatórios como funções puras sobre o agregado | Números verificáveis por teste com dados conhecidos | `openspec/changes/archive/2026-11-06-add-admin-and-reports/design.md` D5 |
 
 ## Segurança
 
