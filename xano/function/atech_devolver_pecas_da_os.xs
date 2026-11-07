@@ -25,4 +25,5 @@ function "atech_devolver_pecas_da_os" {
     }
   }
   response = $itens|count
+  guid = "b1rWg9std4NyB66XLEZATOlHwEM"
 }

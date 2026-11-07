@@ -42,4 +42,5 @@ query "pecas" verb=POST {
     } as $peca
   }
   response = $peca
+  guid = "aNYgmqtTWJA-ZkBZR1tLfzY-h5g"
 }

@@ -9,4 +9,5 @@ addon atech_ordem_resumo {
       output = ["id", "created_at"]
     }
   }
+  guid = "fLysgZKfxFqB85LrEbUTPnRd6gM"
 }

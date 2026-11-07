@@ -58,4 +58,5 @@ function "atech_mover_estoque" {
     } as $movimento
   }
   response = $atualizada
+  guid = "xJ-alUeMXmHs4k9hQaPQKNTB3PA"
 }

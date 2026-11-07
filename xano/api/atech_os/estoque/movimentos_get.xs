@@ -16,4 +16,5 @@ query "estoque/movimentos" verb=GET {
     } as $movimentos
   }
   response = $movimentos
+  guid = "IYuyGDf-pvFPno_ScytR4njV8Mw"
 }

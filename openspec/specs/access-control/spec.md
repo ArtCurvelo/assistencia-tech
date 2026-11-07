@@ -15,7 +15,7 @@ Todo usuário SHALL ter exatamente um perfil entre Administrador, Atendente, Té
 
 ### Requirement: Matriz de permissões
 
-As permissões SHALL ser concedidas por perfil conforme a matriz: Administrador tem todas as permissões administrativas; Atendente vê painel, clientes, equipamentos e ordens, cadastra e edita clientes e equipamentos, abre ordens, atribui técnico, registra aprovação, pagamentos, entrega e cancelamento; Técnico vê painel, clientes, equipamentos e ordens, e registra diagnóstico, orçamento e status técnicos; Cliente acessa apenas o portal. Somente o Administrador exclui clientes e equipamentos.
+As permissões SHALL ser concedidas por perfil: Administrador tem todas as permissões administrativas; Atendente vê painel, clientes, equipamentos e ordens, cadastra e edita clientes e equipamentos, abre ordens, atribui técnico, registra aprovação, pagamentos, entrega e cancelamento; Técnico vê painel, clientes, equipamentos e ordens, e registra diagnóstico, orçamento e status técnicos; Cliente acessa apenas o portal. Somente o Administrador exclui clientes e equipamentos.
 
 #### Scenario: Atendente tenta excluir cliente
 - **WHEN** um atendente tenta excluir um cliente
@@ -24,6 +24,14 @@ As permissões SHALL ser concedidas por perfil conforme a matriz: Administrador 
 #### Scenario: Técnico tenta registrar pagamento
 - **WHEN** um técnico tenta registrar um pagamento
 - **THEN** a operação é recusada por falta de permissão
+
+### Requirement: Permissões de estoque
+
+Administrador, Atendente e Técnico SHALL consultar o estoque. Somente Administrador e Atendente SHALL cadastrar e editar peças e registrar entradas de estoque. O Cliente MUST NOT acessar o estoque.
+
+#### Scenario: Técnico tenta repor estoque
+- **WHEN** um técnico tenta registrar uma entrada de estoque
+- **THEN** a operação é recusada por falta de permissão, mas o técnico continua consultando o estoque
 
 ### Requirement: Permissões por mudança de status
 

@@ -21,4 +21,5 @@ table "movimento_estoque" {
     {type: "primary", field: [{name: "id"}]}
     {type: "btree", field: [{name: "peca_id"}]}
   ]
+  guid = "mu6HFfa0ZuR0xPhcQR9vTK8Wtz4"
 }

@@ -14,4 +14,5 @@ query "pecas" verb=GET {
     } as $pecas
   }
   response = $pecas
+  guid = "ozJlhH7Yn1QDDHa_y_miKLnRCro"
 }

@@ -15,4 +15,5 @@ table "peca" {
     {type: "primary", field: [{name: "id"}]}
     {type: "btree|unique", field: [{name: "codigo"}]}
   ]
+  guid = "avzU8nhrQrr66J8GaiwLgf_gwYE"
 }

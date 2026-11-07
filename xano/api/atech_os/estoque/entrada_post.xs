@@ -34,4 +34,5 @@ query "estoque/entrada" verb=POST {
     } as $peca
   }
   response = $peca
+  guid = "hIOVhnXmXKeXi7gkoxLoI_wa2yE"
 }

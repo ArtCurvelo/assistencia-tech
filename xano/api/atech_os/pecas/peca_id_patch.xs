@@ -50,4 +50,5 @@ query "pecas/{peca_id}" verb=PATCH {
     } as $peca
   }
   response = $peca
+  guid = "V3aG_Gnen5AypJKLURtGQAI6tak"
 }

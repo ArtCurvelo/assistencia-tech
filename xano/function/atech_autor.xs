@@ -16,4 +16,5 @@ function "atech_autor" {
     }
   }
   response = $autor
+  guid = "bOoXDHnvVqy7efxPndTBgONCdag"
 }
