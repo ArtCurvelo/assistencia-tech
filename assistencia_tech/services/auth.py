@@ -1,7 +1,8 @@
 """Serviço de autenticação: login, logout, sessão e cadastro de cliente.
 
 Sessões e limitador de tentativas são únicos por processo (em memória),
-como os dados do modo demonstração.
+como os dados do modo demonstração. Com a fonte Xano, a sessão guarda o JWT
+do backend e ``resolve`` o coloca no contexto da requisição (decisão D12).
 """
 
 from __future__ import annotations
@@ -12,6 +13,7 @@ from typing import Any
 
 from ..data.errors import AuthenticationError, NotFoundError, ValidationError
 from ..data.repositories import DataGateway
+from ..data.request_context import take_issued_token, use_backend_token
 from ..data.sessions import SessionStore
 from ..domain.login_throttle import LoginThrottle
 from ..domain.passwords import check_password_policy
@@ -53,16 +55,18 @@ class AuthService:
             raise AuthenticationError(
                 f"Acesso temporariamente bloqueado por excesso de tentativas. Tente novamente em {minutes} minuto(s)."
             )
+        use_backend_token(None)
         try:
             user = await self._gw.auth.authenticate(email, password)
         except AuthenticationError:
             _throttle.register_failure(email)
             raise AuthenticationError(INVALID_CREDENTIALS) from None
         _throttle.register_success(email)
-        return _sessions.create(user.id), principal_from(user)
+        return _sessions.create(user.id, take_issued_token()), principal_from(user)
 
     async def resolve(self, token: str | None) -> SessionResult:
         lookup = _sessions.resolve(token)
+        use_backend_token(lookup.backend_token)
         if lookup.user_id is None:
             return SessionResult(None, expired=lookup.expired)
         try:
@@ -70,6 +74,11 @@ class AuthService:
         except NotFoundError:
             _sessions.revoke(token)
             return SessionResult(None)
+        except AuthenticationError:
+            # O backend recusou o token (expirado ou revogado): encerra a sessão.
+            _sessions.revoke(token)
+            use_backend_token(None)
+            return SessionResult(None, expired=True)
         if not user.active:
             _sessions.revoke(token)
             return SessionResult(None)
@@ -84,6 +93,11 @@ class AuthService:
             raise ValidationError("As senhas não conferem.")
         check_password_policy(password)
         data = parse_model(ClientCreate, form)
+        use_backend_token(None)
+        if self._gw.remote_accounts:
+            # Xano: cliente e conta são criados juntos, com as regras de unicidade no servidor.
+            user = await self._gw.auth.signup_client(data, password)
+            return _sessions.create(user.id, take_issued_token()), principal_from(user)
         if await self._gw.auth.email_in_use(data.email):
             raise ValidationError(f"Já existe uma conta com o e-mail {data.email}.")
         # O cadastro público é um fluxo do sistema: usa as mesmas regras do cadastro de clientes.

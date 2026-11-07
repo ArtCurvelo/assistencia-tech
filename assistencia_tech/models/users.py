@@ -23,7 +23,8 @@ class UserAccount(BaseModel):
     email: str = Field(min_length=1)
     role: Role
     # Nunca exibido nem registrado: ``repr=False`` evita vazamento em logs.
-    password_hash: str = Field(min_length=1, repr=False)
+    # Vazio quando a senha é guardada pelo backend (Xano), nunca pela aplicação.
+    password_hash: str = Field(default="", repr=False)
     client_id: str | None = None
     technician_id: str | None = None
     active: bool = True

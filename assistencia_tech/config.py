@@ -1,7 +1,9 @@
 """Configuração da aplicação lida de variáveis de ambiente.
 
-Nenhuma credencial é definida aqui. Variáveis de autenticação do Xano serão
-adicionadas somente quando o contrato oficial for conhecido.
+Nenhuma credencial é definida aqui: o acesso ao Xano usa o token de cada
+usuário, obtido no login. ``XANO_BASE_URL`` é o endereço da instância e cada
+grupo de API (``api:<grupo>``) tem um identificador configurável; os padrões
+são os canônicos do backend em XanoScript da pasta ``xano/``.
 """
 
 from __future__ import annotations
@@ -20,6 +22,13 @@ DEFAULT_TIMEOUT_SECONDS = 10.0
 ENV_DATA_SOURCE = "ASSISTENCIA_DATA_SOURCE"
 ENV_XANO_BASE_URL = "XANO_BASE_URL"
 ENV_XANO_TIMEOUT = "XANO_TIMEOUT_SECONDS"
+ENV_XANO_GROUP_AUTH = "XANO_GROUP_AUTH"
+ENV_XANO_GROUP_CLIENTE = "XANO_GROUP_CLIENTE"
+ENV_XANO_GROUP_OS = "XANO_GROUP_OS"
+
+DEFAULT_GROUP_AUTH = "assistencia-tech-auth"
+DEFAULT_GROUP_CLIENTE = "assistencia-tech-cliente"
+DEFAULT_GROUP_OS = "assistencia-tech-os"
 
 
 @dataclass(frozen=True)
@@ -27,6 +36,9 @@ class Settings:
     data_source: str = DATA_SOURCE_DEMO
     xano_base_url: str | None = None
     xano_timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS
+    xano_group_auth: str = DEFAULT_GROUP_AUTH
+    xano_group_cliente: str = DEFAULT_GROUP_CLIENTE
+    xano_group_os: str = DEFAULT_GROUP_OS
 
 
 def _clean(value: str | None) -> str | None:
@@ -69,4 +81,7 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         data_source=source,
         xano_base_url=base_url,
         xano_timeout_seconds=_parse_timeout(_clean(env.get(ENV_XANO_TIMEOUT))),
+        xano_group_auth=_clean(env.get(ENV_XANO_GROUP_AUTH)) or DEFAULT_GROUP_AUTH,
+        xano_group_cliente=_clean(env.get(ENV_XANO_GROUP_CLIENTE)) or DEFAULT_GROUP_CLIENTE,
+        xano_group_os=_clean(env.get(ENV_XANO_GROUP_OS)) or DEFAULT_GROUP_OS,
     )

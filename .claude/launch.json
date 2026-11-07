@@ -4,19 +4,28 @@
     {
       "name": "reflex-dev",
       "runtimeExecutable": ".venv\\Scripts\\reflex.exe",
-      "runtimeArgs": ["run"],
-      "env": { "PYTHONUTF8": "1", "PYTHONIOENCODING": "utf-8" },
+      "runtimeArgs": [
+        "run"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONIOENCODING": "utf-8",
+        "NODE_OPTIONS": "--use-system-ca"
+      },
       "port": 3000
     },
     {
-      "name": "reflex-xano-sem-contratos",
+      "name": "reflex-xano",
       "runtimeExecutable": ".venv\\Scripts\\reflex.exe",
-      "runtimeArgs": ["run"],
+      "runtimeArgs": [
+        "run"
+      ],
       "env": {
         "PYTHONUTF8": "1",
         "PYTHONIOENCODING": "utf-8",
         "ASSISTENCIA_DATA_SOURCE": "xano",
-        "XANO_BASE_URL": "https://exemplo.invalid/api"
+        "XANO_BASE_URL": "https://x8ki-letl-twmt.n7.xano.io",
+        "NODE_OPTIONS": "--use-system-ca"
       },
       "port": 3000
     }

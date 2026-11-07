@@ -61,14 +61,15 @@ class Endpoint:
 
 
 # Grupos lógicos do contrato. Os códigos reais (api:XXXX) dependem da instância
-# e são informados ao verificador; os padrões abaixo são os do workspace do grupo.
+# e podem ser informados ao verificador; os padrões são os canônicos do backend
+# próprio em XanoScript (pasta ``xano/``, workspace 170741).
 AUTH = "auth"
 CLIENTE = "cliente"
 OS = "os"
 
 GROUP_TITLES = {AUTH: "Autenticação", CLIENTE: "Cliente", OS: "Ordens de Serviço"}
 DEFAULT_INSTANCE = "https://x8ki-letl-twmt.n7.xano.io"
-DEFAULT_GROUP_IDS = {AUTH: "GRUPO-AUTH-COLEGA", CLIENTE: "GRUPO-CLIENTE-COLEGA", OS: "GRUPO-OS-COLEGA"}
+DEFAULT_GROUP_IDS = {AUTH: "assistencia-tech-auth", CLIENTE: "assistencia-tech-cliente", OS: "assistencia-tech-os"}
 
 TARGET: dict[str, tuple[Endpoint, ...]] = {
     AUTH: (
@@ -123,9 +124,12 @@ TARGET: dict[str, tuple[Endpoint, ...]] = {
         Endpoint("post", "/pagamentos", "bearer",
                  ("os_servicos_id", "valor_a_ser_pago", "forma_de_pagamento", "data_do_pagamento"), PAYMENT_FIELDS),
         Endpoint("get", "/consulta_publica/{os_servicos_id}", "public", (),
-                 ("id", "status", "aparelho", "modelo", "atualizado_em"), {"status": ORDER_STATUS_VALUES},
+                 ("id", "created_at", "status", "aparelho", "modelo", "atualizado_em"), {"status": ORDER_STATUS_VALUES},
                  purpose="Consulta pública: somente estes campos, sem dados pessoais nem valores."),
-        Endpoint("get", "/portal/minhas_ordens", "bearer", (), ORDER_WITH_ADDONS, {"status": ORDER_STATUS_VALUES},
-                 purpose="Perfil cliente: somente as ordens do cliente vinculado ao token."),
+        Endpoint("get", "/portal/minhas_ordens", "bearer", (), ORDER_WITH_ADDONS + ("_aparelho",),
+                 {"status": ORDER_STATUS_VALUES},
+                 purpose="Perfil cliente: somente as ordens do cliente vinculado ao token, com o aparelho."),
+        Endpoint("get", "/portal/minha_conta", "bearer", (), CLIENT_FIELDS,
+                 purpose="Perfil cliente: o cadastro do cliente vinculado ao token."),
     ),
 }

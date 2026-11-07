@@ -19,7 +19,7 @@ query "consulta_publica/{os_servicos_id}" verb=GET {
       }
       where = $db.os_servicos.id == $input.os_servicos_id
       return = {type: "single"}
-      output = ["id", "status", "atualizado_em", "aparelho", "modelo"]
+      output = ["id", "created_at", "status", "atualizado_em", "aparelho", "modelo"]
     } as $ordem
     precondition ($ordem != null) {
       error_type = "notfound"

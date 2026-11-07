@@ -4,8 +4,10 @@ REGRA: só adicione uma entrada aqui a partir da documentação oficial do
 workspace Xano (Swagger/OpenAPI do API group), registrando a origem em
 ``source``. Nenhum endpoint, método ou campo pode ser deduzido ou inventado.
 
-Enquanto o registro estiver vazio, toda operação no modo Xano falha com
-``ContractPendingError`` sem enviar requisições.
+Os contratos abaixo são os do backend em XanoScript da pasta ``xano/``
+(workspace 170741), conferidos com ``python -m tools.xano_contract_check``
+contra a documentação publicada (``/apispec:{grupo}``). Uma operação sem
+contrato falha com ``ContractPendingError`` sem enviar requisições.
 """
 
 from __future__ import annotations
@@ -15,9 +17,20 @@ from dataclasses import dataclass
 
 from ..errors import ContractPendingError
 
-# Operações internas que a aplicação precisa. Os nomes são internos e não
-# correspondem a endpoints do Xano.
+# Grupos lógicos; o identificador real de cada grupo vem da configuração.
+GROUP_AUTH = "auth"
+GROUP_CLIENTE = "cliente"
+GROUP_OS = "os"
+
+# Operações internas (nomes internos, não são endpoints do Xano).
 OPERATIONS: dict[str, str] = {
+    "auth.login": "entrar no sistema",
+    "auth.me": "consultar a conta do usuário",
+    "auth.signup_client": "criar a conta de cliente",
+    "users.list": "listar colaboradores",
+    "users.create": "cadastrar colaboradores",
+    "users.update": "atualizar colaboradores",
+    "technicians.list": "listar técnicos",
     "clients.list": "listar clientes",
     "clients.get": "consultar cliente",
     "clients.create": "cadastrar clientes",
@@ -28,32 +41,63 @@ OPERATIONS: dict[str, str] = {
     "equipment.create": "cadastrar equipamentos",
     "equipment.update": "editar equipamentos",
     "equipment.delete": "excluir equipamentos",
-    "technicians.list": "listar técnicos",
     "orders.list": "listar ordens de serviço",
-    "orders.get_by_code": "consultar ordem de serviço",
-    "orders.next_code": "gerar o código da ordem de serviço",
+    "orders.get": "consultar ordem de serviço",
     "orders.create": "abrir ordens de serviço",
-    "orders.save": "atualizar a ordem de serviço",
-    "auth.login": "entrar no sistema",
-    "auth.register": "criar contas de acesso",
-    "auth.me": "consultar a conta do usuário",
-    "users.list": "listar colaboradores",
-    "users.create": "cadastrar colaboradores",
-    "users.update": "atualizar colaboradores",
-    "technicians.create": "cadastrar técnicos",
-    "technicians.update": "atualizar técnicos",
+    "orders.update": "atualizar a ordem de serviço",
+    "orders.items.add": "adicionar itens ao orçamento",
+    "orders.items.remove": "remover itens do orçamento",
+    "orders.history.add": "registrar o histórico da ordem",
+    "orders.payments.add": "registrar pagamentos",
+    "portal.public_order": "consultar o status público da ordem",
+    "portal.client_orders": "listar as ordens do cliente",
+    "portal.client_account": "consultar o cadastro do cliente",
 }
 
 
 @dataclass(frozen=True)
 class EndpointContract:
     method: str
-    path: str
-    source: str  # referência à documentação oficial (ex.: seção do Swagger)
+    group: str  # grupo lógico (GROUP_AUTH, GROUP_CLIENTE, GROUP_OS)
+    path: str  # caminho com marcadores no formato do Xano, ex.: /cliente/{cliente_id}
+    source: str  # referência à documentação oficial
+    public: bool = False  # True: sem token (login, cadastro e consulta pública)
 
 
-# Vazio até a documentação oficial ser fornecida.
-CONTRACTS: dict[str, EndpointContract] = {}
+def _c(method: str, group: str, path: str, *, public: bool = False) -> EndpointContract:
+    return EndpointContract(method, group, path, f"apispec:{group} {method} {path}", public)
+
+
+CONTRACTS: dict[str, EndpointContract] = {
+    "auth.login": _c("POST", GROUP_AUTH, "/auth/login", public=True),
+    "auth.me": _c("GET", GROUP_AUTH, "/auth/me"),
+    "auth.signup_client": _c("POST", GROUP_AUTH, "/auth/signup_cliente", public=True),
+    "users.list": _c("GET", GROUP_AUTH, "/usuarios"),
+    "users.create": _c("POST", GROUP_AUTH, "/usuarios"),
+    "users.update": _c("PATCH", GROUP_AUTH, "/usuarios/{user_id}"),
+    "technicians.list": _c("GET", GROUP_AUTH, "/tecnicos"),
+    "clients.list": _c("GET", GROUP_CLIENTE, "/cliente"),
+    "clients.get": _c("GET", GROUP_CLIENTE, "/cliente/{cliente_id}"),
+    "clients.create": _c("POST", GROUP_CLIENTE, "/cliente"),
+    "clients.update": _c("PATCH", GROUP_CLIENTE, "/cliente/{cliente_id}"),
+    "clients.delete": _c("DELETE", GROUP_CLIENTE, "/cliente/{cliente_id}"),
+    "equipment.list": _c("GET", GROUP_CLIENTE, "/item_cliente"),
+    "equipment.get": _c("GET", GROUP_CLIENTE, "/item_cliente/{item_cliente_id}"),
+    "equipment.create": _c("POST", GROUP_CLIENTE, "/item_cliente"),
+    "equipment.update": _c("PATCH", GROUP_CLIENTE, "/item_cliente/{item_cliente_id}"),
+    "equipment.delete": _c("DELETE", GROUP_CLIENTE, "/item_cliente/{item_cliente_id}"),
+    "orders.list": _c("GET", GROUP_OS, "/os_servicos"),
+    "orders.get": _c("GET", GROUP_OS, "/os_servicos/{os_servicos_id}"),
+    "orders.create": _c("POST", GROUP_OS, "/os_servicos"),
+    "orders.update": _c("PATCH", GROUP_OS, "/os_servicos/{os_servicos_id}"),
+    "orders.items.add": _c("POST", GROUP_OS, "/os_itens"),
+    "orders.items.remove": _c("DELETE", GROUP_OS, "/os_itens/{os_itens_id}"),
+    "orders.history.add": _c("POST", GROUP_OS, "/os_historico"),
+    "orders.payments.add": _c("POST", GROUP_OS, "/pagamentos"),
+    "portal.public_order": _c("GET", GROUP_OS, "/consulta_publica/{os_servicos_id}", public=True),
+    "portal.client_orders": _c("GET", GROUP_OS, "/portal/minhas_ordens"),
+    "portal.client_account": _c("GET", GROUP_OS, "/portal/minha_conta"),
+}
 
 
 def require_contract(

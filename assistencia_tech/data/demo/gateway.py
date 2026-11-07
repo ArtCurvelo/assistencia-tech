@@ -12,7 +12,7 @@ from collections.abc import Callable
 from datetime import date
 
 from ...config import DATA_SOURCE_DEMO
-from ...models import Client, ClientCreate, Equipment, EquipmentCreate, ServiceOrder, Technician
+from ...models import Client, ClientCreate, Equipment, EquipmentCreate, PublicOrderView, ServiceOrder, Technician
 from ..errors import NotFoundError, ValidationError
 from ..repositories import DataGateway
 from . import seed
@@ -135,15 +135,53 @@ class DemoOrderRepository:
         return order
 
 
+class DemoPortalRepository:
+    """Projeções do portal e da consulta pública sobre os repositórios em memória."""
+
+    def __init__(
+        self, clients: DemoClientRepository, equipment: DemoEquipmentRepository, orders: DemoOrderRepository
+    ) -> None:
+        self._clients = clients
+        self._equipment = equipment
+        self._orders = orders
+
+    async def _equipment_of(self, equipment_id: str) -> Equipment | None:
+        try:
+            return await self._equipment.get(equipment_id)
+        except NotFoundError:
+            return None
+
+    async def client_account(self, client_id: str) -> Client:
+        return await self._clients.get(client_id)
+
+    async def client_orders(self, client_id: str) -> list[tuple[ServiceOrder, Equipment | None]]:
+        orders = [o for o in await self._orders.list() if o.client_id == client_id]
+        return [(o, await self._equipment_of(o.equipment_id)) for o in orders]
+
+    async def public_order(self, code: str) -> PublicOrderView:
+        order = await self._orders.get_by_code(code)
+        equipment = await self._equipment_of(order.equipment_id)
+        return PublicOrderView(
+            code=order.code,
+            status=order.status,
+            equipment=equipment.description if equipment else "Equipamento",
+            updated_at=order.updated_at,
+        )
+
+
 def build_demo_gateway(year_provider: YearProvider | None = None) -> DataGateway:
     """Cria um gateway de demonstração com os dados fictícios iniciais."""
+    clients = DemoClientRepository(seed.seed_clients())
+    equipment = DemoEquipmentRepository(seed.seed_equipment())
+    orders = DemoOrderRepository(seed.seed_orders(), year_provider or (lambda: date.today().year))
     return DataGateway(
         source=DATA_SOURCE_DEMO,
         label="Modo demonstração",
         is_demo=True,
-        clients=DemoClientRepository(seed.seed_clients()),
-        equipment=DemoEquipmentRepository(seed.seed_equipment()),
+        clients=clients,
+        equipment=equipment,
         technicians=DemoTechnicianRepository(seed.seed_technicians()),
-        orders=DemoOrderRepository(seed.seed_orders(), year_provider or (lambda: date.today().year)),
+        orders=orders,
         auth=DemoAuthProvider(seed_users()),
+        portal=DemoPortalRepository(clients, equipment, orders),
     )

@@ -10,7 +10,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
-from ..models import Client, ClientCreate, Equipment, EquipmentCreate, Role, ServiceOrder, Technician, UserAccount
+from ..models import (
+    Client,
+    ClientCreate,
+    Equipment,
+    EquipmentCreate,
+    PublicOrderView,
+    Role,
+    ServiceOrder,
+    Technician,
+    UserAccount,
+)
 
 
 @runtime_checkable
@@ -96,13 +106,39 @@ class AuthProvider(Protocol):
     async def list_users(self) -> list[UserAccount]: ...
 
     async def create_user(
-        self, name: str, email: str, role: Role, password: str, technician_id: str | None = None
+        self,
+        name: str,
+        email: str,
+        role: Role,
+        password: str,
+        technician_id: str | None = None,
+        specialty: str = "",
     ) -> UserAccount:
-        """Cria uma conta de colaborador; o hash é calculado pelo provedor."""
+        """Cria uma conta de colaborador; o hash é calculado pelo provedor.
+
+        ``specialty`` é usado por provedores em que o técnico é a própria conta.
+        """
         ...
 
     async def update_user(self, user: UserAccount, new_password: str | None = None) -> UserAccount:
         """Atualiza dados da conta e, opcionalmente, define uma nova senha."""
+        ...
+
+
+@runtime_checkable
+class PortalRepository(Protocol):
+    """Projeções para o cliente e para a consulta pública (decisão D14)."""
+
+    async def client_account(self, client_id: str) -> Client:
+        """Cadastro do cliente da conta autenticada."""
+        ...
+
+    async def client_orders(self, client_id: str) -> list[tuple[ServiceOrder, Equipment | None]]:
+        """Somente as ordens do cliente, com o equipamento de cada uma."""
+        ...
+
+    async def public_order(self, code: str) -> PublicOrderView:
+        """Status público da ordem, sem dados pessoais nem valores; ou ``NotFoundError``."""
         ...
 
 
@@ -118,3 +154,7 @@ class DataGateway:
     technicians: TechnicianRepository
     orders: OrderRepository
     auth: AuthProvider
+    portal: PortalRepository
+    # Com contas remotas (Xano), técnicos são contas com perfil técnico e o
+    # autocadastro cria cliente e conta numa só chamada (``auth.signup_client``).
+    remote_accounts: bool = False

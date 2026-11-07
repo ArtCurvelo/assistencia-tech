@@ -108,6 +108,10 @@ Com a fonte Xano, o login devolve o `authToken` (JWT) do Xano. A aplicação con
 
 A consulta pública usa `GET /consulta_publica/{id}` (público) e o portal usa `GET /portal/minhas_ordens` (filtrado pelo token). Assim a restrição de dados pessoais é garantida pelo backend, e não só pela aplicação.
 
+### D15. Mensagens do servidor e contas remotas (adendo de 2026-11-07)
+
+O cliente HTTP mostra ao usuário somente as mensagens das pré-condições do backend em XanoScript, que o Xano devolve com `"payload": ""`; erros nativos do Xano (em inglês, com `payload` objeto ou ausente) ficam no log. O JWT é entregue aos repositórios por um `ContextVar` (`data/request_context.py`), definido por `AuthService.resolve` a partir da sessão. No Xano, técnicos são contas com perfil técnico e o autocadastro cria cliente e conta numa só chamada; o gateway declara `remote_accounts=True` e `StaffService`/`AuthService` seguem esse caminho. O portal e a consulta pública passam pela interface `PortalRepository`, implementada sobre `GET /portal/minha_conta`, `GET /portal/minhas_ordens` (com o *addon* `_aparelho`) e `GET /consulta_publica/{id}` (com `created_at` para conferir o ano do código).
+
 ## Risks / Trade-offs
 
 - [Estado Reflex compartilhado por processo no modo demonstração] → os dados de demonstração ficam em um gateway por processo; aceitável para a apresentação e documentado como limitação.

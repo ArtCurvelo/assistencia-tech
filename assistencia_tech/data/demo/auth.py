@@ -64,8 +64,15 @@ class DemoAuthProvider:
         return list(self.users)
 
     async def create_user(
-        self, name: str, email: str, role: Role, password: str, technician_id: str | None = None
+        self,
+        name: str,
+        email: str,
+        role: Role,
+        password: str,
+        technician_id: str | None = None,
+        specialty: str = "",
     ) -> UserAccount:
+        # Na demonstração a especialidade fica no registro do técnico (``technician_id``).
         if await self.email_in_use(email):
             raise ValidationError(f"Já existe uma conta com o e-mail {email}.")
         user = UserAccount(

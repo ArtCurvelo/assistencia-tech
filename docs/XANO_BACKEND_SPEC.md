@@ -11,7 +11,7 @@ Depois de cada rodada de ajustes no Xano, rode o verificador (para outra instân
 python -m tools.xano_contract_check
 ```
 
-Ele baixa a documentação publicada pelo Xano (sem chamar endpoints de dados) e mostra `OK` ou o que falta em cada um dos 27 endpoints. A integração na aplicação começa quando todos estiverem `OK`. Situação em 07/11/2026: **1 de 27** (somente o login).
+Ele baixa a documentação publicada pelo Xano (sem chamar endpoints de dados) e mostra `OK` ou o que falta em cada um dos 28 endpoints. O backend foi implementado em XanoScript na pasta `xano/` (workspace 170741, grupos `assistencia-tech-auth`, `assistencia-tech-cliente` e `assistencia-tech-os`). Situação em 07/11/2026: 27 de 27 antes da inclusão de `GET /portal/minha_conta`, do *addon* `_aparelho` e de `created_at` na consulta pública, acrescentados na integração da aplicação.
 
 > **Regras gerais**
 > 1. Todo endpoint marcado com **token** deve exigir autenticação (*Authentication: user*) e retornar 401 sem token válido.
@@ -78,7 +78,7 @@ Usar `os_servicos_id` (int) no lugar de `servico_id`, ou confirmar que `servico_
 
 Legenda: **público** (sem token) · **token** (qualquer usuário autenticado) · **token: perfis** (verificar o `role` do usuário do token).
 
-### Grupo Autenticação (`api:GRUPO-AUTH-COLEGA`)
+### Grupo Autenticação (`api:assistencia-tech-auth`)
 
 | Método e caminho | Acesso | Entrada | Resposta 200 |
 |---|---|---|---|
@@ -92,7 +92,7 @@ Legenda: **público** (sem token) · **token** (qualquer usuário autenticado) �
 
 O `POST /auth/signup` atual cria usuários `member` sem vínculo: remova-o ou restrinja-o a administradores.
 
-### Grupo Cliente (`api:GRUPO-CLIENTE-COLEGA`): todos com token (admin, atendente e técnico)
+### Grupo Cliente (`api:assistencia-tech-cliente`): todos com token (admin, atendente e técnico)
 
 | Método e caminho | Entrada | Resposta 200 |
 |---|---|---|
@@ -107,7 +107,7 @@ O `POST /auth/signup` atual cria usuários `member` sem vínculo: remova-o ou re
 | `PATCH /item_cliente/{item_cliente_id}` | os mesmos campos do POST | o aparelho atualizado |
 | `DELETE /item_cliente/{item_cliente_id}` | — | somente admin |
 
-### Grupo Ordens de Serviço (`api:GRUPO-OS-COLEGA`)
+### Grupo Ordens de Serviço (`api:assistencia-tech-os`)
 
 | Método e caminho | Acesso | Entrada | Resposta 200 |
 |---|---|---|---|
@@ -119,8 +119,9 @@ O `POST /auth/signup` atual cria usuários `member` sem vínculo: remova-o ou re
 | `DELETE /os_itens/{os_itens_id}` | token: admin, técnico | — | — |
 | `POST /os_historico` | token: colaboradores | `os_servicos_id`, `autor`, `tipo`, `descricao`, `para_status` | o evento criado |
 | `POST /pagamentos` | token: admin, atendente | `os_servicos_id`, `valor_a_ser_pago`, `forma_de_pagamento`, `data_do_pagamento` | o pagamento criado (`id`, `os_servicos_id`, `valor_a_ser_pago`, `forma_de_pagamento`, `data_do_pagamento`) |
-| `GET /consulta_publica/{os_servicos_id}` | **público** | — | **somente** `id`, `status`, `aparelho`, `modelo`, `atualizado_em` |
-| `GET /portal/minhas_ordens` | token: cliente | — | as ordens cujo `cliente_id` é o do usuário do token, com `_itens`, `_pagamentos`, `_historico` |
+| `GET /consulta_publica/{os_servicos_id}` | **público** | — | **somente** `id`, `created_at`, `status`, `aparelho`, `modelo`, `atualizado_em` (`created_at` confere o ano do código) |
+| `GET /portal/minhas_ordens` | token: cliente | — | as ordens cujo `cliente_id` é o do usuário do token, com `_itens`, `_pagamentos`, `_historico` e `_aparelho` |
+| `GET /portal/minha_conta` | token: cliente | — | o cadastro (`cliente`) vinculado ao usuário do token |
 
 **Importante para a privacidade:** o `GET /consulta_publica` não pode devolver nome, CPF, telefone, valores ou diagnóstico. O `GET /portal/minhas_ordens` deve filtrar no servidor pelo `cliente_id` do token, nunca por um parâmetro enviado pelo navegador.
 

@@ -1,39 +1,31 @@
+"""Cliente HTTP do Xano, tradução de erros e registro de contratos."""
+
 import httpx
 import pytest
 
-from assistencia_tech.config import Settings
+from assistencia_tech.config import Settings, load_settings
 from assistencia_tech.data import errors
-from assistencia_tech.data.xano import (
-    CONTRACTS,
-    OPERATIONS,
-    EndpointContract,
-    XanoClient,
-    build_xano_gateway,
-    require_contract,
+from assistencia_tech.data.request_context import (
+    current_backend_token,
+    issue_backend_token,
+    take_issued_token,
+    use_backend_token,
 )
-from datetime import datetime
-
-from assistencia_tech.domain.clock import BRT
-from assistencia_tech.models import (
-    Client,
-    ClientCreate,
-    Equipment,
-    EquipmentCreate,
-    Role,
-    ServiceOrder,
-    Technician,
-    UserAccount,
-)
-
-CLIENT_DATA = ClientCreate(name="Ana", cpf="52998224725", email="ana@exemplo.test", phone="11987654321")
-EQUIPMENT_DATA = EquipmentCreate(client_id="1", kind="Notebook", brand="Dell", model="Inspiron")
-_AT = datetime(2026, 11, 6, tzinfo=BRT)
-USER = UserAccount(id="1", name="Ana", email="a@x.test", role=Role.ADMIN, password_hash="x")
-ORDER = ServiceOrder(code="OS-2026-00001", client_id="1", equipment_id="1", problem="X", opened_at=_AT, updated_at=_AT)
+from assistencia_tech.data.xano import CONTRACTS, OPERATIONS, EndpointContract, XanoClient, require_contract
+from assistencia_tech.data.xano.client import server_message
+from tools.xano_target_contract import TARGET
 
 pytestmark = pytest.mark.anyio
 
-BASE_URL = "https://exemplo.invalid/api"
+BASE_URL = "https://exemplo.invalid"
+
+
+@pytest.fixture(autouse=True)
+def _token():
+    use_backend_token("jwt-de-teste")
+    yield
+    use_backend_token(None)
+    take_issued_token()
 
 
 def make_client(handler, timeout=5.0) -> XanoClient:
@@ -46,27 +38,62 @@ def test_client_requires_base_url():
     assert "XANO_BASE_URL" in info.value.user_message
 
 
-async def test_successful_json_response_and_request_shape():
+def test_settings_have_group_defaults_and_overrides():
+    defaults = load_settings({})
+    assert (defaults.xano_group_auth, defaults.xano_group_cliente, defaults.xano_group_os) == (
+        "assistencia-tech-auth",
+        "assistencia-tech-cliente",
+        "assistencia-tech-os",
+    )
+    custom = load_settings({"XANO_GROUP_AUTH": " AAAA ", "XANO_GROUP_OS": "CCCC"})
+    assert (custom.xano_group_auth, custom.xano_group_cliente, custom.xano_group_os) == (
+        "AAAA",
+        "assistencia-tech-cliente",
+        "CCCC",
+    )
+
+
+async def test_request_uses_group_url_and_bearer_token():
     seen = {}
 
     def handler(request: httpx.Request) -> httpx.Response:
         seen["url"] = str(request.url)
-        seen["method"] = request.method
+        seen["auth"] = request.headers.get("Authorization")
         return httpx.Response(200, json={"ok": True})
 
-    result = await make_client(handler).request("GET", "/qualquer", params={"q": "1"})
+    result = await make_client(handler).request("GET", "grupo-x", "/qualquer", params={"q": "1"})
     assert result == {"ok": True}
-    assert seen == {"url": f"{BASE_URL}/qualquer?q=1", "method": "GET"}
+    assert seen == {"url": f"{BASE_URL}/api:grupo-x/qualquer?q=1", "auth": "Bearer jwt-de-teste"}
+
+
+async def test_public_request_sends_no_token():
+    seen = {}
+
+    def handler(request):
+        seen["auth"] = request.headers.get("Authorization")
+        return httpx.Response(200, json={})
+
+    await make_client(handler).request("POST", "g", "/auth/login", json={}, authenticated=False)
+    assert seen == {"auth": None}
+
+
+async def test_authenticated_request_without_token_sends_nothing():
+    use_backend_token(None)
+    calls = []
+    client = make_client(lambda r: calls.append(r) or httpx.Response(200, json={}))
+    with pytest.raises(errors.AuthenticationError):
+        await client.request("GET", "g", "/x")
+    assert calls == []
 
 
 async def test_empty_body_returns_none():
-    result = await make_client(lambda r: httpx.Response(204)).request("DELETE", "/x")
+    result = await make_client(lambda r: httpx.Response(204)).request("DELETE", "g", "/x")
     assert result is None
 
 
 async def test_non_json_body_is_unexpected():
     with pytest.raises(errors.UnexpectedError):
-        await make_client(lambda r: httpx.Response(200, text="<html>")).request("GET", "/x")
+        await make_client(lambda r: httpx.Response(200, text="<html>")).request("GET", "g", "/x")
 
 
 @pytest.mark.parametrize(
@@ -74,8 +101,8 @@ async def test_non_json_body_is_unexpected():
     [
         (400, errors.ValidationError),
         (422, errors.ValidationError),
-        (401, errors.UnauthorizedError),
-        (403, errors.UnauthorizedError),
+        (401, errors.AuthenticationError),
+        (403, errors.PermissionDeniedError),
         (404, errors.NotFoundError),
         (408, errors.ServiceUnavailableError),
         (429, errors.ServiceUnavailableError),
@@ -84,11 +111,34 @@ async def test_non_json_body_is_unexpected():
         (418, errors.UnexpectedError),
     ],
 )
-async def test_status_codes_are_translated(status, expected):
-    client = make_client(lambda r: httpx.Response(status, json={"message": "detalhe interno"}))
+async def test_native_xano_errors_never_reach_the_user(status, expected):
+    # Erro nativo do Xano: payload objeto (ou ausente) e mensagem técnica em inglês.
+    body = {"code": "ERROR_CODE_INPUT_ERROR", "message": "Missing param: Cpf", "payload": {"param": "Cpf"}}
+    client = make_client(lambda r: httpx.Response(status, json=body))
     with pytest.raises(expected) as info:
-        await client.request("GET", "/x")
-    assert "detalhe interno" not in info.value.user_message
+        await client.request("GET", "g", "/x")
+    assert "Missing param" not in info.value.user_message
+    assert "Missing param" in (info.value.detail or "")
+
+
+@pytest.mark.parametrize(
+    ("status", "expected"),
+    [(400, errors.ValidationError), (403, errors.PermissionDeniedError), (404, errors.NotFoundError)],
+)
+async def test_precondition_messages_are_shown(status, expected):
+    body = {"code": "ERROR_CODE_INPUT_ERROR", "message": "Já existe um cliente com este CPF.", "payload": ""}
+    client = make_client(lambda r: httpx.Response(status, json=body))
+    with pytest.raises(expected) as info:
+        await client.request("POST", "g", "/cliente")
+    assert info.value.user_message == "Já existe um cliente com este CPF."
+
+
+def test_server_message_rule():
+    assert server_message({"message": "Informe o CPF.", "payload": ""}) == "Informe o CPF."
+    assert server_message({"message": "Unauthorized"}) is None
+    assert server_message({"message": "Invalid", "payload": {"param": "x"}}) is None
+    assert server_message({"message": "  ", "payload": ""}) is None
+    assert server_message(None) is None
 
 
 async def test_timeout_is_service_unavailable():
@@ -96,7 +146,7 @@ async def test_timeout_is_service_unavailable():
         raise httpx.ReadTimeout("lento", request=request)
 
     with pytest.raises(errors.ServiceUnavailableError):
-        await make_client(handler).request("GET", "/x")
+        await make_client(handler).request("GET", "g", "/x")
 
 
 async def test_connection_failure_is_service_unavailable():
@@ -104,12 +154,29 @@ async def test_connection_failure_is_service_unavailable():
         raise httpx.ConnectError("sem rede", request=request)
 
     with pytest.raises(errors.ServiceUnavailableError):
-        await make_client(handler).request("GET", "/x")
+        await make_client(handler).request("GET", "g", "/x")
 
 
-def test_contract_registry_starts_empty():
-    # Nenhum contrato pode existir antes da documentação oficial.
-    assert CONTRACTS == {}
+def test_issued_token_is_taken_once():
+    use_backend_token(None)
+    issue_backend_token("novo")
+    assert current_backend_token() == "novo"
+    assert take_issued_token() == "novo"
+    assert take_issued_token() is None
+
+
+def test_every_operation_has_a_contract_from_the_target():
+    # Cada contrato registrado corresponde a um endpoint do contrato-alvo verificado.
+    assert set(CONTRACTS) == set(OPERATIONS)
+    target = {(e.method.upper(), e.path) for endpoints in TARGET.values() for e in endpoints}
+    for name, contract in CONTRACTS.items():
+        assert (contract.method, contract.path) in target, name
+        assert contract.source.startswith("apispec:"), name
+
+
+def test_only_login_signup_and_public_lookup_are_public():
+    public = {name for name, contract in CONTRACTS.items() if contract.public}
+    assert public == {"auth.login", "auth.signup_client", "portal.public_order"}
 
 
 def test_require_contract_unknown_operation():
@@ -117,65 +184,16 @@ def test_require_contract_unknown_operation():
         require_contract("nao.existe")
 
 
+def test_missing_contract_is_pending_and_sends_nothing():
+    with pytest.raises(errors.ContractPendingError) as info:
+        require_contract("clients.list", {})
+    assert "documentação oficial" in info.value.user_message
+
+
 def test_require_contract_returns_registered_contract():
-    contract = EndpointContract(method="GET", path="/exemplo", source="teste")
+    contract = EndpointContract(method="GET", group="cliente", path="/exemplo", source="teste")
     assert require_contract("clients.list", {"clients.list": contract}) is contract
 
 
-async def test_xano_gateway_sends_no_requests_without_contracts():
-    calls = []
-
-    def handler(request):
-        calls.append(request)
-        return httpx.Response(200, json=[])
-
-    gateway = build_xano_gateway(
-        Settings(data_source="xano", xano_base_url=BASE_URL), client=make_client(handler)
-    )
-    assert gateway.is_demo is False
-    client = Client(id="1", **CLIENT_DATA.model_dump())
-    operations = {
-        "clients.list": gateway.clients.list(),
-        "clients.get": gateway.clients.get("1"),
-        "clients.create": gateway.clients.create(CLIENT_DATA),
-        "clients.update": gateway.clients.update(client),
-        "clients.delete": gateway.clients.delete("1"),
-        "equipment.list": gateway.equipment.list(),
-        "equipment.get": gateway.equipment.get("1"),
-        "equipment.create": gateway.equipment.create(EQUIPMENT_DATA),
-        "equipment.update": gateway.equipment.update(Equipment(id="1", **EQUIPMENT_DATA.model_dump())),
-        "equipment.delete": gateway.equipment.delete("1"),
-        "technicians.list": gateway.technicians.list(),
-        "orders.list": gateway.orders.list(),
-        "orders.get_by_code": gateway.orders.get_by_code("OS-2026-00001"),
-        "orders.next_code": gateway.orders.next_code(),
-        "orders.create": gateway.orders.create(ORDER),
-        "orders.save": gateway.orders.save(ORDER),
-        "auth.login": gateway.auth.authenticate("a@b.test", "x"),
-        "auth.me": gateway.auth.get_user("1"),
-        "auth.register": gateway.auth.register_client(client, "segredo123"),
-        "users.list": gateway.auth.list_users(),
-        "users.create": gateway.auth.create_user("Bruno", "b@x.test", Role.TECHNICIAN, "senha2026"),
-        "users.update": gateway.auth.update_user(USER),
-        "technicians.create": gateway.technicians.create("Bruno", "Redes"),
-        "technicians.update": gateway.technicians.update(Technician(id="1", name="Carlos")),
-    }
-    assert set(operations) == set(OPERATIONS)
-    for name, operation in operations.items():
-        with pytest.raises(errors.ContractPendingError) as info:
-            await operation
-        assert "documentação oficial" in info.value.user_message, name
-    assert calls == []
-
-
-async def test_registered_contract_without_mapping_still_sends_nothing():
-    calls = []
-    registry = {"clients.list": EndpointContract(method="GET", path="/exemplo", source="teste")}
-    gateway = build_xano_gateway(
-        Settings(data_source="xano", xano_base_url=BASE_URL),
-        client=make_client(lambda r: calls.append(r) or httpx.Response(200, json=[])),
-        registry=registry,
-    )
-    with pytest.raises(errors.ContractPendingError, match="em implementação"):
-        await gateway.clients.list()
-    assert calls == []
+def test_settings_type_is_unchanged_for_demo():
+    assert Settings().data_source == "demo"

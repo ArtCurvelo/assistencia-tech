@@ -19,6 +19,7 @@ query "portal/minhas_ordens" verb=GET {
         {name: "atech_itens_da_os", input: {os_servicos_id: $output.id}, as: "items._itens"}
         {name: "atech_pagamentos_da_os", input: {os_servicos_id: $output.id}, as: "items._pagamentos"}
         {name: "atech_historico_da_os", input: {os_servicos_id: $output.id}, as: "items._historico"}
+        {name: "atech_aparelho_da_os", input: {item_cliente_id: $output.item_cliente_id}, as: "items._aparelho"}
       ]
     } as $ordens
   }

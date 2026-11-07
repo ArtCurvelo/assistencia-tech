@@ -39,9 +39,9 @@
 - [x] 6.0a Definir o contrato-alvo (`docs/XANO_BACKEND_SPEC.md`, `tools/xano_target_contract.py`) e o verificador `tools/xano_contract_check.py`; verificado com `tests/test_xano_contract_check.py` (6 testes) e a execução online: 1 de 27 endpoints atendidos em 07/11/2026.
 - [x] 6.0b Usar o repositório de certificados do sistema no cliente Xano (`truststore`); verificado baixando a documentação com verificação TLS ativa.
 - [x] 6.1 Obter `OK` nos 27 endpoints do verificador; verificar executando `python -m tools.xano_contract_check` e registrando a saída. (Backend próprio em XanoScript no workspace 170741, grupos `assistencia-tech-auth`, `-cliente` e `-os`: 27 de 27 em 07/11/2026.)
-- [ ] 6.2 Registrar em `CONTRACTS` cada operação interna com o endpoint documentado e implementar o mapeamento das respostas para os modelos internos; verificar com testes usando os esquemas da documentação.
-- [ ] 6.3 Implementar a sessão com o JWT do Xano (D12) e os perfis vindos de `GET /auth/me`; verificar com testes simulados e um login real no workspace.
-- [ ] 6.4 Implementar o agregado da OS sobre `os_servicos`, `os_itens`, `pagamentos` e `os_historico` (D13), a consulta pública e o portal (D14); verificar com testes simulados.
+- [x] 6.2 Registrar em `CONTRACTS` cada operação interna com o endpoint documentado e implementar o mapeamento das respostas para os modelos internos; verificar com testes usando os esquemas da documentação. (28 contratos; `tests/test_xano.py` e `tests/test_xano_repositories.py`.)
+- [ ] 6.3 Implementar a sessão com o JWT do Xano (D12) e os perfis vindos de `GET /auth/me`; verificar com testes simulados e um login real no workspace. (Implementado e testado com servidor simulado; falta o login real, que depende do primeiro administrador.)
+- [x] 6.4 Implementar o agregado da OS sobre `os_servicos`, `os_itens`, `pagamentos` e `os_historico` (D13), a consulta pública e o portal (D14); verificar com testes simulados. (`data/xano/orders.py`; o portal usa `GET /portal/minha_conta` e o *addon* `_aparelho`, acrescentados ao contrato-alvo — envio ao Xano pendente de autorização.)
 - [ ] 6.5 Executar no navegador, com `ASSISTENCIA_DATA_SOURCE=xano`, o roteiro de `docs/DEMO_SCRIPT.md` contra o workspace e registrar os resultados neste arquivo.
 
 ## 7. Verificação integrada

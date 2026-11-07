@@ -1,13 +1,15 @@
 """Sessões no servidor, identificadas por token opaco.
 
 O navegador guarda apenas o token. Sessões expiram após ``IDLE_TIMEOUT`` sem
-atividade e são revogadas no logout. Ficam em memória no processo.
+atividade e são revogadas no logout. Ficam em memória no processo. Com a fonte
+Xano, a sessão guarda também o JWT do backend (``backend_token``), que nunca
+é enviado ao navegador.
 """
 
 from __future__ import annotations
 
 import secrets
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
 from ..domain.clock import Clock, now_brt
@@ -21,12 +23,14 @@ class Session:
     user_id: str
     created_at: datetime
     last_seen_at: datetime
+    backend_token: str | None = field(default=None, repr=False)
 
 
 @dataclass(frozen=True)
 class SessionLookup:
     user_id: str | None
     expired: bool = False
+    backend_token: str | None = field(default=None, repr=False)
 
 
 class SessionStore:
@@ -35,10 +39,12 @@ class SessionStore:
         self._idle = idle_timeout
         self._sessions: dict[str, Session] = {}
 
-    def create(self, user_id: str) -> str:
+    def create(self, user_id: str, backend_token: str | None = None) -> str:
         token = secrets.token_urlsafe(TOKEN_BYTES)
         now = self._clock()
-        self._sessions[token] = Session(user_id=user_id, created_at=now, last_seen_at=now)
+        self._sessions[token] = Session(
+            user_id=user_id, created_at=now, last_seen_at=now, backend_token=backend_token
+        )
         return token
 
     def resolve(self, token: str | None) -> SessionLookup:
@@ -53,7 +59,7 @@ class SessionStore:
             del self._sessions[token]
             return SessionLookup(None, expired=True)
         session.last_seen_at = now
-        return SessionLookup(session.user_id)
+        return SessionLookup(session.user_id, backend_token=session.backend_token)
 
     def revoke(self, token: str | None) -> None:
         if token:

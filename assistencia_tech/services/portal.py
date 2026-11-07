@@ -28,27 +28,17 @@ class PortalService:
         return user.client_id
 
     async def account(self) -> Client:
-        return await self._gw.clients.get(self._client_id())
-
-    async def _equipment(self, equipment_id: str) -> Equipment | None:
-        try:
-            return await self._gw.equipment.get(equipment_id)
-        except NotFoundError:
-            return None
+        return await self._gw.portal.client_account(self._client_id())
 
     async def my_orders(self) -> list[PortalOrder]:
-        client_id = self._client_id()
-        orders = [o for o in await self._gw.orders.list() if o.client_id == client_id]
-        orders.sort(key=lambda o: o.updated_at, reverse=True)
-        return [PortalOrder(o, await self._equipment(o.equipment_id)) for o in orders]
+        pairs = await self._gw.portal.client_orders(self._client_id())
+        pairs.sort(key=lambda pair: pair[0].updated_at, reverse=True)
+        return [PortalOrder(order, equipment) for order, equipment in pairs]
 
     async def my_order(self, code: str) -> PortalOrder:
-        client_id = self._client_id()
-        try:
-            order = await self._gw.orders.get_by_code(code)
-        except NotFoundError:
-            order = None
-        # Ordens de outros clientes recebem a mesma resposta de "não encontrada".
-        if order is None or order.client_id != client_id:
-            raise NotFoundError("Ordem de serviço não encontrada.")
-        return PortalOrder(order, await self._equipment(order.equipment_id))
+        wanted = code.strip().upper()
+        # Somente as ordens do próprio cliente: as demais recebem "não encontrada".
+        for item in await self.my_orders():
+            if item.order.code.upper() == wanted:
+                return item
+        raise NotFoundError("Ordem de serviço não encontrada.")

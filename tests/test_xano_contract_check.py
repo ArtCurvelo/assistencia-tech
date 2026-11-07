@@ -1,7 +1,7 @@
 """Verificador do contrato-alvo do Xano (sem rede: specs sintéticas e cópias salvas)."""
 
 from tools.xano_contract_check import check_endpoint, load_specs, report
-from tools.xano_target_contract import ORDER_STATUS_VALUES, TARGET, Endpoint
+from tools.xano_target_contract import DEFAULT_INSTANCE, ORDER_STATUS_VALUES, TARGET, Endpoint
 
 
 def _obj(*names, enums=None):
@@ -68,8 +68,12 @@ def test_query_parameters_count_as_request_fields():
     assert check_endpoint(_spec("/cliente", "get", op), target) == []
 
 
+COLLEAGUE_GROUP_IDS = {"auth": "GRUPO-AUTH-COLEGA", "cliente": "GRUPO-CLIENTE-COLEGA", "os": "GRUPO-OS-COLEGA"}
+
+
 def test_saved_snapshots_report_current_gaps():
-    text, pending = report(load_specs(offline=True))
+    # Cópias da documentação do workspace original do grupo (antes do backend próprio).
+    text, pending = report(load_specs(True, DEFAULT_INSTANCE, COLLEAGUE_GROUP_IDS), COLLEAGUE_GROUP_IDS)
     total = sum(len(e) for e in TARGET.values())
     assert pending == total - 1  # somente POST /auth/login já atende ao alvo
     assert "[OK ] POST   /auth/login" in text

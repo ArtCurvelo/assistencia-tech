@@ -109,9 +109,4 @@ class OrderService:
     async def public_view(self, code: str) -> PublicOrderView:
         if not code.strip():
             raise ValidationError("Informe o código da ordem de serviço.")
-        order = await self._gw.orders.get_by_code(code)
-        try:
-            equipment = (await self._gw.equipment.get(order.equipment_id)).description
-        except NotFoundError:
-            equipment = "Equipamento"
-        return PublicOrderView(code=order.code, status=order.status, equipment=equipment, updated_at=order.updated_at)
+        return await self._gw.portal.public_order(code.strip())
