@@ -60,11 +60,15 @@ class Endpoint:
     purpose: str = ""
 
 
-AUTH = "GRUPO-AUTH-COLEGA"
-CLIENTE = "GRUPO-CLIENTE-COLEGA"
-OS = "GRUPO-OS-COLEGA"
+# Grupos lógicos do contrato. Os códigos reais (api:XXXX) dependem da instância
+# e são informados ao verificador; os padrões abaixo são os do workspace do grupo.
+AUTH = "auth"
+CLIENTE = "cliente"
+OS = "os"
 
 GROUP_TITLES = {AUTH: "Autenticação", CLIENTE: "Cliente", OS: "Ordens de Serviço"}
+DEFAULT_INSTANCE = "https://x8ki-letl-twmt.n7.xano.io"
+DEFAULT_GROUP_IDS = {AUTH: "GRUPO-AUTH-COLEGA", CLIENTE: "GRUPO-CLIENTE-COLEGA", OS: "GRUPO-OS-COLEGA"}
 
 TARGET: dict[str, tuple[Endpoint, ...]] = {
     AUTH: (

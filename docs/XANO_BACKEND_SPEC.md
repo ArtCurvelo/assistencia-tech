@@ -2,7 +2,9 @@
 
 Este documento descreve os ajustes a fazer no workspace Xano para que a aplicação se integre a ele sem perder funcionalidades. Ele é o **contrato-alvo**: o que a aplicação precisa receber. A mesma definição, em forma de dados, está em `tools/xano_target_contract.py`.
 
-Depois de cada rodada de ajustes no Xano, rode o verificador:
+Para criar o backend com a IA do próprio Xano, use os prompts em etapas de `docs/XANO_AI_PROMPTS.md`.
+
+Depois de cada rodada de ajustes no Xano, rode o verificador (para outra instância, informe `--instance`, `--auth`, `--cliente` e `--os`):
 
 ```powershell
 .venv\Scripts\Activate.ps1

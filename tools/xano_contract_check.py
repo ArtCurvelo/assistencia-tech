@@ -5,6 +5,10 @@ Uso (na raiz do projeto, com a .venv ativa):
     python -m tools.xano_contract_check            # baixa a documentação atual do Xano
     python -m tools.xano_contract_check --offline  # usa as cópias em docs/xano-openapi/
 
+    # Outra instância ou outros grupos (ou variáveis XANO_INSTANCE, XANO_GROUP_AUTH,
+    # XANO_GROUP_CLIENTE e XANO_GROUP_OS):
+    python -m tools.xano_contract_check --instance https://xxxx.xano.io --auth AAAA --cliente BBBB --os CCCC
+
 Somente a documentação (``/apispec:<grupo>?type=json``) é lida; nenhum
 endpoint de dados é chamado. A saída lista, por grupo, cada endpoint do
 contrato-alvo como OK ou com as pendências encontradas.
@@ -14,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import pathlib
 import sys
 from collections.abc import Mapping
@@ -23,9 +28,8 @@ import httpx
 
 from assistencia_tech.data.xano.tls import system_ssl_context
 
-from .xano_target_contract import GROUP_TITLES, TARGET, Endpoint
+from .xano_target_contract import DEFAULT_GROUP_IDS, DEFAULT_INSTANCE, GROUP_TITLES, TARGET, Endpoint
 
-INSTANCE = "https://x8ki-letl-twmt.n7.xano.io"
 SNAPSHOTS = pathlib.Path(__file__).resolve().parent.parent / "docs" / "xano-openapi"
 
 
@@ -79,16 +83,24 @@ def check_endpoint(spec: Mapping[str, Any] | None, target: Endpoint) -> list[str
     return problems
 
 
-def load_specs(offline: bool) -> dict[str, Any]:
+def load_specs(
+    offline: bool,
+    instance: str = DEFAULT_INSTANCE,
+    group_ids: Mapping[str, str] | None = None,
+) -> dict[str, Any]:
+    ids = {**DEFAULT_GROUP_IDS, **(group_ids or {})}
     specs: dict[str, Any] = {}
     for group in TARGET:
         if offline:
-            match = next(SNAPSHOTS.glob(f"*-{group}.json"), None)
+            match = next(SNAPSHOTS.glob(f"*-{ids[group]}.json"), None)
             specs[group] = json.loads(match.read_text(encoding="utf-8")) if match else None
             continue
         try:
             response = httpx.get(
-                f"{INSTANCE}/apispec:{group}", params={"type": "json"}, timeout=30, verify=system_ssl_context()
+                f"{instance.rstrip('/')}/apispec:{ids[group]}",
+                params={"type": "json"},
+                timeout=30,
+                verify=system_ssl_context(),
             )
             specs[group] = response.json() if response.status_code == 200 else None
         except (httpx.HTTPError, ValueError):
@@ -96,10 +108,11 @@ def load_specs(offline: bool) -> dict[str, Any]:
     return specs
 
 
-def report(specs: Mapping[str, Any]) -> tuple[str, int]:
+def report(specs: Mapping[str, Any], group_ids: Mapping[str, str] | None = None) -> tuple[str, int]:
+    ids = {**DEFAULT_GROUP_IDS, **(group_ids or {})}
     lines, pending = [], 0
     for group, endpoints in TARGET.items():
-        lines.append(f"\n== {GROUP_TITLES[group]} (api:{group})")
+        lines.append(f"\n== {GROUP_TITLES[group]} (api:{ids[group]})")
         for target in endpoints:
             problems = check_endpoint(specs.get(group), target)
             status = "OK " if not problems else "FALTA"
@@ -115,8 +128,14 @@ def report(specs: Mapping[str, Any]) -> tuple[str, int]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--offline", action="store_true", help="usar as cópias em docs/xano-openapi/")
+    parser.add_argument("--instance", default=os.environ.get("XANO_INSTANCE", DEFAULT_INSTANCE),
+                        help="endereço da instância Xano (ex.: https://xxxx.n7.xano.io)")
+    for group in TARGET:
+        parser.add_argument(f"--{group}", default=os.environ.get(f"XANO_GROUP_{group.upper()}"),
+                            help=f"código do grupo {GROUP_TITLES[group]} (parte depois de 'api:')")
     args = parser.parse_args(argv)
-    text, pending = report(load_specs(args.offline))
+    group_ids = {g: getattr(args, g) for g in TARGET if getattr(args, g)}
+    text, pending = report(load_specs(args.offline, args.instance, group_ids), group_ids)
     print(text)
     return 1 if pending else 0
 

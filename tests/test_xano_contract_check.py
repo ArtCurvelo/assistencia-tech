@@ -74,3 +74,25 @@ def test_saved_snapshots_report_current_gaps():
     assert pending == total - 1  # somente POST /auth/login já atende ao alvo
     assert "[OK ] POST   /auth/login" in text
     assert "role deve aceitar admin, atendente, tecnico, cliente (hoje: admin, member)" in text
+
+
+def test_custom_instance_and_group_ids(monkeypatch):
+    calls = []
+
+    class FakeResponse:
+        status_code = 404
+
+        def json(self):
+            return {}
+
+    def fake_get(url, **kwargs):
+        calls.append(url)
+        return FakeResponse()
+
+    monkeypatch.setattr("tools.xano_contract_check.httpx.get", fake_get)
+    specs = load_specs(False, "https://exemplo.invalid/", {"auth": "AAAA", "cliente": "BBBB", "os": "CCCC"})
+    assert calls == ["https://exemplo.invalid/apispec:AAAA", "https://exemplo.invalid/apispec:BBBB",
+                     "https://exemplo.invalid/apispec:CCCC"]
+    assert set(specs.values()) == {None}
+    text, _ = report(specs, {"auth": "AAAA", "cliente": "BBBB", "os": "CCCC"})
+    assert "(api:AAAA)" in text and "documentação do grupo indisponível" in text
