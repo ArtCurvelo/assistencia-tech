@@ -21,4 +21,5 @@ query "portal/minha_conta" verb=GET {
     }
   }
   response = $cliente
+  guid = "t4TzrpQ-bhJQGCiysJSDhNm2a-E"
 }

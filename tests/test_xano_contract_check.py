@@ -100,3 +100,9 @@ def test_custom_instance_and_group_ids(monkeypatch):
     assert set(specs.values()) == {None}
     text, _ = report(specs, {"auth": "AAAA", "cliente": "BBBB", "os": "CCCC"})
     assert "(api:AAAA)" in text and "documentação do grupo indisponível" in text
+
+
+def test_own_backend_snapshots_meet_the_whole_target():
+    # Cópias da documentação do backend em XanoScript (workspace 170741), grupos padrão.
+    text, pending = report(load_specs(offline=True))
+    assert pending == 0, text

@@ -8,4 +8,5 @@ addon atech_aparelho_da_os {
       return = {type: "single"}
     }
   }
+  guid = "2SdWT2sSHAtSmOq4IFFrLrG3iwE"
 }

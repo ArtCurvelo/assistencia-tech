@@ -11,7 +11,7 @@ Depois de cada rodada de ajustes no Xano, rode o verificador (para outra instân
 python -m tools.xano_contract_check
 ```
 
-Ele baixa a documentação publicada pelo Xano (sem chamar endpoints de dados) e mostra `OK` ou o que falta em cada um dos 28 endpoints. O backend foi implementado em XanoScript na pasta `xano/` (workspace 170741, grupos `assistencia-tech-auth`, `assistencia-tech-cliente` e `assistencia-tech-os`). Situação em 07/11/2026: 27 de 27 antes da inclusão de `GET /portal/minha_conta`, do *addon* `_aparelho` e de `created_at` na consulta pública, acrescentados na integração da aplicação.
+Ele baixa a documentação publicada pelo Xano (sem chamar endpoints de dados) e mostra `OK` ou o que falta em cada um dos 28 endpoints. O backend foi implementado em XanoScript na pasta `xano/` (workspace 170741, grupos `assistencia-tech-auth`, `assistencia-tech-cliente` e `assistencia-tech-os`). Situação em 07/11/2026: **28 de 28** (inclui `GET /portal/minha_conta`, o *addon* `_aparelho` e `created_at` na consulta pública, acrescentados na integração da aplicação). Cópias da documentação em `docs/xano-openapi/*-assistencia-tech-*.json` (`--offline`).
 
 > **Regras gerais**
 > 1. Todo endpoint marcado com **token** deve exigir autenticação (*Authentication: user*) e retornar 401 sem token válido.
