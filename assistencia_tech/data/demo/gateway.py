@@ -16,7 +16,9 @@ from ...models import Client, ClientCreate, Equipment, EquipmentCreate, PublicOr
 from ..errors import NotFoundError, ValidationError
 from ..repositories import DataGateway
 from . import seed
+from ...domain.inventory import stock_effects
 from .auth import DemoAuthProvider
+from .inventory import DemoPartRepository, seed_parts
 from .users import seed_users
 
 YearProvider = Callable[[], int]
@@ -104,9 +106,18 @@ class DemoTechnicianRepository:
 
 
 class DemoOrderRepository:
-    def __init__(self, items: list[ServiceOrder], year_provider: YearProvider) -> None:
+    def __init__(
+        self, items: list[ServiceOrder], year_provider: YearProvider, stock: DemoPartRepository | None = None
+    ) -> None:
         self.items = list(items)
         self._year = year_provider
+        self._stock = stock
+
+    def _apply_stock(self, before: ServiceOrder | None, after: ServiceOrder) -> None:
+        # O estoque acompanha os itens das ordens, como um gatilho de banco (D2 de add-parts-inventory).
+        if self._stock is not None:
+            author = after.history[-1].author if after.history else "Sistema"
+            self._stock.apply(stock_effects(before, after), author, after.code)
 
     async def list(self) -> list[ServiceOrder]:
         return sorted(self.items, key=lambda o: (o.opened_at, o.code), reverse=True)
@@ -127,11 +138,14 @@ class DemoOrderRepository:
     async def create(self, order: ServiceOrder) -> ServiceOrder:
         if any(o.code.upper() == order.code.upper() for o in self.items):
             raise ValidationError(f"Já existe uma ordem com o código {order.code}.")
+        self._apply_stock(None, order)
         self.items.append(order)
         return order
 
     async def save(self, order: ServiceOrder) -> ServiceOrder:
-        self.items[self._index_of(order.code)] = order
+        index = self._index_of(order.code)
+        self._apply_stock(self.items[index], order)
+        self.items[index] = order
         return order
 
 
@@ -181,7 +195,8 @@ def build_demo_gateway(year_provider: YearProvider | None = None) -> DataGateway
     """Cria um gateway de demonstração com os dados fictícios iniciais."""
     clients = DemoClientRepository(seed.seed_clients())
     equipment = DemoEquipmentRepository(seed.seed_equipment())
-    orders = DemoOrderRepository(seed.seed_orders(), year_provider or (lambda: date.today().year))
+    parts = DemoPartRepository(seed_parts())
+    orders = DemoOrderRepository(seed.seed_orders(), year_provider or (lambda: date.today().year), parts)
     return DataGateway(
         source=DATA_SOURCE_DEMO,
         label="Modo demonstração",
@@ -192,4 +207,5 @@ def build_demo_gateway(year_provider: YearProvider | None = None) -> DataGateway
         orders=orders,
         auth=DemoAuthProvider(seed_users()),
         portal=DemoPortalRepository(clients, equipment, orders),
+        parts=parts,
     )

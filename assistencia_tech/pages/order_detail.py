@@ -132,10 +132,25 @@ def _budget() -> rx.Component:
                 rx.grid(
                     field("Tipo", values_select("kind", ["Serviço", "Peça"], "Tipo", value=S.item_kind,
                                                 on_change=S.set_item_kind)),
-                    field("Descrição", text_input("description", "Ex.: SSD 480 GB", required=True)),
+                    rx.cond(
+                        S.item_kind == "Peça",
+                        field("Peça do estoque",
+                              options_select("part_select", S.part_select_options, "Escolha a peça",
+                                             value=S.item_part, on_change=S.set_item_part),
+                              "Peças do estoque usam nome e preço do catálogo e dão baixa na quantidade."),
+                    ),
+                    rx.cond(
+                        S.uses_stock_part,
+                        rx.fragment(),
+                        field("Descrição", text_input("description", "Ex.: SSD 480 GB", required=True)),
+                    ),
                     field("Quantidade", text_input("quantity", "1", default_value="1",
                                                    disabled=S.item_kind == "Serviço"), "Serviços contam 1."),
-                    field("Valor unitário (R$)", text_input("unit_price", "Ex.: 250,00", required=True)),
+                    rx.cond(
+                        S.uses_stock_part,
+                        rx.fragment(),
+                        field("Valor unitário (R$)", text_input("unit_price", "Ex.: 250,00", required=True)),
+                    ),
                     columns=rx.breakpoints(initial="1", md="2", xl="4"),
                     spacing="3",
                     width="100%",

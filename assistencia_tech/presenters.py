@@ -11,6 +11,7 @@ import unicodedata
 from decimal import Decimal
 
 from .domain.clock import format_datetime
+from .domain.inventory import stock_level
 from .domain.history import KIND_CLIENT_DECISION, KIND_OPENED, KIND_STATUS
 from .domain.order_workflow import BUDGET_EDITABLE, OPEN_STATUSES, TECHNICIAN_LOCKED
 from .domain.permissions import Permission, Principal, has_permission, is_own_order, transitions_for
@@ -344,4 +345,42 @@ def report_view(report) -> dict:
              "budget": format_brl(row.budget_total)}
             for row in report.technicians
         ],
+    }
+
+
+# ----------------------------------------------------------------------
+# Estoque de peças (add-parts-inventory)
+# ----------------------------------------------------------------------
+def part_row(part) -> Row:
+    level = stock_level(part)
+    return {
+        "id": part.id,
+        "code": part.code,
+        "name": part.name,
+        "price": format_brl(part.unit_price),
+        "price_input": f"{part.unit_price:.2f}".replace(".", ","),
+        "quantity": str(part.quantity),
+        "min_quantity": str(part.min_quantity),
+        "level": level.value if part.active else "Inativa",
+        "level_class": f"stock-badge stock-{slug(level.value) if part.active else 'inativa'}",
+        "active": "sim" if part.active else "nao",
+    }
+
+
+def part_option(part) -> Row:
+    return {"value": part.id, "label": f"{part.name} · {format_brl(part.unit_price)} · disp. {part.quantity}"}
+
+
+def movement_row(movement, parts_by_id: dict) -> Row:
+    part = parts_by_id.get(movement.part_id)
+    sign = "+" if movement.kind.value != "Saída" else "−"
+    return {
+        "at": format_datetime(movement.at),
+        "part": part.name if part else f"Peça {movement.part_id}",
+        "kind": movement.kind.value,
+        "kind_class": f"move-badge move-{slug(movement.kind.value)}",
+        "quantity": f"{sign}{movement.quantity}",
+        "order": movement.order_code,
+        "author": movement.author,
+        "note": movement.note or "—",
     }

@@ -70,6 +70,13 @@ query "portal/decisao_orcamento" verb=POST {
     }
     db.transaction {
       stack {
+        conditional {
+          if (!$input.aprovar) {
+            function.run "atech_devolver_pecas_da_os" {
+              input = {os_servicos_id: $atual.id, autor: $autor}
+            }
+          }
+        }
         db.add "os_historico" {
           data = {
             os_servicos_id: $atual.id,

@@ -117,6 +117,8 @@ def _sidebar() -> rx.Component:
                                 class_name="side-link", on_click=AppState.close_mobile_menu)
                         for icon, label, href in ADMIN_NAV
                     ],
+                    rx.cond(AppState.can_view_stock,
+                            _nav_link("⚙", "Estoque", "/admin/estoque")),
                     rx.cond(AppState.can_view_reports,
                             _nav_link("▤", "Relatórios", "/admin/relatorios")),
                     rx.cond(AppState.can_manage_staff,

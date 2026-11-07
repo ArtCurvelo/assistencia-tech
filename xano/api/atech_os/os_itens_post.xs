@@ -1,6 +1,6 @@
 query "os_itens" verb=POST {
   api_group = "atech_os"
-  description = "Admin e técnico responsável: adiciona serviço ou peça ao orçamento (Em análise, Aguardando aprovação ou Em reparo)."
+  description = "Admin e técnico responsável: adiciona serviço ou peça ao orçamento (Em análise, Aguardando aprovação ou Em reparo). Com peca_id, dá baixa no estoque na mesma transação."
   auth = "user"
   input {
     int os_servicos_id {
@@ -12,6 +12,7 @@ query "os_itens" verb=POST {
     text descricao filters=trim
     int? quantidade?=1 filters=min:1
     decimal valor_unitario filters=min:0.01
+    int? peca_id?
   }
   stack {
     function.run "atech_usuario_autorizado" {
@@ -47,20 +48,49 @@ query "os_itens" verb=POST {
         }
       }
     }
-    db.add "os_itens" {
-      data = {
-        os_servicos_id: $input.os_servicos_id,
-        tipo: $input.tipo,
-        descricao: $input.descricao,
-        quantidade: $quantidade,
-        valor_unitario: $input.valor_unitario
-      }
-    } as $item
-    db.edit "os_servicos" {
-      field_name = "id"
-      field_value = $input.os_servicos_id
-      data = {atualizado_em: now}
+    precondition ($input.peca_id == null || $input.tipo == "peca") {
+      error_type = "inputerror"
+      error = "Somente itens do tipo peça podem vir do estoque."
     }
+    function.run "atech_autor" {
+      input = {user_id: $auth.id}
+    } as $autor
+    db.transaction {
+      stack {
+        db.add "os_itens" {
+          data = {
+            os_servicos_id: $input.os_servicos_id,
+            tipo: $input.tipo,
+            descricao: $input.descricao,
+            quantidade: $quantidade,
+            valor_unitario: $input.valor_unitario,
+            peca_id: $input.peca_id
+          }
+        } as $novo
+        conditional {
+          if ($input.peca_id != null) {
+            function.run "atech_mover_estoque" {
+              input = {
+                peca_id: $input.peca_id,
+                tipo: "saida",
+                quantidade: $quantidade,
+                os_servicos_id: $input.os_servicos_id,
+                autor: $autor
+              }
+            }
+          }
+        }
+        db.edit "os_servicos" {
+          field_name = "id"
+          field_value = $input.os_servicos_id
+          data = {atualizado_em: now}
+        }
+      }
+    }
+    db.get "os_itens" {
+      field_name = "id"
+      field_value = $novo.id
+    } as $item
   }
   response = $item
   guid = "6grGXRQatg1njM_Q2Y-Q_BEgvHU"

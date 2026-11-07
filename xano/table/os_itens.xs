@@ -13,6 +13,10 @@ table "os_itens" {
     text descricao filters=trim
     int quantidade?=1 filters=min:1
     decimal valor_unitario filters=min:0.01
+    int? peca_id? {
+      table = "peca"
+      description = "Peça do catálogo de estoque; vazio para serviço e peça avulsa"
+    }
   }
   index = [
     {type: "primary", field: [{name: "id"}]}

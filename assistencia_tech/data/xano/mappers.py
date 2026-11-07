@@ -228,17 +228,21 @@ def item_from(record: Record) -> OrderItem:
         description=_text(record.get("descricao")),
         quantity=int(record.get("quantidade") or 1),
         unit_price=to_money(record.get("valor_unitario")),
+        part_id=_optional_id(record.get("peca_id")) or "",
     )
 
 
 def item_payload(order_id: str, item: OrderItem) -> Record:
-    return {
+    payload: Record = {
         "os_servicos_id": int(order_id),
         "tipo": ITEM_TO_XANO[item.kind],
         "descricao": item.description,
         "quantidade": item.quantity,
         "valor_unitario": float(item.unit_price),
     }
+    if item.part_id:
+        payload["peca_id"] = int(item.part_id)  # o backend dá baixa no estoque na mesma transação
+    return payload
 
 
 def payment_from(record: Record) -> Payment:

@@ -80,6 +80,7 @@ def add_item(order: ServiceOrder, data: OrderItemCreate, at: datetime, author: s
         description=data.description,
         quantity=quantity,
         unit_price=data.unit_price,
+        part_id=data.part_id if data.kind == ItemKind.PART else "",
     )
     return history.append(order, history.item_added(item, at, author), items=(*order.items, item))
 

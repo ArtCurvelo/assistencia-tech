@@ -1749,3 +1749,33 @@ textarea:focus-visible,
   color: var(--green);
   font-size: 1.15rem;
 }
+
+/* Estoque de peças (add-parts-inventory) */
+.notice-warning {
+  display: block;
+  padding: 10px 12px;
+  border: 1px solid #ffb84d;
+  border-left: 3px solid #ffb84d;
+  border-radius: 8px;
+  background: rgba(255, 184, 77, 0.08);
+  color: #ffd9a0;
+}
+.stock-alert { text-decoration: none; font-weight: 600; }
+.stock-alert:hover { background: rgba(255, 184, 77, 0.14); }
+.stock-badge, .move-badge {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.stock-normal { background: var(--green-soft); color: var(--green); }
+.stock-baixo { background: rgba(255, 184, 77, 0.12); color: #ffb84d; }
+.stock-esgotado { background: rgba(255, 92, 92, 0.12); color: #ff8080; }
+.stock-inativa { background: rgba(255, 255, 255, 0.06); color: #9aa4b2; }
+.move-entrada { background: var(--green-soft); color: var(--green); }
+.move-saida { background: rgba(120, 160, 255, 0.12); color: #9db8ff; }
+.move-devolucao { background: rgba(255, 184, 77, 0.12); color: #ffb84d; }
+.qty-text { font-weight: 700; font-variant-numeric: tabular-nums; }
+.code-text { font-family: ui-monospace, monospace; font-size: 12px; }

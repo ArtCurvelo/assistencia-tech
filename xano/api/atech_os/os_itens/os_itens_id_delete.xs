@@ -31,14 +31,35 @@ query "os_itens/{os_itens_id}" verb=DELETE {
       error_type = "inputerror"
       error = "O orçamento só pode ser alterado em Em análise, Aguardando aprovação e Em reparo."
     }
-    db.del "os_itens" {
-      field_name = "id"
-      field_value = $input.os_itens_id
-    }
-    db.edit "os_servicos" {
-      field_name = "id"
-      field_value = $ordem.id
-      data = {atualizado_em: now}
+    function.run "atech_autor" {
+      input = {user_id: $auth.id}
+    } as $autor
+    db.transaction {
+      stack {
+        conditional {
+          if ($item.peca_id != null) {
+            function.run "atech_mover_estoque" {
+              input = {
+                peca_id: $item.peca_id,
+                tipo: "devolucao",
+                quantidade: $item.quantidade,
+                os_servicos_id: $ordem.id,
+                autor: $autor,
+                observacao: "Item removido do orçamento"
+              }
+            }
+          }
+        }
+        db.del "os_itens" {
+          field_name = "id"
+          field_value = $input.os_itens_id
+        }
+        db.edit "os_servicos" {
+          field_name = "id"
+          field_value = $ordem.id
+          data = {atualizado_em: now}
+        }
+      }
     }
   }
   response = {success: true}

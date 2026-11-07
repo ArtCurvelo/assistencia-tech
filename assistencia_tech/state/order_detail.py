@@ -24,6 +24,9 @@ from .base import AdminState
 CANCELLED = OrderStatus.CANCELLED.value
 
 
+LOOSE_PART = "avulsa"  # peça fora do estoque
+
+
 class OrderDetailState(AdminState):
     found: bool = False
     code: str = ""
@@ -37,6 +40,7 @@ class OrderDetailState(AdminState):
     permissions: dict[str, str] = {}
     next_status: list[str] = []
     item_kind: str = "Serviço"
+    item_part: str = LOOSE_PART  # peça do estoque escolhida (add-parts-inventory)
     item_form_key: int = 0
     payment_form_key: int = 0
 
@@ -45,6 +49,7 @@ class OrderDetailState(AdminState):
     async def _show(self, order: ServiceOrder) -> None:
         principal = await self._current()
         catalog = await load_catalog(self._gateway(), principal)
+        await self._load_stock_summary(principal)
         self.code = order.code
         self.order = order_row(order, catalog)
         self.diagnosis = order.diagnosis
@@ -109,13 +114,29 @@ class OrderDetailState(AdminState):
 
     def set_item_kind(self, value: str):
         self.item_kind = value
+        self.item_part = LOOSE_PART
+
+    def set_item_part(self, value: str):
+        self.item_part = value
+
+    @rx.var
+    def part_select_options(self) -> list[dict[str, str]]:
+        return [{"value": LOOSE_PART, "label": "Peça avulsa (fora do estoque)"}, *self.part_options]
+
+    @rx.var
+    def uses_stock_part(self) -> bool:
+        return self.item_kind == "Peça" and self.item_part != LOOSE_PART
 
     async def add_item(self, form_data: dict):
         form = {**form_data, "kind": self.item_kind}
+        form.pop("part_select", None)
+        if self.item_kind == "Peça" and self.item_part != LOOSE_PART:
+            form["part_id"] = self.item_part
         async for event in self._run(lambda s: s.add_item(self.code, form), "Item adicionado ao orçamento."):
             yield event
         if self.feedback_kind == "success":
             self.item_form_key += 1
+            self.item_part = LOOSE_PART
 
     async def remove_item(self, item_id: str):
         async for event in self._run(lambda s: s.remove_item(self.code, item_id), "Item removido do orçamento."):

@@ -167,10 +167,28 @@ query "os_servicos/{os_servicos_id}" verb=PATCH {
       }
     }
 
-    db.patch "os_servicos" {
+    function.run "atech_autor" {
+      input = {user_id: $auth.id}
+    } as $autor
+    db.transaction {
+      stack {
+        conditional {
+          if ($input.status == "cancelado" && $atual.status != "cancelado") {
+            function.run "atech_devolver_pecas_da_os" {
+              input = {os_servicos_id: $atual.id, autor: $autor}
+            }
+          }
+        }
+        db.patch "os_servicos" {
+          field_name = "id"
+          field_value = $input.os_servicos_id
+          data = $updates
+        } as $alterada
+      }
+    }
+    db.get "os_servicos" {
       field_name = "id"
       field_value = $input.os_servicos_id
-      data = $updates
     } as $ordem
   }
   response = $ordem

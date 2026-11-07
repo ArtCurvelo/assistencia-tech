@@ -15,9 +15,12 @@ from ..models import (
     ClientCreate,
     Equipment,
     EquipmentCreate,
+    Part,
+    PartCreate,
     PublicOrderView,
     Role,
     ServiceOrder,
+    StockMovement,
     Technician,
     UserAccount,
 )
@@ -126,6 +129,29 @@ class AuthProvider(Protocol):
 
 
 @runtime_checkable
+class PartRepository(Protocol):
+    """Catálogo de peças. A quantidade só muda por movimentações (entradas e itens de ordens)."""
+
+    async def list(self) -> list[Part]: ...
+
+    async def get(self, part_id: str) -> Part:
+        """Retorna a peça ou lança ``NotFoundError``."""
+        ...
+
+    async def create(self, data: PartCreate) -> Part: ...
+
+    async def update(self, part: Part) -> Part:
+        """Atualiza código, nome, preço, mínimo e situação; nunca a quantidade."""
+        ...
+
+    async def restock(self, part_id: str, quantity: int, author: str, note: str = "") -> Part: ...
+
+    async def movements(self) -> list[StockMovement]:
+        """Movimentações da mais recente para a mais antiga."""
+        ...
+
+
+@runtime_checkable
 class PortalRepository(Protocol):
     """Projeções para o cliente e para a consulta pública (decisão D14)."""
 
@@ -161,6 +187,7 @@ class DataGateway:
     orders: OrderRepository
     auth: AuthProvider
     portal: PortalRepository
+    parts: PartRepository
     # Com contas remotas (Xano), técnicos são contas com perfil técnico e o
     # autocadastro cria cliente e conta numa só chamada (``auth.signup_client``).
     remote_accounts: bool = False

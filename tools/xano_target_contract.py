@@ -31,7 +31,9 @@ ROLE_VALUES = ("admin", "atendente", "tecnico", "cliente")
 USER_FIELDS = ("id", "name", "email", "role", "cliente_id", "especialidade", "ativo")
 CLIENT_FIELDS = ("id", "created_at", "Nome", "Cpf", "email", "telefone_Aparelho")
 DEVICE_FIELDS = ("id", "cliente_id", "aparelho", "marca", "modelo", "numero_serie", "observacoes")
-ITEM_FIELDS = ("id", "os_servicos_id", "tipo", "descricao", "quantidade", "valor_unitario")
+ITEM_FIELDS = ("id", "os_servicos_id", "tipo", "descricao", "quantidade", "valor_unitario", "peca_id")
+PART_FIELDS = ("id", "codigo", "nome", "preco", "quantidade", "estoque_minimo", "ativo")
+MOVEMENT_FIELDS = ("id", "created_at", "peca_id", "tipo", "quantidade", "os_servicos_id", "autor", "observacao")
 PAYMENT_FIELDS = ("id", "os_servicos_id", "valor_a_ser_pago", "forma_de_pagamento", "data_do_pagamento")
 EVENT_FIELDS = ("id", "os_servicos_id", "created_at", "autor", "tipo", "descricao", "para_status")
 ORDER_FIELDS = (
@@ -116,7 +118,8 @@ TARGET: dict[str, tuple[Endpoint, ...]] = {
         Endpoint("patch", "/os_servicos/{os_servicos_id}", "bearer",
                  ("status", "user_id", "diagnostico", "motivo_cancelamento", "atualizado_em"), ORDER_FIELDS,
                  {"status": ORDER_STATUS_VALUES}),
-        Endpoint("post", "/os_itens", "bearer", ("os_servicos_id", "tipo", "descricao", "quantidade", "valor_unitario"),
+        Endpoint("post", "/os_itens", "bearer",
+                 ("os_servicos_id", "tipo", "descricao", "quantidade", "valor_unitario", "peca_id"),
                  ITEM_FIELDS, {"tipo": ("servico", "peca")}),
         Endpoint("delete", "/os_itens/{os_itens_id}", "bearer", (), None),
         Endpoint("post", "/os_historico", "bearer",
@@ -134,5 +137,15 @@ TARGET: dict[str, tuple[Endpoint, ...]] = {
         Endpoint("post", "/portal/decisao_orcamento", "bearer", ("os_servicos_id", "aprovar", "motivo"), ORDER_FIELDS,
                  {"status": ORDER_STATUS_VALUES},
                  purpose="Perfil cliente: aprova ou recusa (com motivo) o orçamento de uma ordem própria."),
+        Endpoint("get", "/pecas", "bearer", (), PART_FIELDS, purpose="Colaboradores: catálogo de peças."),
+        Endpoint("post", "/pecas", "bearer", ("codigo", "nome", "preco", "estoque_minimo", "ativo"), PART_FIELDS,
+                 purpose="Admin e atendente: cadastra peça (quantidade inicial zero; código único)."),
+        Endpoint("patch", "/pecas/{peca_id}", "bearer", ("codigo", "nome", "preco", "estoque_minimo", "ativo"),
+                 PART_FIELDS, purpose="Admin e atendente: edita peça; nunca a quantidade."),
+        Endpoint("post", "/estoque/entrada", "bearer", ("peca_id", "quantidade", "observacao"), PART_FIELDS,
+                 purpose="Admin e atendente: entrada de estoque com movimentação."),
+        Endpoint("get", "/estoque/movimentos", "bearer", (), MOVEMENT_FIELDS + ("_ordem",),
+                 {"tipo": ("entrada", "saida", "devolucao")},
+                 purpose="Colaboradores: movimentações de estoque com a ordem relacionada."),
     ),
 }

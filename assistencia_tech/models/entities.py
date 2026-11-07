@@ -154,6 +154,7 @@ class OrderItemCreate(_Model):
     description: Text
     quantity: int = Field(default=1, ge=1)
     unit_price: Money
+    part_id: str = ""  # peça do catálogo de estoque; vazio para serviço e peça avulsa
 
     @field_validator("quantity", mode="before")
     @classmethod

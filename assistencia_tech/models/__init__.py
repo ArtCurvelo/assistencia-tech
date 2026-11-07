@@ -21,6 +21,7 @@ from .entities import (
     Technician,
     serial_key,
 )
+from .inventory import MovementKind, Part, PartCreate, StockLevel, StockMovement
 from .users import Role, UserAccount
 from .validation import parse_model
 
@@ -33,6 +34,11 @@ __all__ = [
     "Equipment",
     "EquipmentCreate",
     "HistoryEvent",
+    "MovementKind",
+    "Part",
+    "PartCreate",
+    "StockLevel",
+    "StockMovement",
     "ItemKind",
     "OrderCreate",
     "OrderItem",

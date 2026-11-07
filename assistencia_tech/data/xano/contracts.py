@@ -53,6 +53,11 @@ OPERATIONS: dict[str, str] = {
     "portal.client_orders": "listar as ordens do cliente",
     "portal.client_account": "consultar o cadastro do cliente",
     "portal.client_decision": "registrar a decisão do cliente sobre o orçamento",
+    "parts.list": "listar as peças do estoque",
+    "parts.create": "cadastrar peças",
+    "parts.update": "editar peças",
+    "parts.restock": "registrar entradas de estoque",
+    "parts.movements": "consultar as movimentações de estoque",
 }
 
 
@@ -99,6 +104,11 @@ CONTRACTS: dict[str, EndpointContract] = {
     "portal.client_orders": _c("GET", GROUP_OS, "/portal/minhas_ordens"),
     "portal.client_account": _c("GET", GROUP_OS, "/portal/minha_conta"),
     "portal.client_decision": _c("POST", GROUP_OS, "/portal/decisao_orcamento"),
+    "parts.list": _c("GET", GROUP_OS, "/pecas"),
+    "parts.create": _c("POST", GROUP_OS, "/pecas"),
+    "parts.update": _c("PATCH", GROUP_OS, "/pecas/{peca_id}"),
+    "parts.restock": _c("POST", GROUP_OS, "/estoque/entrada"),
+    "parts.movements": _c("GET", GROUP_OS, "/estoque/movimentos"),
 }
 
 

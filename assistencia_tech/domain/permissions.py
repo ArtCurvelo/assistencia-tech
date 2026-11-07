@@ -38,6 +38,8 @@ class Permission(StrEnum):
     PORTAL_VIEW = "portal.view"
     PORTAL_DECIDE_BUDGET = "portal.decide_budget"
     STAFF_MANAGE = "staff.manage"
+    STOCK_VIEW = "stock.view"
+    STOCK_MANAGE = "stock.manage"
     REPORTS_VIEW = "reports.view"
 
 
@@ -63,10 +65,12 @@ PERMISSION_LABELS: dict[Permission, str] = {
     P.PORTAL_VIEW: "acessar o portal do cliente",
     P.PORTAL_DECIDE_BUDGET: "aprovar ou recusar o orçamento no portal",
     P.STAFF_MANAGE: "gerenciar colaboradores",
+    P.STOCK_VIEW: "consultar o estoque",
+    P.STOCK_MANAGE: "cadastrar peças e repor o estoque",
     P.REPORTS_VIEW: "consultar relatórios",
 }
 
-_STAFF_VIEW = frozenset({P.DASHBOARD_VIEW, P.CLIENTS_VIEW, P.EQUIPMENT_VIEW, P.ORDERS_VIEW})
+_STAFF_VIEW = frozenset({P.DASHBOARD_VIEW, P.CLIENTS_VIEW, P.EQUIPMENT_VIEW, P.ORDERS_VIEW, P.STOCK_VIEW})
 
 ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
     Role.ADMIN: frozenset(set(P) - {P.PORTAL_VIEW, P.PORTAL_DECIDE_BUDGET}),
@@ -81,6 +85,7 @@ ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
         P.ORDERS_DELIVER,
         P.ORDERS_CANCEL,
         P.REPORTS_VIEW,
+        P.STOCK_MANAGE,
     },
     Role.TECHNICIAN: _STAFF_VIEW | {P.ORDERS_DIAGNOSE, P.ORDERS_STATUS_TECHNICAL},
     Role.CLIENT: frozenset({P.PORTAL_VIEW, P.PORTAL_DECIDE_BUDGET}),

@@ -22,11 +22,13 @@ from ..presenters import (
     dashboard_metrics,
     equipment_row,
     order_row,
+    part_option,
     payment_summary,
     status_chart,
     status_counts,
 )
-from ..services import AuthService, load_catalog
+from ..domain.inventory import needs_restock
+from ..services import AuthService, InventoryService, load_catalog
 
 logger = logging.getLogger(__name__)
 
@@ -173,6 +175,14 @@ class AppState(rx.State):
         return self._can(Permission.REPORTS_VIEW)
 
     @rx.var
+    def can_view_stock(self) -> bool:
+        return self._can(Permission.STOCK_VIEW)
+
+    @rx.var
+    def can_manage_stock(self) -> bool:
+        return self._can(Permission.STOCK_MANAGE)
+
+    @rx.var
     def is_staff(self) -> bool:
         return self.is_authenticated and self.user_home == "/admin"
 
@@ -220,12 +230,25 @@ class AdminState(AppState):
     status_summary: list[dict[str, str]] = []
     status_data: list[dict] = []
     payment_data: list[dict] = []
+    # Estoque (add-parts-inventory): alerta do painel e peças para o orçamento.
+    low_stock_count: int = 0
+    part_options: list[dict[str, str]] = []
 
     def _required_permission(self) -> Permission:
         return Permission.DASHBOARD_VIEW
 
+    async def _load_stock_summary(self, principal: Principal | None) -> None:
+        if not has_permission(principal, Permission.STOCK_VIEW):
+            self.low_stock_count, self.part_options = 0, []
+            return
+        parts = await InventoryService(self._gateway(), principal).list()
+        self.low_stock_count = sum(1 for p in parts if needs_restock(p))
+        self.part_options = [part_option(p) for p in parts if p.active and p.quantity > 0]
+
     async def _reload(self) -> None:
-        catalog = await load_catalog(self._gateway(), await self._current())
+        principal = await self._current()
+        catalog = await load_catalog(self._gateway(), principal)
+        await self._load_stock_summary(principal)
         self.clients = [client_row(c) for c in catalog.clients]
         self.equipment = [equipment_row(e, catalog) for e in catalog.equipment]
         self.technicians = [

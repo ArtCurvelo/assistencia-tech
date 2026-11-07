@@ -3,6 +3,7 @@
 from .base import AdminState, AppState
 from .clients import ClientDetailState, ClientState
 from .equipment import EquipmentState
+from .inventory import InventoryState
 from .order_detail import OrderDetailState
 from .orders import OrderState
 from .portal import PortalOrderState, PortalState
@@ -14,6 +15,7 @@ __all__ = [
     "ClientDetailState",
     "ClientState",
     "EquipmentState",
+    "InventoryState",
     "LoginState",
     "OrderDetailState",
     "OrderState",

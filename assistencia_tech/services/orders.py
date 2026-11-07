@@ -9,11 +9,14 @@ from typing import Any
 from ..data.errors import NotFoundError, ValidationError
 from ..data.repositories import DataGateway
 from ..domain import order_operations as ops
+from ..domain.inventory import ensure_available
+from .inventory import parse_quantity
 from ..domain.clock import Clock, now_brt
 from ..domain.permissions import Permission as P
 from ..domain.permissions import Principal, ensure_can_modify_order, require, status_permission
 from ..domain.order_workflow import parse_status
 from ..models import (
+    ItemKind,
     OrderCreate,
     OrderItemCreate,
     PaymentCreate,
@@ -85,9 +88,20 @@ class OrderService:
     async def record_diagnosis(self, code: str, text: str) -> ServiceOrder:
         return await self._mutate(code, P.ORDERS_DIAGNOSE, lambda o, at: ops.record_diagnosis(o, text, at, self._actor))
 
+    async def _catalog_item(self, form: Mapping[str, Any]) -> OrderItemCreate:
+        """Peça do catálogo: nome e preço do estoque, com quantidade disponível (D1 de add-parts-inventory)."""
+        part = await self._gw.parts.get(str(form["part_id"]))
+        quantity = parse_quantity(form.get("quantity") or 1)
+        ensure_available(part, quantity)
+        return OrderItemCreate(kind=ItemKind.PART, description=part.name, quantity=quantity,
+                               unit_price=part.unit_price, part_id=part.id)
+
     async def add_item(self, code: str, form: Mapping[str, Any]) -> ServiceOrder:
         require(self._principal, P.ORDERS_DIAGNOSE)
-        data = parse_model(OrderItemCreate, form)
+        if str(form.get("part_id") or "").strip():
+            data = await self._catalog_item(form)
+        else:
+            data = parse_model(OrderItemCreate, {k: v for k, v in form.items() if k != "part_id"})
         return await self._mutate(code, P.ORDERS_DIAGNOSE, lambda o, at: ops.add_item(o, data, at, self._actor))
 
     async def remove_item(self, code: str, item_id: str) -> ServiceOrder:

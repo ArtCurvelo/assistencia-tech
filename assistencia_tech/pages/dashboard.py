@@ -85,6 +85,15 @@ def dashboard_page() -> rx.Component:
             spacing="3",
             class_name="metrics-grid",
         ),
+        rx.cond(
+            AdminState.low_stock_count > 0,
+            rx.link(
+                rx.text("⚠ ", AdminState.low_stock_count,
+                        " peça(s) com estoque baixo ou esgotado. Ver estoque →"),
+                href="/admin/estoque",
+                class_name="notice notice-warning stock-alert",
+            ),
+        ),
         rx.grid(
             panel(
                 panel_header("Ordens por status"),

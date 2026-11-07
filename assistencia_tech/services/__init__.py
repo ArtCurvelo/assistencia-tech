@@ -4,6 +4,7 @@ from .auth import AuthService, SessionResult, reset_auth_state
 from .catalog import Catalog, load_catalog
 from .clients import ClientDetail, ClientService
 from .equipment import EquipmentService
+from .inventory import InventoryService
 from .orders import OrderService
 from .portal import PortalOrder, PortalService
 from .reports import ReportService
@@ -15,6 +16,7 @@ __all__ = [
     "ClientDetail",
     "ClientService",
     "EquipmentService",
+    "InventoryService",
     "OrderService",
     "PortalOrder",
     "PortalService",

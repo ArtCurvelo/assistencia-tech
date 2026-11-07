@@ -27,6 +27,7 @@ from . import mappers
 from .base import XanoRepository, group_ids, numeric_id
 from .client import XanoClient
 from .contracts import EndpointContract
+from .inventory import XanoPartRepository
 from .orders import XanoOrderRepository, XanoPortalRepository
 
 INVALID_CREDENTIALS = "E-mail ou senha inválidos."
@@ -204,5 +205,6 @@ def build_xano_gateway(
         orders=repo(XanoOrderRepository),
         auth=repo(XanoAuthProvider),
         portal=repo(XanoPortalRepository),
+        parts=repo(XanoPartRepository),
         remote_accounts=True,
     )
