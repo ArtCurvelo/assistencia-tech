@@ -33,12 +33,16 @@
 - [x] 5.3 Implementar o registro de contratos vazio e o adaptador Xano que lança `ContractPendingError` sem enviar requisições; verificar com teste em que o transporte simulado não recebe nenhuma chamada.
 - [x] 5.4 Documentar em `docs/XANO_INTEGRATION.md` a arquitetura, as variáveis e o procedimento para registrar um contrato; verificar seguindo o documento para configurar o modo `xano` e observar a mensagem de integração pendente.
 
-## 6. Contratos reais do Xano (BLOQUEADO — aguarda documentação oficial)
+## 6. Contratos reais do Xano (opção A: ajustar o Xano ao contrato-alvo)
 
-- [ ] 6.1 Registrar, a partir da documentação oficial, os contratos de clientes, equipamentos e ordens; verificar conferindo cada entrada com a fonte documentada.
-- [ ] 6.2 Implementar o mapeamento entre as respostas documentadas e os modelos internos; verificar com testes usando exemplos de resposta extraídos da documentação.
-- [ ] 6.3 Definir e implementar a autenticação conforme o contrato oficial; verificar com testes simulados e uma chamada real em ambiente de teste.
-- [ ] 6.4 Executar os fluxos da interface contra o workspace Xano de teste; verificar registrando resultados neste arquivo.
+- [x] 6.0 Obter a documentação OpenAPI dos grupos e analisar a compatibilidade; verificado com as cópias em `docs/xano-openapi/` e a análise em `docs/XANO_CONTRACT_ANALYSIS.md` (grupo Sistema de Gestão: HTTP 403).
+- [x] 6.0a Definir o contrato-alvo (`docs/XANO_BACKEND_SPEC.md`, `tools/xano_target_contract.py`) e o verificador `tools/xano_contract_check.py`; verificado com `tests/test_xano_contract_check.py` (6 testes) e a execução online: 1 de 27 endpoints atendidos em 07/11/2026.
+- [x] 6.0b Usar o repositório de certificados do sistema no cliente Xano (`truststore`); verificado baixando a documentação com verificação TLS ativa.
+- [ ] 6.1 (BLOQUEADO: ajustes no Xano pelo usuário) Obter `OK` nos 27 endpoints do verificador; verificar executando `python -m tools.xano_contract_check` e registrando a saída.
+- [ ] 6.2 Registrar em `CONTRACTS` cada operação interna com o endpoint documentado e implementar o mapeamento das respostas para os modelos internos; verificar com testes usando os esquemas da documentação.
+- [ ] 6.3 Implementar a sessão com o JWT do Xano (D12) e os perfis vindos de `GET /auth/me`; verificar com testes simulados e um login real no workspace.
+- [ ] 6.4 Implementar o agregado da OS sobre `os_servicos`, `os_itens`, `pagamentos` e `os_historico` (D13), a consulta pública e o portal (D14); verificar com testes simulados.
+- [ ] 6.5 Executar no navegador, com `ASSISTENCIA_DATA_SOURCE=xano`, o roteiro de `docs/DEMO_SCRIPT.md` contra o workspace e registrar os resultados neste arquivo.
 
 ## 7. Verificação integrada
 

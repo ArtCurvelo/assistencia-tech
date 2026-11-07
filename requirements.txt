@@ -1,3 +1,4 @@
 # Dependências de execução. Versão do Reflex alinhada à .venv do projeto (0.8.28).
 reflex>=0.8.28,<0.9.0
 httpx>=0.28,<1.0
+truststore>=0.10  # usa os certificados do sistema operacional no cliente Xano

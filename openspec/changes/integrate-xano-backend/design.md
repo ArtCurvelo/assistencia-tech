@@ -88,6 +88,26 @@ A geração do código fica no adaptador de demonstração (no Xano, a origem do
 
 `pytest` com o plugin do `anyio` (já instalado com o `httpx`) para testes assíncronos. O cliente Xano é testado com `httpx.MockTransport`, sem bibliotecas adicionais e sem rede. Um conjunto de testes de contrato interno roda contra qualquer implementação de `DataGateway`.
 
+### D10. Contrato-alvo e verificador (adendo de 2026-11-07)
+
+A documentação oficial dos grupos (cópias em `docs/xano-openapi/`, análise em `docs/XANO_CONTRACT_ANALYSIS.md`) mostrou um modelo diferente do especificado. Por decisão do usuário (opção A), o Xano será ajustado ao modelo da aplicação. O contrato que a aplicação precisa está em `docs/XANO_BACKEND_SPEC.md`, e a mesma definição, como dados, em `tools/xano_target_contract.py`. O verificador `python -m tools.xano_contract_check` compara o alvo com a documentação publicada; um contrato só entra em `CONTRACTS` quando o endpoint correspondente estiver `OK`. Isso mantém a regra de nunca inventar contratos: o alvo é um requisito para o backend, não uma suposição sobre ele.
+
+### D11. TLS com o repositório do sistema
+
+Nesta máquina, o Python (certifi) recusa a cadeia de certificados do Xano (`CERTIFICATE_VERIFY_FAILED`), enquanto o Windows a aceita. O cliente HTTP usa `truststore` (`data/xano/tls.py`) para validar com o repositório do sistema operacional. A verificação de certificado nunca é desligada.
+
+### D12. Sessão com o token do Xano
+
+Com a fonte Xano, o login devolve o `authToken` (JWT) do Xano. A aplicação continua usando seu próprio token opaco no cookie, e a sessão no servidor passa a guardar também o JWT. Os repositórios Xano recebem o JWT da sessão para enviar `Authorization: Bearer`, e o JWT nunca chega ao navegador. Se o Xano responder 401, a sessão é encerrada.
+
+### D13. Agregado da OS sobre várias tabelas
+
+`OrderRepository.save` no Xano compara a versão gravada com a nova: `PATCH /os_servicos/{id}` para os campos da ordem, `POST`/`DELETE /os_itens` para os itens, `POST /pagamentos` para os novos pagamentos e `POST /os_historico` para os novos eventos. O código `OS-AAAA-NNNNN` é derivado do ano de `created_at` e do `id`, porque o `id` é atribuído pelo Xano na criação (`next_code` deixa de ser consultado nessa fonte).
+
+### D14. Projeções públicas no servidor
+
+A consulta pública usa `GET /consulta_publica/{id}` (público) e o portal usa `GET /portal/minhas_ordens` (filtrado pelo token). Assim a restrição de dados pessoais é garantida pelo backend, e não só pela aplicação.
+
 ## Risks / Trade-offs
 
 - [Estado Reflex compartilhado por processo no modo demonstração] → os dados de demonstração ficam em um gateway por processo; aceitável para a apresentação e documentado como limitação.

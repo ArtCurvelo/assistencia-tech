@@ -14,6 +14,7 @@ from typing import Any
 
 import httpx
 
+from .tls import system_ssl_context
 from ..errors import (
     ConfigurationError,
     DataAccessError,
@@ -76,6 +77,7 @@ class XanoClient:
                 base_url=self.base_url,
                 timeout=self.timeout_seconds,
                 transport=self._transport,
+                verify=system_ssl_context(),
             ) as http:
                 response = await http.request(method, path, params=params, json=json, headers=headers)
         except httpx.TimeoutException as exc:

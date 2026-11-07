@@ -68,6 +68,17 @@ Para voltar ao modo demonstração: `Remove-Item Env:ASSISTENCIA_DATA_SOURCE`.
 
 A classificação usa apenas o código de status, pois o formato do corpo de erro do Xano ainda não foi documentado.
 
+## Situação da integração (07/11/2026)
+
+A documentação dos grupos foi obtida e analisada (`XANO_CONTRACT_ANALYSIS.md`). Por decisão do projeto, o Xano será ajustado ao modelo da aplicação conforme `XANO_BACKEND_SPEC.md`. Para acompanhar o progresso:
+
+```powershell
+python -m tools.xano_contract_check            # documentação atual do Xano
+python -m tools.xano_contract_check --offline  # cópias em docs/xano-openapi/
+```
+
+O cliente HTTP valida os certificados com o repositório do sistema operacional (`truststore`), porque nesta máquina a cadeia do Xano não é reconhecida pelo certifi.
+
 ## Como registrar um contrato (quando a documentação chegar)
 
 1. Obtenha a documentação oficial do API group (no Xano, cada API group disponibiliza sua especificação Swagger/OpenAPI).

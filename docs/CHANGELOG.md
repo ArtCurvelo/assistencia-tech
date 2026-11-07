@@ -1,5 +1,11 @@
 # Changelog
 
+## Não lançado — Contrato do Xano (2026-11-07)
+- Documentação OpenAPI dos grupos de Autenticação, Cliente e Ordens de Serviço registrada em `docs/xano-openapi/` (grupo Sistema de Gestão: acesso restrito, HTTP 403).
+- Análise de compatibilidade (`XANO_CONTRACT_ANALYSIS.md`) e especificação dos ajustes no Xano (`XANO_BACKEND_SPEC.md`), conforme a opção A.
+- Verificador automático do contrato (`python -m tools.xano_contract_check`) com testes; situação atual: 1 de 27 endpoints atendidos.
+- Cliente Xano com validação TLS pelo repositório de certificados do sistema (`truststore`).
+
 ## Não lançado — Arquivamento no OpenSpec (2026-11-06)
 - Arquivadas `expand-service-domain`, `add-auth-and-access-control`, `add-admin-and-reports` e `prepare-academic-delivery`; 62 requisitos incorporados às especificações vigentes (10 capacidades).
 - Mantidas abertas `refine-frontend-experience` (2 verificações pendentes) e `integrate-xano-backend` (contratos do Xano pendentes).
