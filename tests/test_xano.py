@@ -197,3 +197,75 @@ def test_require_contract_returns_registered_contract():
 
 def test_settings_type_is_unchanged_for_demo():
     assert Settings().data_source == "demo"
+
+
+# ----------------------------------------------------------------------
+# Limite de requisições do plano e cache de leituras
+# ----------------------------------------------------------------------
+from assistencia_tech.data.xano.limits import RequestPacer, ResponseCache  # noqa: E402
+
+
+class FakeTime:
+    def __init__(self):
+        self.now = 0.0
+        self.slept = []
+
+    def clock(self):
+        return self.now
+
+    async def sleep(self, seconds):
+        self.slept.append(seconds)
+        self.now += seconds
+
+
+async def test_pacer_waits_when_the_window_is_full():
+    fake = FakeTime()
+    pacer = RequestPacer(3, 20, clock=fake.clock, sleep=fake.sleep)
+    for _ in range(3):
+        await pacer.acquire()
+    assert fake.slept == []
+    await pacer.acquire()
+    assert len(fake.slept) == 1 and fake.slept[0] == pytest.approx(20.05)
+
+
+def test_cache_expires():
+    fake = FakeTime()
+    cache = ResponseCache(10, clock=fake.clock)
+    cache.put(("k",), 1)
+    assert cache.get(("k",)) == (True, 1)
+    fake.now = 11
+    assert cache.get(("k",)) == (False, None)
+
+
+def paced_client(handler, fake):
+    return XanoClient(
+        BASE_URL, 5, transport=httpx.MockTransport(handler),
+        pacer=RequestPacer(10, 20, clock=fake.clock, sleep=fake.sleep), cache=ResponseCache(15, clock=fake.clock),
+    )
+
+
+async def test_reads_are_cached_per_token_and_writes_clear_the_cache():
+    calls = []
+    client = paced_client(lambda r: calls.append(r.method) or httpx.Response(200, json={"n": len(calls)}), FakeTime())
+    first = await client.request("GET", "g", "/x")
+    assert await client.request("GET", "g", "/x") == first
+    use_backend_token("outro-usuario")
+    await client.request("GET", "g", "/x")
+    await client.request("POST", "g", "/y", json={})
+    await client.request("GET", "g", "/x")
+    assert calls == ["GET", "GET", "POST", "GET"]
+
+
+async def test_429_waits_for_the_window_and_retries_once():
+    fake = FakeTime()
+    responses = iter([httpx.Response(429, json={"message": "limit"}), httpx.Response(200, json={"ok": 1})])
+    client = paced_client(lambda r: next(responses), fake)
+    assert await client.request("GET", "g", "/x") == {"ok": 1}
+    assert fake.slept == [20]
+
+
+async def test_repeated_429_is_service_unavailable():
+    fake = FakeTime()
+    client = paced_client(lambda r: httpx.Response(429, json={"message": "limit"}), fake)
+    with pytest.raises(errors.ServiceUnavailableError):
+        await client.request("GET", "g", "/x")

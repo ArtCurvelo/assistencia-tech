@@ -32,6 +32,7 @@ from ..errors import (
     ValidationError,
 )
 from ..request_context import current_backend_token
+from .limits import RequestPacer, ResponseCache
 from .tls import system_ssl_context
 
 logger = logging.getLogger(__name__)
@@ -80,6 +81,8 @@ class XanoClient:
         timeout_seconds: float,
         *,
         transport: httpx.AsyncBaseTransport | None = None,
+        pacer: RequestPacer | None = None,
+        cache: ResponseCache | None = None,
     ) -> None:
         if not base_url:
             raise ConfigurationError(
@@ -89,6 +92,9 @@ class XanoClient:
         self.base_url = base_url.rstrip("/")
         self.timeout_seconds = timeout_seconds
         self._transport = transport
+        # ``is None`` (e não ``or``): um cache vazio tem len() == 0 e seria descartado.
+        self._pacer = RequestPacer() if pacer is None else pacer
+        self._cache = ResponseCache() if cache is None else cache
 
     def url_for(self, group: str, path: str) -> str:
         return f"{self.base_url}/api:{group}{path}"
@@ -103,14 +109,38 @@ class XanoClient:
         json: Any = None,
         authenticated: bool = True,
     ) -> Any:
-        """Executa a requisição e retorna o JSON decodificado (ou ``None`` sem corpo)."""
+        """Executa a requisição e retorna o JSON decodificado (ou ``None`` sem corpo).
+
+        Leituras idênticas do mesmo usuário são reaproveitadas por alguns
+        segundos; escritas limpam o cache. Um 429 do Xano espera a janela do
+        limite e tenta uma única vez de novo.
+        """
         headers: dict[str, str] = {}
+        token = None
         if authenticated:
             token = current_backend_token()
             if not token:
                 raise AuthenticationError(detail=f"{method} {path}: sem token do backend na sessão")
             headers["Authorization"] = f"Bearer {token}"
         url = self.url_for(group, path)
+        is_read = method.upper() == "GET"
+        key = (token, url, tuple(sorted((params or {}).items())))
+        if is_read:
+            hit, cached = self._cache.get(key)
+            if hit:
+                return cached
+        else:
+            self._cache.clear()
+
+        result = await self._send(method, url, path, group, params, json, headers, retry=True)
+        if is_read:
+            self._cache.put(key, result)
+        else:
+            self._cache.clear()
+        return result
+
+    async def _send(self, method, url, path, group, params, json, headers, *, retry: bool) -> Any:
+        await self._pacer.acquire()
         try:
             async with httpx.AsyncClient(
                 timeout=self.timeout_seconds,
@@ -124,6 +154,11 @@ class XanoClient:
         except httpx.TransportError as exc:
             logger.warning("Falha de conexão: %s %s (%r)", method, path, exc)
             raise ServiceUnavailableError(detail=f"transport: {exc!r}") from exc
+
+        if response.status_code == 429 and retry:
+            logger.warning("Limite de requisições do Xano atingido; aguardando a janela: %s %s", method, path)
+            await self._pacer.wait_full_window()
+            return await self._send(method, url, path, group, params, json, headers, retry=False)
 
         body = _json_or_none(response) if response.content else None
         detail = f"{method} api:{group}{path} -> {response.status_code}"

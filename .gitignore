@@ -3,6 +3,7 @@ assets/external/
 *.py[cod]
 __pycache__/
 .web
+.web-antiga-*/
 *.db
 .venv/
 venv/

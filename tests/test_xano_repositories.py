@@ -16,6 +16,7 @@ from assistencia_tech.data.request_context import take_issued_token, use_backend
 from assistencia_tech.data.sessions import SessionStore
 from assistencia_tech.data.xano import XanoClient, build_xano_gateway
 from assistencia_tech.data.xano import mappers
+from assistencia_tech.data.xano.limits import RequestPacer, ResponseCache
 from assistencia_tech.domain.clock import BRT
 from assistencia_tech.domain.login_throttle import LoginThrottle
 from assistencia_tech.domain.permissions import Principal
@@ -73,7 +74,9 @@ class FakeXano:
 
 
 def gateway_for(fake):
-    client = XanoClient(BASE, 5, transport=httpx.MockTransport(fake))
+    # Sem cache e sem espera: cada cenário vê exatamente as respostas que define.
+    client = XanoClient(BASE, 5, transport=httpx.MockTransport(fake),
+                        pacer=RequestPacer(10_000, 1), cache=ResponseCache(0))
     return build_xano_gateway(Settings(data_source="xano", xano_base_url=BASE), client=client)
 
 

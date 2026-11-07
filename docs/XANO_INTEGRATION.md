@@ -101,6 +101,8 @@ O teste `test_every_operation_has_a_contract_from_the_target` impede registrar u
 
 ## Limitações conhecidas
 
+- **Limite do plano gratuito do Xano: 10 requisições a cada 20 segundos.** O cliente HTTP reaproveita por 15 segundos as leituras idênticas do mesmo usuário (qualquer escrita limpa o cache), espaça as requisições para respeitar o limite e, se receber 429, espera a janela e tenta uma vez de novo (`data/xano/limits.py`). Por isso algumas telas podem demorar alguns segundos, e uma alteração feita por outro usuário pode levar até 15 segundos para aparecer. Indisponibilidade do Xano não encerra a sessão: a tela mostra a mensagem de serviço indisponível.
+
 - No modo demonstração, os dados são compartilhados por todas as abas e usuários conectados ao mesmo processo e se perdem ao reiniciar a aplicação.
 - As sessões ficam na memória do processo: reiniciar a aplicação exige novo login (os dados do Xano não são afetados).
 - O tipo de aparelho cadastrado fora da lista da aplicação (por exemplo, pelo painel do Xano) é exibido como "Outro".

@@ -12,7 +12,7 @@ from urllib.parse import quote
 
 import reflex as rx
 
-from ..data.errors import AuthenticationError, DataAccessError
+from ..data.errors import AuthenticationError, DataAccessError, ServiceUnavailableError
 from ..data.factory import get_gateway
 from ..data.repositories import DataGateway
 from ..domain.permissions import Permission, Principal, has_permission, permissions_of
@@ -93,6 +93,9 @@ class AppState(rx.State):
     async def _current(self) -> Principal | None:
         try:
             return (await self._session()).principal
+        except ServiceUnavailableError:
+            # Indisponibilidade não é falta de sessão: o chamador mostra o erro sem deslogar.
+            raise
         except DataAccessError:
             self._apply_principal(None)
             return None
@@ -106,6 +109,10 @@ class AppState(rx.State):
         """Retorna um redirecionamento se o acesso não for permitido; senão ``None``."""
         try:
             result = await self._session()
+        except ServiceUnavailableError as error:
+            # Backend indisponível ou no limite de requisições: não encerra a sessão.
+            self.data_error = error.user_message
+            return rx.toast.error(error.user_message)
         except DataAccessError as error:
             self.data_error = error.user_message
             return self._login_redirect()
@@ -117,7 +124,10 @@ class AppState(rx.State):
 
     async def load_session(self):
         """``on_load`` das páginas públicas: só identifica o usuário, sem exigir login."""
-        await self._current()
+        try:
+            await self._current()
+        except ServiceUnavailableError as error:
+            self.data_error = error.user_message
 
     def logout(self):
         try:
