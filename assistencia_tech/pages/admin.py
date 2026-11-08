@@ -146,6 +146,40 @@ def _technician_row(row) -> rx.Component:
         rx.table.cell(row["assigned"]),
         rx.table.cell(row["finished"]),
         rx.table.cell(row["budget"]),
+        rx.table.cell(row["rating"]),
+    )
+
+
+def _comment(row) -> rx.Component:
+    return rx.box(
+        rx.flex(rx.link(row["code"], href="/admin/ordens/" + row["code"], class_name="code-link"),
+                rx.text(row["score"], class_name=row["group_class"]),
+                rx.text(row["at"], class_name="muted tiny"), gap="3", align="center", wrap="wrap"),
+        rx.text(row["comment"], class_name="rating-comment"),
+        class_name="rating-comment-item",
+    )
+
+
+def _satisfaction() -> rx.Component:
+    """NPS das avaliações feitas no período (add-service-rating)."""
+    n = ReportsState.satisfaction
+    return panel(
+        panel_header("Satisfação dos clientes (NPS)"),
+        rx.grid(
+            stat_card(n["nps"], "NPS", "Promotores − detratores (%)"),
+            stat_card(n["average"], "Nota média", rx.fragment(n["count"], " avaliação(ões)")),
+            stat_card(n["promoters"], "Promotores", "Notas 9 e 10"),
+            stat_card(n["neutrals"], "Neutros", "Notas 7 e 8"),
+            stat_card(n["detractors"], "Detratores", "Notas 0 a 6"),
+            columns=rx.breakpoints(initial="2", lg="5"),
+            spacing="3",
+            width="100%",
+        ),
+        rx.text("Comentários recentes", class_name="form-label"),
+        rx.cond(ReportsState.comments.length() > 0,
+                rx.vstack(rx.foreach(ReportsState.comments, _comment), spacing="2", width="100%"),
+                rx.text("Nenhum comentário no período.", class_name="muted")),
+        rx.text("Avaliações consideradas pela data em que o cliente avaliou.", class_name="muted tiny"),
     )
 
 
@@ -196,10 +230,12 @@ def reports_page() -> rx.Component:
             panel(panel_header("Recebimentos por forma de pagamento"),
                   table(["Forma", "Valor"], ReportsState.methods, _method_row, "Sem recebimentos.")),
             panel(panel_header("Produção por técnico"),
-                  table(["Técnico", "Atribuídas", "Concluídas", "Valor orçado"], ReportsState.technician_rows,
+                  table(["Técnico", "Atribuídas", "Concluídas", "Valor orçado", "Nota média"],
+                        ReportsState.technician_rows,
                         _technician_row, "Nenhuma ordem atribuída no período.")),
             columns=rx.breakpoints(initial="1", lg="2"),
             spacing="4",
             width="100%",
         ),
+        _satisfaction(),
     )

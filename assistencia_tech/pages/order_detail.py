@@ -305,6 +305,20 @@ def _cancel_dialog() -> rx.Component:
     )
 
 
+def _rating() -> rx.Component:
+    """Avaliação do cliente (add-service-rating)."""
+    r = S.rating
+    return rx.cond(
+        r["score"] != "",
+        panel(
+            panel_header("Avaliação do cliente"),
+            rx.flex(rx.text(r["score"], class_name="rating-score"), rx.text(r["group"], class_name=r["group_class"]),
+                    rx.text("Avaliada em ", r["at"], class_name="muted tiny"), gap="3", align="center", wrap="wrap"),
+            rx.cond(r["comment"] != "", rx.text("\u201c", r["comment"], "\u201d", class_name="rating-comment")),
+        ),
+    )
+
+
 def order_detail_page() -> rx.Component:
     return admin_shell(
         rx.cond(S.found, S.code, "Ordem de serviço"),
@@ -319,6 +333,7 @@ def order_detail_page() -> rx.Component:
                         width="100%"),
                 _budget(),
                 _payments(),
+                _rating(),
                 _timeline(),
                 _cancel_dialog(),
                 _warranty_dialog(),

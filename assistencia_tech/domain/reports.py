@@ -11,9 +11,11 @@ from ..data.errors import ValidationError
 from ..models import PAYMENT_METHODS, OrderStatus, ServiceOrder, Technician
 from .clock import BRT
 from .pricing import compute_totals
+from .rating import NpsSummary, nps_summary
 from .validators import quantize
 
 DEFAULT_PERIOD_DAYS = 90
+RECENT_COMMENTS = 10
 FINISHED = frozenset({OrderStatus.DONE, OrderStatus.DELIVERED})
 ZERO = Decimal("0.00")
 
@@ -59,6 +61,7 @@ class TechnicianRow:
     assigned: int
     finished: int
     budget_total: Decimal
+    average_rating: float | None = None  # avaliações feitas no período (add-service-rating)
 
 
 @dataclass(frozen=True)
@@ -68,12 +71,27 @@ class TurnaroundReport:
 
 
 @dataclass(frozen=True)
+class RatingComment:
+    code: str
+    score: int
+    comment: str
+    at: datetime
+
+
+@dataclass(frozen=True)
+class SatisfactionReport:
+    summary: NpsSummary
+    comments: tuple[RatingComment, ...]
+
+
+@dataclass(frozen=True)
 class OperationalReport:
     period: Period
     volume: VolumeReport
     revenue: RevenueReport
     technicians: tuple[TechnicianRow, ...]
     turnaround: TurnaroundReport
+    satisfaction: SatisfactionReport
 
 
 def _first_status_event(order: ServiceOrder, status: OrderStatus) -> datetime | None:
@@ -100,17 +118,27 @@ def revenue(all_orders: Iterable[ServiceOrder], period: Period) -> RevenueReport
     return RevenueReport(quantize(sum(by_method.values(), ZERO)), by_method, len(delivered_totals), average)
 
 
-def technician_rows(orders: list[ServiceOrder], technicians: Iterable[Technician]) -> tuple[TechnicianRow, ...]:
+def rated_in(orders: Iterable[ServiceOrder], period: Period) -> list[ServiceOrder]:
+    """Ordens avaliadas dentro do período (pela data da avaliação)."""
+    return [o for o in orders if o.rating is not None and period.contains(o.rating.at)]
+
+
+def technician_rows(
+    orders: list[ServiceOrder], technicians: Iterable[Technician], rated: Iterable[ServiceOrder] = ()
+) -> tuple[TechnicianRow, ...]:
+    rated = list(rated)
     rows = []
     for technician in technicians:
         mine = [o for o in orders if o.technician_id == technician.id]
         if mine:
+            scores = [o.rating.score for o in rated if o.technician_id == technician.id and o.rating]
             rows.append(
                 TechnicianRow(
                     name=technician.name,
                     assigned=len(mine),
                     finished=sum(1 for o in mine if o.status in FINISHED),
                     budget_total=quantize(sum((compute_totals(o).total for o in mine), ZERO)),
+                    average_rating=nps_summary(scores).average,
                 )
             )
     return tuple(sorted(rows, key=lambda r: (-r.finished, -r.assigned, r.name)))
@@ -127,6 +155,14 @@ def turnaround(orders: list[ServiceOrder]) -> TurnaroundReport:
     return TurnaroundReport(round(sum(durations) / len(durations), 1), len(durations))
 
 
+def satisfaction(all_orders: Iterable[ServiceOrder], period: Period) -> SatisfactionReport:
+    rated = sorted(rated_in(all_orders, period), key=lambda o: o.rating.at, reverse=True)
+    comments = tuple(
+        RatingComment(o.code, o.rating.score, o.rating.comment, o.rating.at) for o in rated if o.rating.comment
+    )[:RECENT_COMMENTS]
+    return SatisfactionReport(nps_summary(o.rating.score for o in rated), comments)
+
+
 def build_report(
     all_orders: list[ServiceOrder], technicians: Iterable[Technician], period: Period
 ) -> OperationalReport:
@@ -135,8 +171,9 @@ def build_report(
         period=period,
         volume=volume(in_period),
         revenue=revenue(all_orders, period),
-        technicians=technician_rows(in_period, technicians),
+        technicians=technician_rows(in_period, technicians, rated_in(all_orders, period)),
         turnaround=turnaround(in_period),
+        satisfaction=satisfaction(all_orders, period),
     )
 
 

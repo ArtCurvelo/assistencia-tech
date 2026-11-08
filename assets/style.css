@@ -1838,3 +1838,19 @@ textarea:focus-visible,
   .receipt-sheet { box-shadow: none; border-radius: 0; padding: 0; }
   .receipt-section { break-inside: avoid; }
 }
+
+/* Avaliação do atendimento (add-service-rating) */
+.score-btn {
+  min-width: 40px; height: 40px; border-radius: 8px; cursor: pointer; font-weight: 700;
+  background: var(--input-bg); color: inherit; border: 1px solid rgba(255, 255, 255, 0.14);
+}
+.score-btn:hover { border-color: var(--green); }
+.score-btn:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.score-btn-active { background: var(--green); color: #031008; border-color: var(--green); }
+.rating-score { font-size: 32px; font-weight: 800; line-height: 1; }
+.rating-comment { font-style: italic; white-space: pre-wrap; }
+.rating-comment-item { width: 100%; padding: 10px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); }
+.rating-badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+.rating-promotor { background: rgba(57, 255, 90, 0.14); color: #39ff5a; }
+.rating-neutro { background: rgba(255, 190, 70, 0.14); color: #ffbe46; }
+.rating-detrator { background: rgba(255, 92, 92, 0.14); color: #ff5c5c; }

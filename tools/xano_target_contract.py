@@ -50,7 +50,8 @@ ORDER_FIELDS = (
     "previsao_entrega",
     "garantia_de",
 )
-ORDER_WITH_ADDONS = ORDER_FIELDS + ("_itens", "_pagamentos", "_historico", "_garantia")
+ORDER_WITH_ADDONS = ORDER_FIELDS + ("_itens", "_pagamentos", "_historico", "_garantia", "_avaliacao")
+RATING_FIELDS = ("id", "created_at", "os_servicos_id", "cliente_id", "nota", "comentario")
 
 
 @dataclass(frozen=True)
@@ -141,6 +142,8 @@ TARGET: dict[str, tuple[Endpoint, ...]] = {
         Endpoint("post", "/portal/decisao_orcamento", "bearer", ("os_servicos_id", "aprovar", "motivo"), ORDER_FIELDS,
                  {"status": ORDER_STATUS_VALUES},
                  purpose="Perfil cliente: aprova ou recusa (com motivo) o orçamento de uma ordem própria."),
+        Endpoint("post", "/portal/avaliacao", "bearer", ("os_servicos_id", "nota", "comentario"), RATING_FIELDS,
+                 purpose="Perfil cliente: avalia de 0 a 10 uma ordem própria entregue, uma única vez."),
         Endpoint("get", "/pecas", "bearer", (), PART_FIELDS, purpose="Colaboradores: catálogo de peças."),
         Endpoint("post", "/pecas", "bearer", ("codigo", "nome", "preco", "estoque_minimo", "ativo"), PART_FIELDS,
                  purpose="Admin e atendente: cadastra peça (quantidade inicial zero; código único)."),

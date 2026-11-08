@@ -7,7 +7,16 @@ import reflex as rx
 from ..data.errors import DataAccessError, NotFoundError
 from ..domain.permissions import Permission
 from ..models import OrderStatus
-from ..presenters import account_row, item_rows, payment_rows, portal_order_row, portal_timeline, totals_row
+from ..domain import rating as rating_rules
+from ..presenters import (
+    account_row,
+    item_rows,
+    payment_rows,
+    portal_order_row,
+    portal_timeline,
+    rating_row,
+    totals_row,
+)
 from ..services import PortalService
 from .base import AppState
 
@@ -45,6 +54,10 @@ class PortalOrderState(PortalState):
     payments: list[dict[str, str]] = []
     timeline: list[dict[str, str]] = []
     totals: dict[str, str] = {}
+    rating: dict[str, str] = {}
+    can_rate: bool = False
+    rate_score: str = ""  # nota escolhida no formulário (add-service-rating)
+    rating_question: str = rating_rules.QUESTION
 
     async def load_portal_order(self):
         self._clear_feedback()
@@ -73,6 +86,13 @@ class PortalOrderState(PortalState):
         self.payments = payment_rows(item.order)
         self.timeline = portal_timeline(item.order)
         self.totals = totals_row(item.order)
+        self.rating = rating_row(item.order)
+        self.can_rate = (
+            item.order.status == OrderStatus.DELIVERED
+            and item.order.rating is None
+            and Permission.PORTAL_RATE.value in self.user_permissions
+        )
+        self.rate_score = ""
         self.found = True
         self.data_error = ""
 
@@ -102,3 +122,20 @@ class PortalOrderState(PortalState):
         reason = str(form_data.get("reason", ""))
         async for event in self._decide(False, reason, "Orçamento recusado. A ordem foi cancelada."):
             yield event
+
+    def choose_score(self, score: str):
+        self.rate_score = score
+
+    async def submit_rating(self, form_data: dict):
+        if not self._start():
+            return
+        yield
+        try:
+            service = PortalService(self._gateway(), await self._current())
+            item = await service.rate(self.order.get("code", ""), self.rate_score, form_data.get("comment", ""))
+            self._show(item)
+            yield self._succeed("Obrigado pela sua avaliação!")
+        except DataAccessError as error:
+            yield self._fail(error)
+        finally:
+            self.is_loading = False

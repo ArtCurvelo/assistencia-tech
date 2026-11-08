@@ -173,6 +173,10 @@ class PortalRepository(Protocol):
         """Grava a decisão do cliente sobre o orçamento; ``order`` já vem atualizada pelo domínio."""
         ...
 
+    async def save_rating(self, client_id: str, order: ServiceOrder) -> ServiceOrder:
+        """Grava a avaliação (``order.rating``) de uma ordem do cliente; recusa se já houver uma."""
+        ...
+
 
 @dataclass(frozen=True)
 class DataGateway:

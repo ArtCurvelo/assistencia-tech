@@ -123,6 +123,55 @@ def _decision_panel() -> rx.Component:
     )
 
 
+def _score_button(score: str) -> rx.Component:
+    chosen = PortalOrderState.rate_score == score
+    return rx.button(
+        score,
+        type="button",
+        on_click=PortalOrderState.choose_score(score),
+        class_name=rx.cond(chosen, "score-btn score-btn-active", "score-btn"),
+        aria_pressed=rx.cond(chosen, "true", "false"),
+        aria_label="Nota " + score,
+    )
+
+
+def _rating_panel() -> rx.Component:
+    """Avaliação do atendimento após a entrega (add-service-rating)."""
+    r = PortalOrderState.rating
+    return rx.cond(
+        PortalOrderState.can_rate,
+        panel(
+            panel_header("Avalie o atendimento"),
+            rx.text(PortalOrderState.rating_question),
+            rx.form(
+                rx.flex(*[_score_button(str(n)) for n in range(11)], gap="2", wrap="wrap", role="group",
+                        aria_label="Nota de 0 a 10"),
+                rx.flex(rx.text("0 = nada provável", class_name="muted tiny"),
+                        rx.text("10 = com certeza", class_name="muted tiny"), justify="between"),
+                field("Comentário (opcional)", rx.text_area(name="comment", max_length=500, class_name="input",
+                                                           placeholder="Conte como foi o atendimento")),
+                rx.button("Enviar avaliação", type="submit", loading=PortalOrderState.is_loading,
+                          disabled=(PortalOrderState.rate_score == "") | PortalOrderState.is_loading,
+                          class_name="btn btn-primary"),
+                rx.text("A avaliação é enviada uma única vez e não pode ser alterada.", class_name="muted tiny"),
+                on_submit=PortalOrderState.submit_rating,
+                class_name="stack-form",
+            ),
+            class_name="decision-panel",
+        ),
+        rx.cond(
+            r["score"] != "",
+            panel(
+                panel_header("Sua avaliação"),
+                rx.flex(rx.text(r["score"], class_name="rating-score"), rx.text("de 10", class_name="muted"),
+                        rx.text("Avaliada em ", r["at"], class_name="muted tiny"), gap="12px", align="center",
+                        wrap="wrap"),
+                rx.cond(r["comment"] != "", rx.text("\u201c", r["comment"], "\u201d", class_name="rating-comment")),
+            ),
+        ),
+    )
+
+
 def _refuse_dialog() -> rx.Component:
     return form_dialog(
         "Recusar orçamento",
@@ -164,6 +213,7 @@ def portal_order_page() -> rx.Component:
                     rx.cond(o["diagnosis"] != "", rx.box(_info("Diagnóstico", o["diagnosis"]))),
                 ),
                 _decision_panel(),
+                _rating_panel(),
                 _refuse_dialog(),
                 panel(
                     panel_header("Orçamento"),

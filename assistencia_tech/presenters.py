@@ -8,10 +8,11 @@ pré-formatados (CPF, telefone, reais, datas) e cada linha recebe uma chave
 from __future__ import annotations
 
 import unicodedata
+from datetime import timedelta
 from decimal import Decimal
 
-from .domain.clock import format_datetime, now_brt
-from .domain import deadlines, receipt
+from .domain.clock import BRT, format_datetime, now_brt
+from .domain import deadlines, rating as rating_rules, receipt
 from .domain.inventory import stock_level
 from .domain.history import KIND_CLIENT_DECISION, KIND_OPENED, KIND_STATUS
 from .domain.order_workflow import BUDGET_EDITABLE, OPEN_STATUSES, TECHNICIAN_LOCKED
@@ -230,8 +231,27 @@ PAYMENT_COLORS: dict[str, str] = {"Pendente": "#ffbe46", "Parcial": "#25a7ff", "
 
 EMPTY_METRICS: Row = {
     "open": "—", "awaiting": "—", "ready": "—", "receivable": "—", "clients": "—", "equipment": "—", "orders": "—",
-    "overdue": "—",
+    "overdue": "—", "nps": "—", "nps_count": "—",
 }
+NPS_WINDOW_DAYS = 90
+
+
+def nps_text(value: int | None) -> str:
+    return "—" if value is None else (f"+{value}" if value > 0 else str(value))
+
+
+def average_text(value: float | None) -> str:
+    return "—" if value is None else f"{value:.1f}".replace(".", ",")
+
+
+def rating_row(order: ServiceOrder) -> Row:
+    """Avaliação do cliente (add-service-rating); vazio quando ainda não há."""
+    r = order.rating
+    if r is None:
+        return {"score": "", "group": "", "group_class": "", "comment": "", "at": ""}
+    group = rating_rules.classify(r.score)
+    return {"score": str(r.score), "group": group, "group_class": f"rating-badge rating-{slug(group)}",
+            "comment": r.comment, "at": format_datetime(r.at)}
 
 
 def dashboard_metrics(catalog: Catalog) -> Row:
@@ -248,7 +268,15 @@ def dashboard_metrics(catalog: Catalog) -> Row:
         "clients": str(len(catalog.clients)),
         "equipment": str(len(catalog.equipment)),
         "orders": str(len(catalog.orders)),
+        **_dashboard_nps(catalog),
     }
+
+
+def _dashboard_nps(catalog: Catalog) -> Row:
+    since = now_brt().date() - timedelta(days=NPS_WINDOW_DAYS)
+    scores = [o.rating.score for o in catalog.orders if o.rating and o.rating.at.astimezone(BRT).date() >= since]
+    summary = rating_rules.nps_summary(scores)
+    return {"nps": nps_text(summary.nps), "nps_count": str(summary.count)}
 
 
 def status_counts(catalog: Catalog) -> list[Row]:
@@ -368,10 +396,22 @@ def report_view(report) -> dict:
         "methods": [{"method": m, "amount": format_brl(a)} for m, a in r.by_method.items()],
         "technicians": [
             {"name": row.name, "assigned": str(row.assigned), "finished": str(row.finished),
-             "budget": format_brl(row.budget_total)}
+             "budget": format_brl(row.budget_total), "rating": average_text(row.average_rating)}
             for row in report.technicians
         ],
+        "satisfaction": _satisfaction_view(report.satisfaction),
+        "comments": [
+            {"code": c.code, "score": str(c.score), "comment": c.comment, "at": format_datetime(c.at),
+             "group_class": f"rating-badge rating-{slug(rating_rules.classify(c.score))}"}
+            for c in report.satisfaction.comments
+        ],
     }
+
+
+def _satisfaction_view(satisfaction) -> Row:
+    s = satisfaction.summary
+    return {"nps": nps_text(s.nps), "average": average_text(s.average), "count": str(s.count),
+            "promoters": str(s.promoters), "neutrals": str(s.neutrals), "detractors": str(s.detractors)}
 
 
 # ----------------------------------------------------------------------

@@ -127,7 +127,7 @@ O `POST /auth/signup` atual cria usuários `member` sem vínculo: remova-o ou re
 **Importante para a privacidade:** o `GET /consulta_publica` não pode devolver nome, CPF, telefone, valores ou diagnóstico. O `GET /portal/minhas_ordens` deve filtrar no servidor pelo `cliente_id` do token, nunca por um parâmetro enviado pelo navegador.
 
 
-### Acréscimos dos incrementos (estoque, prazos e garantia)
+### Acréscimos dos incrementos (estoque, prazos, garantia e avaliação)
 
 | Método e caminho | Acesso | Entrada | Resposta 200 |
 |---|---|---|---|
@@ -136,9 +136,11 @@ O `POST /auth/signup` atual cria usuários `member` sem vínculo: remova-o ou re
 | `PATCH /pecas/{peca_id}` | token: admin, atendente | os mesmos campos | a peça; nunca altera a quantidade |
 | `POST /estoque/entrada` | token: admin, atendente | `peca_id`, `quantidade`, `observacao` | a peça com a nova quantidade, e a movimentação |
 | `GET /estoque/movimentos` | token: colaboradores | — | movimentações com `_ordem` (id e `created_at` da ordem) |
+| `POST /portal/avaliacao` | token: cliente | `os_servicos_id`, `nota` (0 a 10), `comentario` (até 500 caracteres) | a avaliação; somente ordem própria `entregue`, uma única vez (índice único em `avaliacao.os_servicos_id`) |
 
 - `POST /os_itens` aceita `peca_id`: dá baixa no estoque na mesma transação e recusa quantidade insuficiente. `DELETE /os_itens/{id}`, o cancelamento em `PATCH /os_servicos/{id}` e a recusa em `POST /portal/decisao_orcamento` devolvem as peças.
 - `os_servicos` tem `previsao_entrega` (padrão: abertura + 7 dias; nunca anterior à abertura; alterável por admin e atendente fora de entregue/cancelado) e `garantia_de` (ordem original, entregue depois de concluída há no máximo 90 dias, mesmo cliente e aparelho). As leituras trazem o *addon* `_garantia`, e a consulta pública devolve `previsao_entrega`.
+- Tabela `avaliacao` (`os_servicos_id`, `cliente_id`, `nota`, `comentario`): avaliação imutável do atendimento. As leituras de `os_servicos` e `portal/minhas_ordens` trazem o *addon* `_avaliacao` (`id`, `created_at`, `nota`, `comentario`); o NPS é calculado na aplicação.
 
 ## 3. O que continua na aplicação
 

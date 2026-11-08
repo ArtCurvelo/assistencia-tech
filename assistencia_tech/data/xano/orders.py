@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import Any
 
 from ...models import PublicOrderView, ServiceOrder
-from ..errors import NotFoundError
+from ..errors import NotFoundError, ValidationError
 from . import mappers
 from .base import XanoRepository
 
@@ -127,6 +127,19 @@ class XanoPortalRepository(XanoRepository):
         order_id = int(mappers.order_id_of(order))
         payload = {"os_servicos_id": order_id, "aprovar": approve, "motivo": reason}
         await self._call("portal.client_decision", json=payload)
+        for refreshed, _ in await self.client_orders(client_id):
+            if refreshed.code == order.code:
+                return refreshed
+        raise NotFoundError("Ordem de serviço não encontrada.")
+
+    async def save_rating(self, client_id: str, order: ServiceOrder) -> ServiceOrder:
+        # O backend repete as validações (dono, entregue, nota, avaliação única).
+        rating = order.rating
+        if rating is None:
+            raise ValidationError("Informe a nota da avaliação.")
+        payload = {"os_servicos_id": int(mappers.order_id_of(order)), "nota": rating.score,
+                   "comentario": rating.comment}
+        await self._call("portal.client_rating", json=payload)
         for refreshed, _ in await self.client_orders(client_id):
             if refreshed.code == order.code:
                 return refreshed

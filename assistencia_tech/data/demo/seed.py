@@ -21,6 +21,7 @@ from ...models import (
     OrderItemCreate,
     OrderStatus,
     PaymentCreate,
+    Rating,
     ServiceOrder,
     Technician,
 )
@@ -152,5 +153,8 @@ def seed_orders() -> list[ServiceOrder]:
     received = _Order("OS-2026-00126", "5", "7", "Não reconhece o chip", _at(17, 16))
 
     orders = [received, repair, analysis, awaiting, done_partial, cancelled, delivered]
+    # Avaliação da cliente após a entrega (add-service-rating).
+    rating = Rating(score=9, comment="Atendimento rápido e explicaram tudo antes de trocar a peça.", at=_at(5, 18))
+    delivered.order = delivered.order.model_copy(update={"rating": rating})
     # Previsão padrão de 7 dias (add-deadlines-and-warranty).
     return [o.order.model_copy(update={"due_date": default_due_date(o.order.opened_at)}) for o in orders]

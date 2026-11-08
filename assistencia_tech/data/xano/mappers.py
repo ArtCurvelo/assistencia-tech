@@ -27,6 +27,7 @@ from ...models import (
     OrderStatus,
     Payment,
     PublicOrderView,
+    Rating,
     Role,
     ServiceOrder,
     Technician,
@@ -308,6 +309,14 @@ def _linked_code(record: Any) -> str:
     return ""
 
 
+def rating_from(record: Any) -> Rating | None:
+    """Avaliação devolvida pelo *addon* ``_avaliacao`` (add-service-rating)."""
+    if not isinstance(record, dict) or record.get("nota") is None:
+        return None
+    return Rating(score=int(record["nota"]), comment=_text(record.get("comentario")),
+                  at=_required_datetime(record.get("created_at")))
+
+
 def order_id_of(order: ServiceOrder) -> str:
     return str(parse_order_code(order.code)[1])
 
@@ -331,6 +340,7 @@ def order_from(record: Record) -> ServiceOrder:
         history=history,
         due_date=to_date(record.get("previsao_entrega")),
         warranty_of=_linked_code(record.get("_garantia")),
+        rating=rating_from(record.get("_avaliacao")),
     )
 
 

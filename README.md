@@ -14,6 +14,7 @@ Aplicação acadêmica de gestão de assistência técnica, desenvolvida em Pyth
 - Aprovação ou recusa do orçamento pelo próprio cliente no portal.
 - Estoque de peças: catálogo, entradas, movimentações, alerta de estoque baixo e baixa automática pelos orçamentos.
 - Previsão de entrega, ordens atrasadas e garantia de 90 dias com abertura de ordem em garantia sem cobrança.
+- Avaliação do atendimento (nota de 0 a 10) pelo cliente após a entrega, com NPS no painel e nos relatórios.
 - Comprovante de entrada e de entrega para imprimir ou salvar em PDF, com QR code que abre a consulta pública da ordem (`/consulta/<código>`).
 
 ## Requisitos

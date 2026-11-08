@@ -14,6 +14,7 @@ from ..presenters import (
     next_statuses,
     order_permissions,
     order_row,
+    rating_row,
     payment_rows,
     totals_row,
 )
@@ -37,6 +38,7 @@ class OrderDetailState(AdminState):
     payments: list[dict[str, str]] = []
     timeline: list[dict[str, str]] = []
     totals: dict[str, str] = {}
+    rating: dict[str, str] = {}
     permissions: dict[str, str] = {}
     next_status: list[str] = []
     item_kind: str = "Serviço"
@@ -59,6 +61,7 @@ class OrderDetailState(AdminState):
         self.payments = payment_rows(order)
         self.timeline = list(reversed(history_rows(order)))
         self.totals = totals_row(order)
+        self.rating = rating_row(order)
         self.permissions = order_permissions(order, principal)
         self.next_status = next_statuses(order, principal)
         self.technicians = [

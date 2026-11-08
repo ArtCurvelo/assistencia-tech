@@ -149,6 +149,8 @@ class ReportsState(AppState):
     summary: dict[str, str] = {}
     methods: list[dict[str, str]] = []
     technician_rows: list[dict[str, str]] = []
+    satisfaction: dict[str, str] = {}
+    comments: list[dict[str, str]] = []
     loaded: bool = False
 
     async def _build(self, start: str, end: str) -> None:
@@ -159,6 +161,8 @@ class ReportsState(AppState):
         self.summary = view["summary"]
         self.methods = view["methods"]
         self.technician_rows = view["technicians"]
+        self.satisfaction = view["satisfaction"]
+        self.comments = view["comments"]
         self.loaded = True
         self.data_error = ""
 

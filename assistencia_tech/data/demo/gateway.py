@@ -180,6 +180,14 @@ class DemoPortalRepository:
             raise NotFoundError("Ordem de serviço não encontrada.")
         return await self._orders.save(order)
 
+    async def save_rating(self, client_id: str, order: ServiceOrder) -> ServiceOrder:
+        current = await self._orders.get_by_code(order.code)
+        if current.client_id != client_id:
+            raise NotFoundError("Ordem de serviço não encontrada.")
+        if current.rating is not None:
+            raise ValidationError("Esta ordem já foi avaliada.")
+        return await self._orders.save(current.model_copy(update={"rating": order.rating}))
+
     async def public_order(self, code: str) -> PublicOrderView:
         order = await self._orders.get_by_code(code)
         equipment = await self._equipment_of(order.equipment_id)

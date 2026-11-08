@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from ..data.errors import NotFoundError
 from ..data.repositories import DataGateway
 from ..domain import order_operations as ops
+from ..domain import rating as rating_rules
 from ..domain.clock import Clock, now_brt
 from ..domain.permissions import Permission, Principal, require
 from ..models import Client, Equipment, ServiceOrder
@@ -53,4 +54,13 @@ class PortalService:
         item = await self.my_order(code)
         updated = ops.client_decision(item.order, approve, reason, self._clock(), user.display_name)
         saved = await self._gw.portal.save_client_decision(client_id, updated, approve, (reason or "").strip())
+        return PortalOrder(saved, item.equipment)
+
+    async def rate(self, code: str, score: object, comment: object = "") -> PortalOrder:
+        """O cliente avalia uma ordem própria entregue, uma única vez (add-service-rating)."""
+        require(self._principal, Permission.PORTAL_RATE)
+        client_id = self._client_id()
+        item = await self.my_order(code)
+        rated = rating_rules.rate(item.order, score, comment, self._clock())
+        saved = await self._gw.portal.save_rating(client_id, rated)
         return PortalOrder(saved, item.equipment)

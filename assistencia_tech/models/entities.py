@@ -238,6 +238,14 @@ class OrderCreate(_Model):
     warranty_of: str = ""  # código da ordem original, nas ordens em garantia
 
 
+class Rating(_Model):
+    """Avaliação do atendimento pelo cliente (add-service-rating): nota de 0 a 10."""
+
+    score: int = Field(ge=0, le=10)
+    comment: str = ""
+    at: datetime
+
+
 class ServiceOrder(OrderCreate):
     code: Text
     status: OrderStatus = OrderStatus.RECEIVED
@@ -249,6 +257,7 @@ class ServiceOrder(OrderCreate):
     items: tuple[OrderItem, ...] = ()
     payments: tuple[Payment, ...] = ()
     history: tuple[HistoryEvent, ...] = ()
+    rating: Rating | None = None
 
 
 class PublicOrderView(_Model):
