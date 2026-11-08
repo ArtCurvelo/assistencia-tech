@@ -2,4 +2,5 @@
 reflex>=0.8.28,<0.9.0
 httpx>=0.28,<1.0
 segno>=1.6,<2  # QR code dos comprovantes (SVG gerado localmente)
+greenlet>=3.0  # exigido pelo sqlalchemy.ext.asyncio que o Reflex importa; opcional no SQLAlchemy 2.1
 truststore>=0.10  # usa os certificados do sistema operacional no cliente Xano
