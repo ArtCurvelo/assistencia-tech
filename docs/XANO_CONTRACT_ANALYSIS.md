@@ -1,13 +1,13 @@
 # Análise dos contratos do Xano
 
-Levantamento feito em 06/11/2026 a partir da documentação OpenAPI publicada pelo próprio Xano para cada API group (`/apispec:<grupo>?type=json`). As cópias estão em `docs/xano-openapi/`. Nenhum endpoint de dados foi chamado; apenas a documentação foi lida.
+Levantamento feito em 06/11/2026 a partir da documentação OpenAPI publicada pelo próprio Xano para cada API group (`/apispec:<grupo>?type=json`). As cópias desse backend do colega não são versionadas, para não publicar os endereços de endpoints sem autenticação; ficaram apenas as do backend próprio (`*-assistencia-tech-*.json`). Nenhum endpoint de dados foi chamado; apenas a documentação foi lida.
 
 | Grupo | Base | Documentação |
 |---|---|---|
-| Autenticação | `api:GRUPO-AUTH-COLEGA` | obtida (12 operações) |
-| Cliente | `api:GRUPO-CLIENTE-COLEGA` | obtida (15 operações) |
-| Ordens de Serviço | `api:GRUPO-OS-COLEGA` | obtida (29 operações) |
-| Sistema de Gestão | `api:GRUPO-GESTAO-COLEGA` | **indisponível** (HTTP 403: "Access to this resource is restricted") |
+| Autenticação | `api:<grupo de autenticação do colega>` | obtida (12 operações) |
+| Cliente | `api:<grupo de clientes do colega>` | obtida (15 operações) |
+| Ordens de Serviço | `api:<grupo de ordens do colega>` | obtida (29 operações) |
+| Sistema de Gestão | `api:<grupo de gestão do colega>` | **indisponível** (HTTP 403: "Access to this resource is restricted") |
 
 ## 1. Alertas antes de qualquer integração
 

@@ -68,18 +68,6 @@ def test_query_parameters_count_as_request_fields():
     assert check_endpoint(_spec("/cliente", "get", op), target) == []
 
 
-COLLEAGUE_GROUP_IDS = {"auth": "GRUPO-AUTH-COLEGA", "cliente": "GRUPO-CLIENTE-COLEGA", "os": "GRUPO-OS-COLEGA"}
-
-
-def test_saved_snapshots_report_current_gaps():
-    # Cópias da documentação do workspace original do grupo (antes do backend próprio).
-    text, pending = report(load_specs(True, DEFAULT_INSTANCE, COLLEAGUE_GROUP_IDS), COLLEAGUE_GROUP_IDS)
-    total = sum(len(e) for e in TARGET.values())
-    assert pending == total - 1  # somente POST /auth/login já atende ao alvo
-    assert "[OK ] POST   /auth/login" in text
-    assert "role deve aceitar admin, atendente, tecnico, cliente (hoje: admin, member)" in text
-
-
 def test_custom_instance_and_group_ids(monkeypatch):
     calls = []
 
