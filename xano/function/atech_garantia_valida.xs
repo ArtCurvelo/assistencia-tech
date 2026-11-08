@@ -42,4 +42,5 @@ function "atech_garantia_valida" {
     }
   }
   response = $original.id
+  guid = "yOclPBdtyfdzlTCH4ODJNmjUuIA"
 }
