@@ -11,7 +11,7 @@ import unicodedata
 from decimal import Decimal
 
 from .domain.clock import format_datetime, now_brt
-from .domain import deadlines
+from .domain import deadlines, receipt
 from .domain.inventory import stock_level
 from .domain.history import KIND_CLIENT_DECISION, KIND_OPENED, KIND_STATUS
 from .domain.order_workflow import BUDGET_EDITABLE, OPEN_STATUSES, TECHNICIAN_LOCKED
@@ -409,4 +409,34 @@ def movement_row(movement, parts_by_id: dict) -> Row:
         "order": movement.order_code,
         "author": movement.author,
         "note": movement.note or "—",
+    }
+
+
+# ----------------------------------------------------------------------
+# Comprovante da ordem (add-order-receipt)
+# ----------------------------------------------------------------------
+def receipt_row(order: ServiceOrder, client: Client | None, equipment: Equipment | None, base_url: str) -> Row:
+    """Textos do comprovante: dados mínimos do cliente (CPF mascarado), sem autores nem diagnóstico."""
+    url = receipt.tracking_url(base_url, order.code)
+    delivered = deadlines.delivered_at(order)
+    until = deadlines.warranty_until(order)
+    return {
+        "kind": receipt.receipt_kind(order),
+        "is_delivery": _flag(order.status == OrderStatus.DELIVERED),
+        "code": order.code,
+        "status": order.status.value,
+        "opened_at": format_datetime(order.opened_at),
+        "client": client.name if client else "Cliente removido",
+        "cpf": mask_cpf(client.cpf) if client else "—",
+        "phone": format_phone(client.phone) if client else "—",
+        "equipment": equipment.description if equipment else "Equipamento removido",
+        "serial": (equipment.serial_number if equipment else "") or "—",
+        "problem": order.problem,
+        "due_date": f"{order.due_date:%d/%m/%Y}" if order.due_date else "—",
+        "cancel_reason": order.cancel_reason if order.status == OrderStatus.CANCELLED else "",
+        "warranty_of": order.warranty_of,
+        "delivered_at": format_datetime(delivered) if delivered else "",
+        "warranty_until": f"{until:%d/%m/%Y}" if until else "",
+        "tracking_url": url,
+        "qr": receipt.qr_svg_data_uri(url),
     }

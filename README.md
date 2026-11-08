@@ -11,6 +11,10 @@ Aplicação acadêmica de gestão de assistência técnica, desenvolvida em Pyth
 - Login, logout e cadastro de cliente; perfis Administrador, Atendente, Técnico e Cliente com permissões aplicadas nas operações.
 - Portal do cliente (`/minha-conta`) com as próprias ordens, orçamento e andamento.
 - Gestão de colaboradores (cargos, senha provisória, desativação) e relatórios por período com exportação CSV.
+- Aprovação ou recusa do orçamento pelo próprio cliente no portal.
+- Estoque de peças: catálogo, entradas, movimentações, alerta de estoque baixo e baixa automática pelos orçamentos.
+- Previsão de entrega, ordens atrasadas e garantia de 90 dias com abertura de ordem em garantia sem cobrança.
+- Comprovante de entrada e de entrega para imprimir ou salvar em PDF, com QR code que abre a consulta pública da ordem (`/consulta/<código>`).
 
 ## Requisitos
 - Python 3.10+ (a `.venv` do projeto usa Python 3.14).
@@ -47,7 +51,7 @@ python -m pytest --cov=assistencia_tech   # cobertura (pytest-cov)
 ```
 
 ## Rotas
-Públicas: `/`, `/servicos`, `/login`, `/cadastro`, `/acesso-negado`. Cliente: `/minha-conta` e `/minha-conta/ordens/[codigo]`. Administração (exige login):
+Públicas: `/`, `/servicos`, `/consulta/[codigo]`, `/login`, `/cadastro`, `/acesso-negado`. Cliente: `/minha-conta`, `/minha-conta/ordens/[codigo]` e `/minha-conta/ordens/[codigo]/comprovante`. Administração (exige login):
 
 - `/`
 - `/servicos`
@@ -56,19 +60,22 @@ Públicas: `/`, `/servicos`, `/login`, `/cadastro`, `/acesso-negado`. Cliente: `
 - `/admin`
 - `/admin/clientes` e `/admin/clientes/[cliente_id]`
 - `/admin/equipamentos`
-- `/admin/ordens` e `/admin/ordens/[codigo]`
+- `/admin/ordens`, `/admin/ordens/[codigo]` e `/admin/ordens/[codigo]/comprovante`
+- `/admin/estoque`
 - `/admin/relatorios` (Administrador e Atendente)
 - `/admin/colaboradores` (Administrador)
 
 ## Fonte de dados
 A aplicação usa uma camada de acesso a dados com duas fontes, escolhidas por variável de ambiente (veja `.env.example` e `docs/XANO_INTEGRATION.md`):
 - `demo` (padrão): dados fictícios em memória, sempre identificados como "Modo demonstração".
-- `xano`: backend Xano. Até a documentação oficial da API ser fornecida, as operações informam que a integração está pendente, sem enviar requisições e sem recorrer aos dados de demonstração.
+- `xano`: backend Xano (pasta `xano/`, em XanoScript), sem recorrer aos dados de demonstração quando indisponível.
+
+O QR code dos comprovantes aponta para `ASSISTENCIA_PUBLIC_URL` (por exemplo, o domínio do site publicado). Sem essa variável, usa o endereço pelo qual o sistema foi aberto; com `localhost`, o QR code só funciona no próprio computador.
 
 ## Limitações conhecidas
 - No modo demonstração, os registros ficam em memória no processo da aplicação; não existe persistência em banco.
 - Contas, sessões e bloqueios de login ficam em memória no modo demonstração e se perdem ao reiniciar o servidor.
-- A integração real com o Xano depende da documentação oficial da API (contratos ainda não fornecidos).
+- O PDF do comprovante é gerado pela impressão do navegador ("Salvar como PDF"), não pelo servidor.
 
 ## Documentação
 - `docs/XANO_DEV_ENV.md` — Xano CLI, Developer MCP e fluxo de sincronização do backend.

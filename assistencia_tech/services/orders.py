@@ -17,6 +17,8 @@ from ..domain.permissions import Permission as P
 from ..domain.permissions import Principal, ensure_can_modify_order, require, status_permission
 from ..domain.order_workflow import parse_status
 from ..models import (
+    Client,
+    Equipment,
     ItemKind,
     OrderCreate,
     OrderItemCreate,
@@ -48,6 +50,20 @@ class OrderService:
     async def get(self, code: str) -> ServiceOrder:
         require(self._principal, P.ORDERS_VIEW)
         return await self._gw.orders.get_by_code(code)
+
+    async def receipt(self, code: str) -> tuple[ServiceOrder, Client | None, Equipment | None]:
+        """Ordem, cliente e equipamento para o comprovante (add-order-receipt)."""
+        order = await self.get(code)
+        client = equipment = None
+        try:
+            client = await self._gw.clients.get(order.client_id)
+        except NotFoundError:
+            pass  # cliente removido: o comprovante informa
+        try:
+            equipment = await self._gw.equipment.get(order.equipment_id)
+        except NotFoundError:
+            pass
+        return order, client, equipment
 
     async def open(self, form: Mapping[str, Any]) -> ServiceOrder:
         require(self._principal, P.ORDERS_OPEN)

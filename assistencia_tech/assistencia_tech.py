@@ -15,8 +15,10 @@ from .pages.inventory import inventory_page
 from .pages.order_detail import order_detail_page
 from .pages.orders import orders_page
 from .pages.portal import portal_order_page, portal_page
+from .pages.receipt import portal_receipt_page, receipt_page, tracking_link_page
 from .pages.public import access_denied_page, home_page, login_page, not_found_page, register_page, services_page
 from .state.admin import ReportsState, StaffState
+from .state.receipt import PortalReceiptState, ReceiptState, TrackingLinkState
 from .state import (
     AdminState,
     AppState,
@@ -44,6 +46,8 @@ app.add_page(home_page, route="/", title="Início" + SUFFIX, on_load=AppState.lo
 app.add_page(services_page, route="/servicos", title="Serviços" + SUFFIX, on_load=AppState.load_session)
 app.add_page(login_page, route="/login", title="Entrar" + SUFFIX, on_load=LoginState.load_login)
 app.add_page(register_page, route="/cadastro", title="Criar conta" + SUFFIX, on_load=RegisterState.load_register)
+app.add_page(tracking_link_page, route="/consulta/[codigo]", title="Consulta da ordem" + SUFFIX,
+             on_load=TrackingLinkState.load_tracking_link)
 app.add_page(access_denied_page, route="/acesso-negado", title="Acesso negado" + SUFFIX,
              on_load=AppState.load_session)
 app.add_page(not_found_page, route=constants.Page404.SLUG, title="Página não encontrada" + SUFFIX,
@@ -53,6 +57,8 @@ app.add_page(not_found_page, route=constants.Page404.SLUG, title="Página não e
 app.add_page(portal_page, route="/minha-conta", title="Minha conta" + SUFFIX, on_load=PortalState.load_portal)
 app.add_page(portal_order_page, route="/minha-conta/ordens/[codigo]", title="Minha ordem" + SUFFIX,
              on_load=PortalOrderState.load_portal_order)
+app.add_page(portal_receipt_page, route="/minha-conta/ordens/[codigo]/comprovante", title="Comprovante" + SUFFIX,
+             on_load=PortalReceiptState.load_portal_receipt)
 
 # Administração
 app.add_page(dashboard_page, route="/admin", title="Painel" + SUFFIX, on_load=AdminState.load_admin_data)
@@ -65,6 +71,8 @@ app.add_page(orders_page, route="/admin/ordens", title="Ordens de serviço" + SU
              on_load=OrderState.load_admin_data)
 app.add_page(order_detail_page, route="/admin/ordens/[codigo]", title="Ordem de serviço" + SUFFIX,
              on_load=OrderDetailState.load_order)
+app.add_page(receipt_page, route="/admin/ordens/[codigo]/comprovante", title="Comprovante" + SUFFIX,
+             on_load=ReceiptState.load_receipt)
 app.add_page(inventory_page, route="/admin/estoque", title="Estoque" + SUFFIX,
              on_load=InventoryState.load_inventory)
 app.add_page(reports_page, route="/admin/relatorios", title="Relatórios" + SUFFIX, on_load=ReportsState.load_reports)

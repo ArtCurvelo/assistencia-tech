@@ -150,7 +150,11 @@ def portal_order_page() -> rx.Component:
             rx.vstack(
                 panel(
                     rx.flex(status_badge(o["status"], o["status_class"]),
-                            payment_badge(o["payment_status"], o["payment_class"]), gap="3"),
+                            payment_badge(o["payment_status"], o["payment_class"]),
+                            rx.link("🧾 Comprovante (imprimir / PDF)",
+                                    href="/minha-conta/ordens/" + o["code"] + "/comprovante",
+                                    class_name="accent-link"),
+                            gap="3", align="center", wrap="wrap"),
                     rx.grid(_info("Equipamento", o["equipment"]), _info("Problema relatado", o["problem"]),
                             _info("Última atualização", o["updated_at"]),
                             _info("Previsão de entrega", o["due_date"]),

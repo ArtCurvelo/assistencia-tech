@@ -25,6 +25,7 @@ ENV_XANO_TIMEOUT = "XANO_TIMEOUT_SECONDS"
 ENV_XANO_GROUP_AUTH = "XANO_GROUP_AUTH"
 ENV_XANO_GROUP_CLIENTE = "XANO_GROUP_CLIENTE"
 ENV_XANO_GROUP_OS = "XANO_GROUP_OS"
+ENV_PUBLIC_URL = "ASSISTENCIA_PUBLIC_URL"  # endereço público usado no QR code dos comprovantes
 
 DEFAULT_GROUP_AUTH = "assistencia-tech-auth"
 DEFAULT_GROUP_CLIENTE = "assistencia-tech-cliente"
@@ -39,6 +40,7 @@ class Settings:
     xano_group_auth: str = DEFAULT_GROUP_AUTH
     xano_group_cliente: str = DEFAULT_GROUP_CLIENTE
     xano_group_os: str = DEFAULT_GROUP_OS
+    public_url: str | None = None
 
 
 def _clean(value: str | None) -> str | None:
@@ -60,6 +62,14 @@ def _parse_timeout(raw: str | None) -> float:
             f"{ENV_XANO_TIMEOUT} deve ser um número positivo de segundos (recebido: '{raw}')."
         )
     return timeout
+
+
+def _parse_public_url(raw: str | None) -> str | None:
+    if raw is None:
+        return None
+    if not raw.startswith(("http://", "https://")):
+        raise ConfigurationError(f"{ENV_PUBLIC_URL} deve começar com http:// ou https:// (recebido: '{raw}').")
+    return raw.rstrip("/")
 
 
 def load_settings(env: Mapping[str, str] | None = None) -> Settings:
@@ -84,4 +94,5 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         xano_group_auth=_clean(env.get(ENV_XANO_GROUP_AUTH)) or DEFAULT_GROUP_AUTH,
         xano_group_cliente=_clean(env.get(ENV_XANO_GROUP_CLIENTE)) or DEFAULT_GROUP_CLIENTE,
         xano_group_os=_clean(env.get(ENV_XANO_GROUP_OS)) or DEFAULT_GROUP_OS,
+        public_url=_parse_public_url(_clean(env.get(ENV_PUBLIC_URL))),
     )

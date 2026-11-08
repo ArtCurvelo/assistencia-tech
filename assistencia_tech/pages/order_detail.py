@@ -312,6 +312,8 @@ def order_detail_page() -> rx.Component:
         rx.cond(
             S.found,
             rx.vstack(
+                rx.link("🧾 Comprovante (imprimir / PDF)", href="/admin/ordens/" + S.code + "/comprovante",
+                        class_name="btn btn-outline"),
                 _summary(),
                 rx.grid(_workflow(), _diagnosis(), columns=rx.breakpoints(initial="1", lg="2"), spacing="4",
                         width="100%"),

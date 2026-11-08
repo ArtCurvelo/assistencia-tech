@@ -59,8 +59,9 @@ def _hero() -> rx.Component:
     )
 
 
-def _tracking() -> rx.Component:
-    result = TrackingState.result
+def tracking_box(state=TrackingState) -> rx.Component:
+    """Consulta pública; também usada pela consulta por link (``/consulta/<código>``)."""
+    result = state.result
     return rx.box(
         rx.box(
             rx.text("ACOMPANHE SEU EQUIPAMENTO", class_name="eyebrow"),
@@ -69,11 +70,11 @@ def _tracking() -> rx.Component:
         ),
         rx.box(
             rx.el.label("Código da Ordem de Serviço", html_for="tracking-code", class_name="form-label"),
-            rx.input(id="tracking-code", value=TrackingState.tracking_code,
-                     on_change=TrackingState.set_tracking_code, placeholder="Ex.: OS-2026-00125", class_name="input"),
-            rx.button("Consultar", on_click=TrackingState.lookup_order, class_name="btn btn-primary"),
+            rx.input(id="tracking-code", value=state.tracking_code,
+                     on_change=state.set_tracking_code, placeholder="Ex.: OS-2026-00125", class_name="input"),
+            rx.button("Consultar", on_click=state.lookup_order, class_name="btn btn-primary"),
             rx.cond(
-                TrackingState.has_result,
+                state.has_result,
                 rx.box(
                     rx.text(result["code"], class_name="tracking-code"),
                     rx.text(result["status"], class_name="tracking-status"),
@@ -86,8 +87,8 @@ def _tracking() -> rx.Component:
                 ),
             ),
             rx.cond(
-                TrackingState.tracking_message != "",
-                rx.text(TrackingState.tracking_message, class_name="notice notice-" + TrackingState.tracking_kind,
+                state.tracking_message != "",
+                rx.text(state.tracking_message, class_name="notice notice-" + state.tracking_kind,
                         role="status"),
             ),
             class_name="tracking-box",
@@ -127,7 +128,7 @@ def home_page() -> rx.Component:
             ),
             class_name="section page-width",
         ),
-        _tracking(),
+        tracking_box(),
         rx.box(
             rx.heading("Seu equipamento precisa de ajuda?", size="7"),
             rx.text("Conheça nossos serviços e veja como funciona o atendimento."),

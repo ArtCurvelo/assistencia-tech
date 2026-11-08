@@ -44,6 +44,7 @@ DataGateway (data/repositories.py)   ← interfaces internas (Protocol)
 | `XANO_GROUP_CLIENTE` | identificador do grupo de clientes | `assistencia-tech-cliente` |
 | `XANO_GROUP_OS` | identificador do grupo de ordens de serviço | `assistencia-tech-os` |
 | `XANO_TIMEOUT_SECONDS` | número positivo de segundos | `10` |
+| `ASSISTENCIA_PUBLIC_URL` | endereço público (`http://` ou `https://`) usado no QR code dos comprovantes | endereço de acesso |
 
 Nenhuma credencial é configurada: cada usuário entra com a própria conta do Xano. Veja o modelo em `.env.example`. No PowerShell, para a sessão atual:
 
