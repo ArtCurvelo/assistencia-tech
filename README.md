@@ -18,7 +18,7 @@ Aplicação acadêmica de gestão de assistência técnica, desenvolvida em Pyth
 - Comprovante de entrada e de entrega para imprimir ou salvar em PDF, com QR code que abre a consulta pública da ordem (`/consulta/<código>`).
 
 ## Requisitos
-- Python 3.10+ (a `.venv` do projeto usa Python 3.14).
+- Python 3.14 (versão da `.venv` e da integração contínua; outras versões não foram testadas).
 - Reflex 0.8.x (fixado em `requirements.txt`).
 - Acesso à internet na instalação inicial das dependências e para carregar a fonte Inter.
 
@@ -50,6 +50,13 @@ Na tela `/login`, use o bloco **Acesso rápido** para entrar como Administrador,
 python -m pytest
 python -m pytest --cov=assistencia_tech   # cobertura (pytest-cov)
 ```
+
+## Integração contínua
+O workflow `.github/workflows/ci.yml` roda no GitHub Actions a cada `push` e `pull_request`, sem segredos e sem acessar o Xano real:
+- **Testes (Python 3.14):** `pytest` com cobertura, verificador de contrato com as cópias de `docs/xano-openapi/` (`--offline`) e montagem de todas as páginas do Reflex.
+- **Especificações:** `openspec validate --all --strict`.
+
+Os testes também conferem regras do projeto: arquivos Python com menos de 1.000 linhas, nenhum `.env` versionado e nenhum token JWT nos arquivos versionados (`tests/test_project_rules.py`).
 
 ## Rotas
 Públicas: `/`, `/servicos`, `/consulta/[codigo]`, `/login`, `/cadastro`, `/acesso-negado`. Cliente: `/minha-conta`, `/minha-conta/ordens/[codigo]` e `/minha-conta/ordens/[codigo]/comprovante`. Administração (exige login):
