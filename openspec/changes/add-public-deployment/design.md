@@ -6,13 +6,13 @@
 
 O Render publica direto do GitHub e tem plano gratuito para serviços web com WebSocket, de que o Reflex precisa. A imagem Docker deixa o ambiente igual ao testado: Python 3.14 (o da `.venv` e do CI), Node.js e as dependências de `requirements.txt`.
 
-### D2. Uma porta só
+### D2. Uma porta só, sem compilar ao iniciar
 
-O Render expõe uma única porta (`PORT`). `reflex run --env prod --single-port --frontend-port $PORT --backend-host 0.0.0.0` faz o backend servir também o frontend compilado. Sem Redis, o Reflex usa um processo, e as sessões (com o token do Xano guardado no servidor) ficam na memória dele: reiniciar ou dormir o serviço encerra as sessões, e o usuário entra de novo.
+O Render expõe uma única porta (`PORT`) e o plano gratuito tem 512 MB. A primeira versão iniciava com `reflex run --env prod --single-port`, que recompila o frontend ao subir e estourou a memória ("Ran out of memory (used over 512MB)"). A imagem agora inicia só o servidor Granian (`python -m granian --interface asgi --factory assistencia_tech.assistencia_tech:app`) com as variáveis internas do Reflex `__REFLEX_SKIP_COMPILE=true` e `__REFLEX_MOUNT_FRONTEND_COMPILED_APP=true`, o mesmo que o `--single-port` faz por dentro, mas sem a compilação: o processo usa cerca de 120 MB. Sem Redis, há um processo, e as sessões (com o token do Xano guardado no servidor) ficam na memória dele: reiniciar ou dormir o serviço encerra as sessões, e o usuário entra de novo.
 
-### D3. Frontend preparado na construção
+### D3. Frontend compilado na construção
 
-`reflex export --frontend-only --no-zip` roda durante a construção da imagem: baixa o Bun e instala os pacotes do frontend uma vez. Ao iniciar, o modo produção só recompila o aplicativo com o endereço público, o que encurta o tempo para o site acordar.
+`reflex export --frontend-only --no-zip --env prod` roda durante a construção da imagem e gera `.web/build/client`. O endereço do backend gravado no frontend fica como `localhost`; o próprio frontend do Reflex (`getBackendURL`) troca, no navegador, `localhost` pelo domínio da página e usa `wss://` sem porta quando a página está em HTTPS. Assim a imagem não depende de saber o endereço público na construção.
 
 ### D4. Endereço público
 

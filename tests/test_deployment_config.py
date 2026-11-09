@@ -42,7 +42,10 @@ def test_render_blueprint_uses_xano_without_secrets():
     lowered = blueprint.lower()
     assert not any(word in lowered for word in ("password", "senha", "token", "secret", "sync: false"))
     docker = (ROOT / "Dockerfile").read_text(encoding="utf-8")
-    assert "--single-port" in docker and "FROM python:3.14" in docker
+    assert "FROM python:3.14" in docker and "reflex export --frontend-only --no-zip --env prod" in docker
+    # Ao iniciar, nada é recompilado (512 MB no plano gratuito): só o Granian com o frontend montado.
+    assert "__REFLEX_SKIP_COMPILE=true" in docker and "__REFLEX_MOUNT_FRONTEND_COMPILED_APP=true" in docker
+    assert "granian" in docker and "assistencia_tech.assistencia_tech:app" in docker
 
 
 @pytest.fixture(autouse=True)
