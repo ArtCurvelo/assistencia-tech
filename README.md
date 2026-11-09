@@ -65,6 +65,17 @@ Os testes também conferem regras do projeto: arquivos Python com menos de 1.000
 ## Publicação
 O site é publicado no Render a partir do ramo `main` (`render.yaml` e `Dockerfile`): a cada envio ao GitHub, o Render constrói a imagem e publica a nova versão. O frontend é compilado na construção da imagem, e ao iniciar só o servidor Granian sobe, para caber nos 512 MB do plano gratuito. Nenhuma credencial é configurada no Render; cada usuário entra com a própria conta do Xano.
 
+## Dados de vitrine
+Para apresentações, o backend pode ser povoado com dados fictícios (nomes inventados, CPFs gerados e e-mails `@exemplo.test`) pelas regras do próprio sistema: histórico, baixa no estoque, decisões e avaliações dos clientes.
+
+```powershell
+python -m tools.seed_showcase --demo   # ensaio no modo demonstração
+python -m tools.create_showcase_technicians --saida C:\caminho\fora\do\projeto\tecnicos.txt
+python -m tools.seed_showcase --xano --colaboradores C:\caminho\colaboradores.txt --saida-clientes C:\caminho\clientes.txt
+```
+
+Nenhuma credencial fica no repositório: a senha do administrador é digitada no terminal, e as senhas geradas para técnicos e clientes de teste vão para arquivos locais indicados na linha de comando.
+
 ## Rotas
 Públicas: `/`, `/servicos`, `/consulta/[codigo]`, `/login`, `/cadastro`, `/acesso-negado`. Cliente: `/minha-conta`, `/minha-conta/ordens/[codigo]` e `/minha-conta/ordens/[codigo]/comprovante`. Administração (exige login):
 
