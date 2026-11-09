@@ -24,6 +24,49 @@ SERVICE_CATALOG = [
      ["Diagnóstico", "Problemas de software", "Configuração", "Recuperação do sistema"]),
 ]
 
+# Etapas reais do fluxo da ordem de serviço (improve-services-and-dashboard).
+SERVICE_STEPS = [
+    ("1", "Recebimento", "Registramos o equipamento e o problema relatado. Você recebe o comprovante com o código "
+     "da ordem, a previsão de entrega e um QR code para acompanhar."),
+    ("2", "Diagnóstico", "Um técnico analisa o equipamento e registra a causa do problema antes de qualquer reparo."),
+    ("3", "Orçamento", "Você recebe o orçamento detalhado, com serviços e peças, e aprova ou recusa pelo portal "
+     "do cliente."),
+    ("4", "Reparo", "Com o orçamento aprovado, o técnico executa o serviço. Cada etapa fica registrada no "
+     "histórico da ordem."),
+    ("5", "Entrega", "Equipamento pronto: você retira, quita o saldo e recebe o comprovante de entrega."),
+    ("6", "Garantia", "O serviço tem 90 dias de garantia a partir da entrega. Se o defeito voltar, abrimos uma "
+     "ordem em garantia, sem cobrança."),
+]
+
+SERVICE_PROMISES = [
+    ("📅", "Previsão de entrega", "Toda ordem nasce com uma data prevista, informada no comprovante e na consulta."),
+    ("✅", "Nada sem a sua aprovação", "O reparo só começa depois que você aprova o orçamento."),
+    ("🔎", "Acompanhamento online", "Consulte o andamento pelo código da ordem, pelo QR code ou pela sua conta."),
+    ("🛡️", "Garantia de 90 dias", "Prazo do Código de Defesa do Consumidor (art. 26, II) para serviços e "
+     "produtos duráveis."),
+]
+
+SERVICE_FAQ = [
+    ("Como acompanho o meu reparo?",
+     "Pelo código da ordem (por exemplo, OS-2026-00125) na página inicial, lendo o QR code do comprovante ou "
+     "entrando na sua conta, em \"Minha conta\"."),
+    ("Preciso aprovar o orçamento?",
+     "Sim. Depois do diagnóstico, o orçamento fica disponível no portal do cliente e o reparo só começa com a "
+     "sua aprovação."),
+    ("E se eu recusar o orçamento?",
+     "A ordem é cancelada sem cobrança do reparo, o motivo fica registrado e o equipamento fica disponível "
+     "para retirada."),
+    ("Quanto tempo demora?",
+     "A previsão de entrega é informada na abertura da ordem; sem um prazo combinado, consideramos 7 dias. "
+     "Você acompanha qualquer mudança pela consulta."),
+    ("O que a garantia cobre?",
+     "O serviço realizado, por 90 dias a partir da entrega. Se o mesmo defeito voltar nesse prazo, a nova "
+     "ordem é aberta em garantia e não é cobrada."),
+    ("Como avalio o atendimento?",
+     "Depois da entrega, o portal pede uma nota de 0 a 10 e um comentário opcional. A sua opinião ajuda a "
+     "melhorar o atendimento."),
+]
+
 
 def _hero() -> rx.Component:
     return rx.box(
@@ -35,7 +78,7 @@ def _hero() -> rx.Component:
                     "dispositivos.", class_name="hero-copy"),
             rx.flex(
                 rx.link(button("Conhecer serviços →"), href="/servicos"),
-                rx.link(button("Área administrativa", outline=True), href="/admin"),
+                rx.link(button("Acompanhar meu reparo", outline=True), href="/#consulta"),
                 class_name="hero-actions",
                 wrap="wrap",
                 gap="12px",
@@ -93,6 +136,7 @@ def tracking_box(state=TrackingState) -> rx.Component:
             ),
             class_name="tracking-box",
         ),
+        id="consulta",
         class_name="tracking page-width",
     )
 
@@ -162,6 +206,57 @@ def services_page() -> rx.Component:
             ],
             spacing="4",
             class_name="services-list page-width",
+        ),
+        rx.box(
+            section_heading("COMO FUNCIONA", "Do recebimento à garantia",
+                            "Você sabe em que etapa o seu equipamento está, do começo ao fim."),
+            rx.grid(
+                *[
+                    rx.box(rx.text(number, class_name="step-number"), rx.heading(title, size="4"),
+                           rx.text(text, class_name="muted"), class_name="step-card")
+                    for number, title, text in SERVICE_STEPS
+                ],
+                columns=rx.breakpoints(initial="1", sm="2", lg="3"),
+                spacing="4",
+            ),
+            class_name="section page-width",
+        ),
+        rx.box(
+            section_heading("NOSSOS COMPROMISSOS", "Transparência em cada etapa",
+                            "Regras que o próprio sistema aplica em todo atendimento."),
+            rx.grid(
+                *[
+                    rx.box(rx.box(icon, class_name="service-icon"), rx.heading(title, size="4"),
+                           rx.text(text, class_name="muted"), class_name="service-card")
+                    for icon, title, text in SERVICE_PROMISES
+                ],
+                columns=rx.breakpoints(initial="1", sm="2", lg="4"),
+                spacing="4",
+            ),
+            class_name="section page-width",
+        ),
+        rx.box(
+            section_heading("DÚVIDAS FREQUENTES", "Perguntas e respostas", "O que os clientes mais perguntam."),
+            rx.box(
+                *[
+                    rx.el.details(rx.el.summary(question, class_name="faq-question"),
+                                  rx.text(answer, class_name="muted faq-answer"), class_name="faq-item")
+                    for question, answer in SERVICE_FAQ
+                ],
+                class_name="faq-list",
+            ),
+            class_name="section page-width",
+        ),
+        rx.box(
+            rx.heading("Já deixou seu equipamento com a gente?", size="7"),
+            rx.text("Consulte o andamento pelo código da ordem ou crie sua conta para aprovar orçamentos e "
+                    "acompanhar tudo pelo portal."),
+            rx.flex(
+                rx.link(button("Consultar minha ordem →"), href="/#consulta"),
+                rx.link(button("Criar conta", outline=True), href="/cadastro"),
+                gap="12px", wrap="wrap", justify="center",
+            ),
+            class_name="cta",
         ),
     )
 

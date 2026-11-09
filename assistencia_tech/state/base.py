@@ -17,7 +17,9 @@ from ..data.factory import get_gateway
 from ..data.repositories import DataGateway
 from ..domain.permissions import Permission, Principal, has_permission, permissions_of
 from ..presenters import (
+    ATTENTION_LIMIT,
     EMPTY_METRICS,
+    attention_rows,
     client_row,
     dashboard_metrics,
     equipment_row,
@@ -26,7 +28,10 @@ from ..presenters import (
     payment_summary,
     status_chart,
     status_counts,
+    technician_queue,
 )
+from ..domain.clock import now_brt
+from ..presenters import greeting as greeting_row
 from ..domain.inventory import needs_restock
 from ..services import AuthService, InventoryService, load_catalog
 
@@ -230,6 +235,11 @@ class AdminState(AppState):
     status_summary: list[dict[str, str]] = []
     status_data: list[dict] = []
     payment_data: list[dict] = []
+    # Painel orientado a ações (improve-services-and-dashboard)
+    attention: list[dict[str, str]] = []
+    attention_total: int = 0
+    my_queue: list[dict[str, str]] = []
+    greeting: dict[str, str] = {}
     # Estoque (add-parts-inventory): alerta do painel e peças para o orçamento.
     low_stock_count: int = 0
     part_options: list[dict[str, str]] = []
@@ -259,6 +269,10 @@ class AdminState(AppState):
         self.status_summary = status_counts(catalog)
         self.status_data = status_chart(catalog)
         self.payment_data = payment_summary(catalog)
+        attention = attention_rows(catalog)
+        self.attention, self.attention_total = attention[:ATTENTION_LIMIT], len(attention)
+        self.my_queue = technician_queue(catalog, principal)
+        self.greeting = greeting_row(principal.name if principal else "", now_brt())
         self.data_error = ""
 
     async def load_admin_data(self):

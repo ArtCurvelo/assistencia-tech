@@ -231,7 +231,7 @@ PAYMENT_COLORS: dict[str, str] = {"Pendente": "#ffbe46", "Parcial": "#25a7ff", "
 
 EMPTY_METRICS: Row = {
     "open": "—", "awaiting": "—", "ready": "—", "receivable": "—", "clients": "—", "equipment": "—", "orders": "—",
-    "overdue": "—", "nps": "—", "nps_count": "—",
+    "overdue": "—", "nps": "—", "nps_count": "—", "received_month": "—",
 }
 NPS_WINDOW_DAYS = 90
 
@@ -268,6 +268,7 @@ def dashboard_metrics(catalog: Catalog) -> Row:
         "clients": str(len(catalog.clients)),
         "equipment": str(len(catalog.equipment)),
         "orders": str(len(catalog.orders)),
+        "received_month": format_brl(received_in_month(catalog)),
         **_dashboard_nps(catalog),
     }
 
@@ -480,3 +481,79 @@ def receipt_row(order: ServiceOrder, client: Client | None, equipment: Equipment
         "tracking_url": url,
         "qr": receipt.qr_svg_data_uri(url),
     }
+
+
+# ----------------------------------------------------------------------
+# Painel orientado a ações (improve-services-and-dashboard)
+# ----------------------------------------------------------------------
+ATTENTION_LIMIT = 8
+WEEKDAYS = ("segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado", "domingo")
+MONTHS = ("janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro",
+          "novembro", "dezembro")
+
+
+def greeting(name: str, now) -> Row:
+    """Saudação pelo horário de Brasília e data por extenso."""
+    local = now.astimezone(BRT)
+    period = "Bom dia" if local.hour < 12 else "Boa tarde" if local.hour < 18 else "Boa noite"
+    first = (name or "").split(" ")[0]
+    return {
+        "text": f"{period}, {first}!" if first else f"{period}!",
+        "date": f"{WEEKDAYS[local.weekday()]}, {local.day} de {MONTHS[local.month - 1]} de {local.year}",
+    }
+
+
+def _attention_row(order: ServiceOrder, catalog: Catalog, reason: str, kind: str) -> Row:
+    client = catalog.clients_by_id.get(order.client_id)
+    equipment = catalog.equipment_by_id.get(order.equipment_id)
+    return {
+        "code": order.code,
+        "client": client.name if client else "Cliente removido",
+        "equipment": equipment.description if equipment else "Equipamento removido",
+        "reason": reason,
+        "reason_class": f"attention-badge attention-{kind}",
+    }
+
+
+def attention_rows(catalog: Catalog, today=None) -> list[Row]:
+    """Atrasadas (mais atraso primeiro), prontas para entrega e aguardando o cliente (mais antigas primeiro)."""
+    today = today or now_brt().date()
+    rows: list[Row] = []
+    seen: set[str] = set()
+
+    def add(orders, reason, kind):
+        for order in orders:
+            if order.code not in seen:
+                seen.add(order.code)
+                rows.append(_attention_row(order, catalog, reason(order), kind))
+
+    late = sorted((o for o in catalog.orders if deadlines.is_overdue(o, today)),
+                  key=lambda o: (-deadlines.days_late(o, today), o.code))
+    add(late, lambda o: deadline_fields(o, today)["late"], "late")
+    def oldest_first(status):
+        return sorted((o for o in catalog.orders if o.status == status), key=lambda o: (o.updated_at, o.code))
+
+    add(oldest_first(OrderStatus.DONE), lambda o: "Pronta para entrega", "ready")
+    add(oldest_first(OrderStatus.AWAITING_APPROVAL), lambda o: "Aguardando o cliente", "awaiting")
+    return rows
+
+
+def technician_queue(catalog: Catalog, principal: Principal | None) -> list[Row]:
+    """Ordens em aberto do técnico logado, mais antigas primeiro (vazio para os demais perfis)."""
+    if principal is None or not principal.technician_id:
+        return []
+    mine = sorted((o for o in catalog.orders
+                   if o.technician_id == principal.technician_id and o.status in OPEN_STATUSES),
+                  key=lambda o: (o.opened_at, o.code))
+    return [order_row(o, catalog) for o in mine]
+
+
+def received_in_month(catalog: Catalog, today=None) -> Decimal:
+    today = today or now_brt().date()
+    total = Decimal("0")
+    for order in catalog.orders:
+        for payment in order.payments:
+            paid = payment.paid_at.astimezone(BRT).date()
+            if (paid.year, paid.month) == (today.year, today.month):
+                total += payment.amount
+    return total

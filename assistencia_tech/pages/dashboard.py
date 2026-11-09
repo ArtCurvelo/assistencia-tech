@@ -4,7 +4,16 @@ from __future__ import annotations
 
 import reflex as rx
 
-from ..components import admin_shell, panel, panel_header, payment_badge, stat_card, status_badge, table
+from ..components import (
+    admin_shell,
+    empty_state,
+    panel,
+    panel_header,
+    payment_badge,
+    stat_card,
+    status_badge,
+    table,
+)
 from ..presenters import PAYMENT_COLORS, STATUS_COLORS
 from ..state import AdminState
 
@@ -71,18 +80,99 @@ def _payment_chart() -> rx.Component:
     )
 
 
+# Atalhos: (permissão exigida, ícone, rótulo, destino)
+QUICK_ACTIONS = [
+    ("orders.open", "📝", "Nova ordem", "/admin/ordens"),
+    ("clients.manage", "👤", "Novo cliente", "/admin/clientes"),
+    ("stock.view", "📦", "Estoque", "/admin/estoque"),
+    ("reports.view", "📊", "Relatórios", "/admin/relatorios"),
+]
+
+
+def _quick_actions() -> rx.Component:
+    return rx.flex(
+        *[
+            rx.cond(
+                AdminState.user_permissions.contains(permission),
+                rx.link(rx.text(icon, " ", label), href=href, class_name="quick-action"),
+            )
+            for permission, icon, label, href in QUICK_ACTIONS
+        ],
+        gap="10px",
+        wrap="wrap",
+        class_name="quick-actions",
+    )
+
+
+def _attention_item(row) -> rx.Component:
+    return rx.flex(
+        rx.link(row["code"], href="/admin/ordens/" + row["code"], class_name="code-link"),
+        rx.box(rx.text(row["client"], class_name="attention-client"),
+               rx.text(row["equipment"], class_name="muted tiny"), class_name="attention-who"),
+        rx.text(row["reason"], class_name=row["reason_class"]),
+        align="center",
+        gap="12px",
+        wrap="wrap",
+        class_name="attention-item",
+    )
+
+
+def _attention_panel() -> rx.Component:
+    return panel(
+        panel_header("Precisa de atenção",
+                     rx.cond(AdminState.attention_total > AdminState.attention.length(),
+                             rx.text("Mostrando ", AdminState.attention.length(), " de ",
+                                     AdminState.attention_total, class_name="muted tiny"))),
+        rx.cond(
+            AdminState.attention.length() > 0,
+            rx.vstack(rx.foreach(AdminState.attention, _attention_item), spacing="2", width="100%"),
+            rx.box(rx.text("✓ Tudo em dia", class_name="attention-ok"),
+                   rx.text("Nenhuma ordem atrasada, pronta para entrega ou aguardando o cliente.",
+                           class_name="muted tiny")),
+        ),
+    )
+
+
+def _queue_row(order) -> rx.Component:
+    return rx.table.row(
+        rx.table.cell(rx.link(order["code"], href="/admin/ordens/" + order["code"], class_name="code-link")),
+        rx.table.cell(order["equipment"]),
+        rx.table.cell(status_badge(order["status"], order["status_class"])),
+        rx.table.cell(rx.cond(order["late"] != "", rx.text(order["late"], class_name="late-badge"),
+                              order["due_date"])),
+    )
+
+
+def _my_queue_panel() -> rx.Component:
+    return rx.cond(
+        AdminState.user_role == "Técnico",
+        panel(
+            panel_header("Meus atendimentos"),
+            rx.cond(
+                AdminState.my_queue.length() > 0,
+                table(["Código", "Equipamento", "Status", "Previsão"], AdminState.my_queue, _queue_row,
+                      "Nenhum atendimento em aberto."),
+                empty_state("Nenhum atendimento em aberto atribuído a você."),
+            ),
+        ),
+    )
+
+
 def dashboard_page() -> rx.Component:
     m = AdminState.metrics
+    g = AdminState.greeting
     return admin_shell(
-        "Visão geral",
-        "Acompanhe a operação da assistência em um só lugar.",
+        rx.cond(g["text"] != "", g["text"], "Visão geral"),
+        rx.fragment(g["date"], " · ", AdminState.user_role),
+        _quick_actions(),
         rx.grid(
             stat_card(m["open"], "Ordens em aberto", "Do recebimento até a conclusão"),
             stat_card(m["awaiting"], "Aguardando aprovação", "Orçamentos enviados ao cliente"),
             stat_card(m["ready"], "Prontas para entrega", "Ordens concluídas"),
             stat_card(m["receivable"], "Valor a receber", "Saldo das ordens não canceladas"),
+            stat_card(m["received_month"], "Recebido no mês", "Pagamentos registrados neste mês"),
             stat_card(m["nps"], "NPS (90 dias)", rx.fragment(m["nps_count"], " avaliação(ões) de clientes")),
-            columns=rx.breakpoints(initial="2", lg="5"),
+            columns=rx.breakpoints(initial="2", md="3", lg="6"),
             spacing="3",
             class_name="metrics-grid",
         ),
@@ -103,6 +193,8 @@ def dashboard_page() -> rx.Component:
                 class_name="notice notice-warning stock-alert",
             ),
         ),
+        _my_queue_panel(),
+        _attention_panel(),
         rx.grid(
             panel(
                 panel_header("Ordens por status"),
