@@ -7,11 +7,11 @@
 
 ## 2. Verificação local
 
-- [x] 2.1 Rodar o modo produção numa porta só (`--env prod --single-port`) com o Xano e conferir login, páginas e QR code no navegador.
+- [x] 2.1 Rodar o modo produção numa porta só (`--env prod --single-port`) com o Xano e conferir login, páginas e consulta no navegador (o QR code foi conferido no site publicado).
 
 ## 3. Publicação
 
-- [ ] 3.1 Com a confirmação do aluno, enviar ao GitHub e criar o serviço no Render pela conta dele; conferir o site publicado (página inicial, login, consulta pública e QR code) e registrar o endereço no README.
+- [x] 3.1 Com a confirmação do aluno, enviar ao GitHub e criar o serviço no Render pela conta dele; conferir o site publicado (página inicial, login, consulta pública e QR code) e registrar o endereço no README.
 
 ## Registro de verificação
 
@@ -24,3 +24,4 @@
 - **Primeiro deploy no Render (`470e765`):** a imagem foi construída, mas o serviço caiu com "Ran out of memory (used over 512MB)": `reflex run --env prod --single-port` recompila o frontend ao iniciar.
 - **Correção (`a838b16`):** frontend compilado na construção (`reflex export --frontend-only --no-zip --env prod`) e início só do Granian com `__REFLEX_SKIP_COMPILE` e `__REFLEX_MOUNT_FRONTEND_COMPILED_APP`; testado localmente antes (cerca de 120 MB, consulta da OS-2026-00001 com dados do Xano pelo WebSocket).
 - **Site publicado** (`https://assistencia-tech-2eyb.onrender.com`, deploy de `a838b16`): `/ping` 200 cerca de 60 s após o envio; `/` e `/style.css` 200; `/consulta/OS-2026-00001` no navegador → "Entregue", "Notebook Inspiron 15", com a conexão `wss://` no HTTPS do Render.
+- **Login e QR code no site publicado:** com a sessão de administrador do aluno, `/admin/ordens/OS-2026-00001/comprovante` abriu o "Comprovante de entrega"; o texto traz `https://assistencia-tech-2eyb.onrender.com/consulta/OS-2026-00001`, e a imagem do QR code é idêntica (mesmo tamanho e hash) à gerada pelo `segno` para esse endereço.
