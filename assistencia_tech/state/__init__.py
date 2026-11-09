@@ -7,7 +7,7 @@ from .inventory import InventoryState
 from .order_detail import OrderDetailState
 from .orders import OrderState
 from .portal import PortalOrderState, PortalState
-from .public import LoginState, RegisterState, TrackingState
+from .public import HomeState, LoginState, RegisterState, TrackingState
 
 __all__ = [
     "AdminState",
@@ -15,6 +15,7 @@ __all__ = [
     "ClientDetailState",
     "ClientState",
     "EquipmentState",
+    "HomeState",
     "InventoryState",
     "LoginState",
     "OrderDetailState",

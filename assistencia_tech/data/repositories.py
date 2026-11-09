@@ -18,6 +18,7 @@ from ..models import (
     Part,
     PartCreate,
     PublicOrderView,
+    PublicStats,
     Role,
     ServiceOrder,
     StockMovement,
@@ -165,6 +166,10 @@ class PortalRepository(Protocol):
 
     async def public_order(self, code: str) -> PublicOrderView:
         """Status público da ordem, sem dados pessoais nem valores; ou ``NotFoundError``."""
+        ...
+
+    async def public_stats(self) -> PublicStats:
+        """Contagens agregadas para a página inicial (entregues, em atendimento, avaliações)."""
         ...
 
     async def save_client_decision(

@@ -27,6 +27,7 @@ from ...models import (
     OrderStatus,
     Payment,
     PublicOrderView,
+    PublicStats,
     Rating,
     Role,
     ServiceOrder,
@@ -342,6 +343,20 @@ def order_from(record: Record) -> ServiceOrder:
         warranty_of=_linked_code(record.get("_garantia")),
         rating=rating_from(record.get("_avaliacao")),
     )
+
+
+def public_stats_from(record: Record) -> PublicStats:
+    """Contagens de ``GET /estatisticas_publicas`` (add-public-stats)."""
+    try:
+        return PublicStats(
+            delivered=int(record["entregues"]),
+            in_progress=int(record["em_atendimento"]),
+            ratings=int(record["avaliacoes"]),
+            promoters=int(record["promotores"]),
+            detractors=int(record["detratores"]),
+        )
+    except (KeyError, TypeError, ValueError) as exc:
+        raise UnexpectedError(detail=f"estatísticas públicas em formato inesperado: {record!r}") from exc
 
 
 def public_view_from(record: Record) -> PublicOrderView:

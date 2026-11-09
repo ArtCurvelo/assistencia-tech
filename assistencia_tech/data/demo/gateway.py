@@ -12,7 +12,17 @@ from collections.abc import Callable
 from datetime import date
 
 from ...config import DATA_SOURCE_DEMO
-from ...models import Client, ClientCreate, Equipment, EquipmentCreate, PublicOrderView, ServiceOrder, Technician
+from ...models import (
+    Client,
+    ClientCreate,
+    Equipment,
+    EquipmentCreate,
+    OrderStatus,
+    PublicOrderView,
+    PublicStats,
+    ServiceOrder,
+    Technician,
+)
 from ..errors import NotFoundError, ValidationError
 from ..repositories import DataGateway
 from . import seed
@@ -187,6 +197,18 @@ class DemoPortalRepository:
         if current.rating is not None:
             raise ValidationError("Esta ordem já foi avaliada.")
         return await self._orders.save(current.model_copy(update={"rating": order.rating}))
+
+    async def public_stats(self) -> PublicStats:
+        orders = await self._orders.list()
+        scores = [o.rating.score for o in orders if o.rating is not None]
+        finished = (OrderStatus.DELIVERED, OrderStatus.CANCELLED)
+        return PublicStats(
+            delivered=sum(1 for o in orders if o.status == OrderStatus.DELIVERED),
+            in_progress=sum(1 for o in orders if o.status not in finished),
+            ratings=len(scores),
+            promoters=sum(1 for s in scores if s >= 9),
+            detractors=sum(1 for s in scores if s <= 6),
+        )
 
     async def public_order(self, code: str) -> PublicOrderView:
         order = await self._orders.get_by_code(code)

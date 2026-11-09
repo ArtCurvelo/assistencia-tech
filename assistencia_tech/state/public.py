@@ -7,8 +7,20 @@ import reflex as rx
 from ..data.demo.users import DEMO_ACCOUNTS, DEMO_PASSWORDS
 from ..data.errors import DataAccessError, NotFoundError
 from ..domain.clock import format_datetime
+from ..presenters import home_stats
 from ..services import AuthService, OrderService
+from ..services.public_stats import public_stats
 from .base import FEEDBACK_ERROR, FEEDBACK_SUCCESS, AppState, safe_next
+
+
+class HomeState(AppState):
+    """Página inicial: números reais do sistema (add-public-stats)."""
+
+    stats: dict[str, str] = home_stats(None)
+
+    async def load_home(self):
+        await self.load_session()
+        self.stats = home_stats(await public_stats(self._gateway()))
 
 
 class TrackingState(AppState):

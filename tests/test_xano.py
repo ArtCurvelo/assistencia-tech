@@ -174,9 +174,10 @@ def test_every_operation_has_a_contract_from_the_target():
         assert contract.source.startswith("apispec:"), name
 
 
-def test_only_login_signup_and_public_lookup_are_public():
+def test_only_login_signup_public_lookup_and_public_stats_are_public():
+    # Estatísticas públicas (add-public-stats): só contagens agregadas, sem dados pessoais.
     public = {name for name, contract in CONTRACTS.items() if contract.public}
-    assert public == {"auth.login", "auth.signup_client", "portal.public_order"}
+    assert public == {"auth.login", "auth.signup_client", "portal.public_order", "portal.public_stats"}
 
 
 def test_require_contract_unknown_operation():

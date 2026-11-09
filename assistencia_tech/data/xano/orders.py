@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from ...models import PublicOrderView, ServiceOrder
+from ...models import PublicOrderView, PublicStats, ServiceOrder
 from ..errors import NotFoundError, ValidationError
 from . import mappers
 from .base import XanoRepository
@@ -144,6 +144,9 @@ class XanoPortalRepository(XanoRepository):
             if refreshed.code == order.code:
                 return refreshed
         raise NotFoundError("Ordem de serviço não encontrada.")
+
+    async def public_stats(self) -> PublicStats:
+        return mappers.public_stats_from(await self._record("portal.public_stats"))
 
     async def public_order(self, code: str) -> PublicOrderView:
         _, order_id = mappers.parse_order_code(code)

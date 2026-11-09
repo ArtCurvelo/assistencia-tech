@@ -5,7 +5,7 @@ from __future__ import annotations
 import reflex as rx
 
 from ..components import button, feedback_message, field, logo, public_page, section_heading, stat_card
-from ..state import AppState, LoginState, RegisterState, TrackingState
+from ..state import AppState, HomeState, LoginState, RegisterState, TrackingState
 
 HOME_SERVICES = [
     ("💻", "Computadores", "Formatação, limpeza, upgrades e diagnóstico."),
@@ -145,10 +145,10 @@ def home_page() -> rx.Component:
     return public_page(
         _hero(),
         rx.grid(
-            stat_card("+500", "Equipamentos reparados"),
-            stat_card("98%", "Clientes satisfeitos"),
-            stat_card("24h", "Meta de diagnóstico inicial"),
-            stat_card("100%", "Transparência"),
+            stat_card(HomeState.stats["delivered"], "Equipamentos entregues", "Ordens concluídas e entregues"),
+            stat_card(HomeState.stats["in_progress"], "Em atendimento agora", "Equipamentos na assistência"),
+            stat_card(HomeState.stats["nps"], "Satisfação (NPS)", rx.fragment(HomeState.stats["nps_hint"])),
+            stat_card("90 dias", "Garantia", "Em todo serviço realizado"),
             columns="4",
             spacing="0",
             class_name="stats-grid page-width",

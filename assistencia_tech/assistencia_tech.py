@@ -25,6 +25,7 @@ from .state import (
     ClientDetailState,
     ClientState,
     EquipmentState,
+    HomeState,
     InventoryState,
     LoginState,
     OrderDetailState,
@@ -43,7 +44,7 @@ app = rx.App(
 )
 
 # Públicas
-app.add_page(home_page, route="/", title="Início" + SUFFIX, on_load=AppState.load_session)
+app.add_page(home_page, route="/", title="Início" + SUFFIX, on_load=HomeState.load_home)
 app.add_page(services_page, route="/servicos", title="Serviços" + SUFFIX, on_load=AppState.load_session)
 app.add_page(login_page, route="/login", title="Entrar" + SUFFIX, on_load=LoginState.load_login)
 app.add_page(register_page, route="/cadastro", title="Criar conta" + SUFFIX, on_load=RegisterState.load_register)

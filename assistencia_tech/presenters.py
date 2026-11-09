@@ -557,3 +557,20 @@ def received_in_month(catalog: Catalog, today=None) -> Decimal:
             if (paid.year, paid.month) == (today.year, today.month):
                 total += payment.amount
     return total
+
+
+# ----------------------------------------------------------------------
+# Números públicos da página inicial (add-public-stats)
+# ----------------------------------------------------------------------
+def home_stats(stats) -> Row:
+    """Textos dos cartões; sem dados (``None``), tudo vira "—", nunca números fictícios."""
+    if stats is None:
+        return {"delivered": "—", "in_progress": "—", "nps": "—", "nps_hint": "Avaliações dos clientes"}
+    nps = rating_rules.nps_from_counts(stats.ratings, stats.promoters, stats.detractors)
+    plural = "avaliação" if stats.ratings == 1 else "avaliações"
+    return {
+        "delivered": str(stats.delivered),
+        "in_progress": str(stats.in_progress),
+        "nps": nps_text(nps),
+        "nps_hint": f"NPS de {stats.ratings} {plural}" if stats.ratings else "Ainda sem avaliações",
+    }

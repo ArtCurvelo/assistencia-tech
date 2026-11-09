@@ -260,6 +260,16 @@ class ServiceOrder(OrderCreate):
     rating: Rating | None = None
 
 
+class PublicStats(_Model):
+    """Contagens agregadas para a página inicial (add-public-stats): sem dados pessoais nem valores."""
+
+    delivered: int = Field(ge=0)
+    in_progress: int = Field(ge=0)
+    ratings: int = Field(ge=0)
+    promoters: int = Field(ge=0)
+    detractors: int = Field(ge=0)
+
+
 class PublicOrderView(_Model):
     """Projeção da OS para a consulta pública: sem dados pessoais nem valores."""
 

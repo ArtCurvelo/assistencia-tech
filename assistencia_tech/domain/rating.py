@@ -64,6 +64,14 @@ class NpsSummary:
     average: float | None
 
 
+def nps_from_counts(total: int, promoters: int, detractors: int) -> int | None:
+    """% de promotores − % de detratores, com arredondamento comercial (0,5 para longe do zero)."""
+    if not total:
+        return None
+    raw = (promoters - detractors) * 100 / total
+    return int(raw + 0.5) if raw >= 0 else -int(-raw + 0.5)
+
+
 def nps_summary(scores: Iterable[int]) -> NpsSummary:
     values = list(scores)
     if not values:
@@ -71,7 +79,5 @@ def nps_summary(scores: Iterable[int]) -> NpsSummary:
     groups = [classify(score) for score in values]
     promoters, detractors = groups.count(PROMOTER), groups.count(DETRACTOR)
     count = len(values)
-    # Arredondamento comercial (0,5 para cima), não o bancário do ``round``.
-    raw = (promoters - detractors) * 100 / count
-    nps = int(raw + 0.5) if raw >= 0 else -int(-raw + 0.5)
+    nps = nps_from_counts(count, promoters, detractors)
     return NpsSummary(count, promoters, groups.count(NEUTRAL), detractors, nps, round(sum(values) / count, 1))

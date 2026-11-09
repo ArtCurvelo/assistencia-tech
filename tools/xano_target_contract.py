@@ -134,6 +134,9 @@ TARGET: dict[str, tuple[Endpoint, ...]] = {
         Endpoint("get", "/consulta_publica/{os_servicos_id}", "public", (),
                  ("id", "created_at", "status", "aparelho", "modelo", "atualizado_em", "previsao_entrega"), {"status": ORDER_STATUS_VALUES},
                  purpose="Consulta pública: somente estes campos, sem dados pessoais nem valores."),
+        # Resposta montada no XanoScript (objeto de contagens): campos conferidos pelo roteiro e pelos testes.
+        Endpoint("get", "/estatisticas_publicas", "public", (), None,
+                 purpose="Público: entregues, em_atendimento, avaliacoes, promotores e detratores; só contagens."),
         Endpoint("get", "/portal/minhas_ordens", "bearer", (), ORDER_WITH_ADDONS + ("_aparelho",),
                  {"status": ORDER_STATUS_VALUES},
                  purpose="Perfil cliente: somente as ordens do cliente vinculado ao token, com o aparelho."),
