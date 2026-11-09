@@ -54,7 +54,7 @@ def _client_row(client) -> rx.Component:
                 rx.cond(ClientState.can_delete_clients,
                         small_button("Excluir", "danger", on_click=ClientState.ask_delete(client))),
                 rx.link("Ver", href="/admin/clientes/" + client["id"], class_name="btn-sm btn-sm-ghost"),
-                gap="2",
+                gap="8px",
             )
         ),
     )

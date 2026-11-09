@@ -57,3 +57,12 @@ def test_rules_catch_offending_files(tmp_path, monkeypatch):
     leaked.write_bytes(b'token = "' + b"eyJhbGciOiJIUzI1NiJ9" + b"." + b"eyJzdWIiOiIxMjM0NTY3ODkwIn0" + b'.x"')
     assert too_long([big]) == [f"grande.py: {MAX_LINES} linhas"]
     assert with_tokens([leaked, big]) == ["vazou.txt"]
+
+
+def test_flex_gap_has_css_units():
+    """No Reflex, ``gap`` é CSS literal: ``gap="2"`` é inválido e some (a escala do Radix é ``spacing``)."""
+    pattern = re.compile(r'\bgap="\d+"')
+    offending = [f"{p.relative_to(ROOT)}:{n}" for p in tracked_files()
+                 if p.suffix == ".py" and p.parts[len(ROOT.parts)] == "assistencia_tech"
+                 for n, line in enumerate(p.read_text(encoding="utf-8").splitlines(), 1) if pattern.search(line)]
+    assert offending == []

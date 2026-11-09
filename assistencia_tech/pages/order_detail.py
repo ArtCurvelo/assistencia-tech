@@ -40,7 +40,7 @@ def _summary() -> rx.Component:
             rx.spacer(),
             rx.text("Aberta em ", o["opened_at"], " · atualizada em ", o["updated_at"], class_name="muted tiny"),
             align="center",
-            gap="3",
+            gap="12px",
             wrap="wrap",
         ),
         rx.grid(
@@ -64,7 +64,7 @@ def _deadlines() -> rx.Component:
             _info("Previsão de entrega", rx.flex(
                 rx.text(o["due_date"]),
                 rx.cond(o["late"] != "", rx.text(o["late"], class_name="late-badge")),
-                gap="2", align="center", wrap="wrap",
+                gap="8px", align="center", wrap="wrap",
             )),
             rx.cond(o["warranty_until"] != "", _info("Garantia até", o["warranty_until"])),
             rx.cond(o["warranty_of"] != "", _info("Ordem em garantia da", rx.link(
@@ -80,7 +80,7 @@ def _deadlines() -> rx.Component:
                     rx.input(type="date", name="due_date", default_value=o["due_input"], key=o["due_input"],
                              class_name="input date-input", aria_label="Nova previsão de entrega"),
                     rx.button("Alterar previsão", type="submit", loading=S.is_loading, class_name="btn-sm btn-sm-ghost"),
-                    gap="2", align="center", wrap="wrap",
+                    gap="8px", align="center", wrap="wrap",
                 ),
                 on_submit=S.save_due_date,
                 reset_on_submit=False,
@@ -126,7 +126,7 @@ def _workflow() -> rx.Component:
         panel_header("Andamento"),
         rx.cond(
             S.next_status.length() > 0,
-            rx.flex(rx.foreach(S.next_status, _status_button), gap="3", wrap="wrap"),
+            rx.flex(rx.foreach(S.next_status, _status_button), gap="12px", wrap="wrap"),
             rx.text(
                 rx.cond(S.permissions["read_only_reason"] != "", S.permissions["read_only_reason"],
                         "Não há próximos status disponíveis para o seu perfil."),
@@ -274,7 +274,7 @@ def _event(event) -> rx.Component:
         rx.box(class_name="timeline-dot"),
         rx.box(
             rx.flex(rx.text(event["kind"], class_name="timeline-kind"), rx.spacer(),
-                    rx.text(event["at"], " · ", event["author"], class_name="muted tiny"), wrap="wrap", gap="2"),
+                    rx.text(event["at"], " · ", event["author"], class_name="muted tiny"), wrap="wrap", gap="8px"),
             rx.text(event["description"]),
             class_name="timeline-body",
         ),
@@ -313,7 +313,7 @@ def _rating() -> rx.Component:
         panel(
             panel_header("Avaliação do cliente"),
             rx.flex(rx.text(r["score"], class_name="rating-score"), rx.text(r["group"], class_name=r["group_class"]),
-                    rx.text("Avaliada em ", r["at"], class_name="muted tiny"), gap="3", align="center", wrap="wrap"),
+                    rx.text("Avaliada em ", r["at"], class_name="muted tiny"), gap="12px", align="center", wrap="wrap"),
             rx.cond(r["comment"] != "", rx.text("\u201c", r["comment"], "\u201d", class_name="rating-comment")),
         ),
     )

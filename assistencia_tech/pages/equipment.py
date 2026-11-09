@@ -59,7 +59,7 @@ def _row(equipment) -> rx.Component:
                         small_button("Editar", on_click=EquipmentState.open_edit(equipment))),
                 rx.cond(EquipmentState.can_delete_equipment,
                         small_button("Excluir", "danger", on_click=EquipmentState.ask_delete(equipment))),
-                gap="2",
+                gap="8px",
             )
         ),
     )

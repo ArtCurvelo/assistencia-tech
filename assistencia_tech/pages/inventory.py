@@ -52,7 +52,7 @@ def _part_row(part) -> rx.Component:
                 rx.flex(
                     small_button("Entrada", on_click=S.open_restock(part)),
                     small_button("Editar", on_click=S.open_edit(part)),
-                    gap="2",
+                    gap="8px",
                 ),
                 rx.text("—", class_name="muted"),
             )

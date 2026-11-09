@@ -27,7 +27,7 @@ def dialog_actions(submit_label: str) -> rx.Component:
         rx.dialog.close(rx.button("Cancelar", type="button", class_name="btn btn-outline")),
         rx.button(submit_label, type="submit", loading=AppState.is_loading, class_name="btn btn-primary"),
         justify="end",
-        gap="3",
+        gap="12px",
         class_name="dialog-actions",
     )
 
@@ -41,7 +41,7 @@ def confirm_dialog(title: str, message, open_var, on_open_change, on_confirm, co
                 rx.alert_dialog.cancel(rx.button("Cancelar", class_name="btn btn-outline")),
                 rx.button(confirm_label, on_click=on_confirm, loading=AppState.is_loading, class_name="btn btn-danger"),
                 justify="end",
-                gap="3",
+                gap="12px",
                 class_name="dialog-actions",
             ),
             class_name="dialog-card",

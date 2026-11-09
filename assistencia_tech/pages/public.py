@@ -234,7 +234,7 @@ def login_page() -> rx.Component:
             form,
             _demo_access(),
             rx.flex(rx.text("Ainda não possui uma conta?"),
-                    rx.link("Criar conta", href="/cadastro", class_name="accent-link"), gap="2", wrap="wrap"),
+                    rx.link("Criar conta", href="/cadastro", class_name="accent-link"), gap="8px", wrap="wrap"),
         ),
     )
 
@@ -258,7 +258,7 @@ def register_page() -> rx.Component:
             "+", "Criar sua conta", "Acompanhe seus equipamentos e ordens de serviço.",
             form,
             rx.flex(rx.text("Já possui uma conta?"), rx.link("Entrar", href="/login", class_name="accent-link"),
-                    gap="2", wrap="wrap"),
+                    gap="8px", wrap="wrap"),
         ),
     )
 
@@ -295,7 +295,7 @@ def not_found_page() -> rx.Component:
                         rx.link(button("Ir para a minha área"), href=AppState.user_home),
                         rx.link(button("Página inicial"), href="/"),
                     ),
-                    gap="3",
+                    gap="12px",
                     justify="center",
                 ),
                 class_name="auth-card auth-heading",

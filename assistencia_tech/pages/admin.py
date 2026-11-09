@@ -47,7 +47,7 @@ def _staff_row(member) -> rx.Component:
                         small_button("Reativar", on_click=StaffState.ask_toggle(member)),
                     ),
                 ),
-                gap="2",
+                gap="8px",
                 wrap="wrap",
             )
         ),
@@ -154,7 +154,7 @@ def _comment(row) -> rx.Component:
     return rx.box(
         rx.flex(rx.link(row["code"], href="/admin/ordens/" + row["code"], class_name="code-link"),
                 rx.text(row["score"], class_name=row["group_class"]),
-                rx.text(row["at"], class_name="muted tiny"), gap="3", align="center", wrap="wrap"),
+                rx.text(row["at"], class_name="muted tiny"), gap="12px", align="center", wrap="wrap"),
         rx.text(row["comment"], class_name="rating-comment"),
         class_name="rating-comment-item",
     )
@@ -198,7 +198,7 @@ def reports_page() -> rx.Component:
                     submit_button("Atualizar"),
                     rx.button("Exportar CSV", type="button", on_click=ReportsState.export_csv,
                               disabled=~ReportsState.loaded, class_name="btn btn-outline"),
-                    gap="3",
+                    gap="12px",
                     align="end",
                     wrap="wrap",
                 ),

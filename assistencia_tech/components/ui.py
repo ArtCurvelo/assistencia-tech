@@ -93,7 +93,7 @@ def panel(*children, **props) -> rx.Component:
 
 
 def panel_header(title: str, *actions) -> rx.Component:
-    return rx.flex(rx.heading(title, size="5"), rx.spacer(), *actions, align="center", wrap="wrap", gap="3",
+    return rx.flex(rx.heading(title, size="5"), rx.spacer(), *actions, align="center", wrap="wrap", gap="12px",
                    class_name="panel-header")
 
 
