@@ -28,6 +28,29 @@
         "NODE_OPTIONS": "--use-system-ca"
       },
       "port": 3000
+    },
+    {
+      "name": "reflex-prod-xano",
+      "runtimeExecutable": ".venv\\Scripts\\reflex.exe",
+      "runtimeArgs": [
+        "run",
+        "--env",
+        "prod",
+        "--single-port",
+        "--frontend-port",
+        "8080",
+        "--backend-host",
+        "0.0.0.0"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PYTHONIOENCODING": "utf-8",
+        "ASSISTENCIA_DATA_SOURCE": "xano",
+        "XANO_BASE_URL": "https://x8ki-letl-twmt.n7.xano.io",
+        "ASSISTENCIA_PUBLIC_URL": "http://localhost:8080",
+        "NODE_OPTIONS": "--use-system-ca"
+      },
+      "port": 8080
     }
   ]
 }

@@ -1,0 +1,16 @@
+# Blueprint do Render (mudança add-public-deployment). Sem credenciais: cada
+# usuário entra com a própria conta do Xano; o endereço da instância é público.
+services:
+  - type: web
+    name: assistencia-tech
+    runtime: docker
+    plan: free
+    branch: main
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
+    healthCheckPath: /ping
+    envVars:
+      - key: ASSISTENCIA_DATA_SOURCE
+        value: xano
+      - key: XANO_BASE_URL
+        value: https://x8ki-letl-twmt.n7.xano.io
