@@ -15,10 +15,18 @@ ADMIN_NAV = [
 ]
 
 
+LOGO_SRC = "/logo.svg"
+
+
+def logo(class_name: str = "brand-logo", alt: str = "") -> rx.Component:
+    """Marca da Assistência TECH: engrenagem com raio (assets/logo.svg)."""
+    return rx.image(src=LOGO_SRC, alt=alt, class_name=class_name)
+
+
 def brand() -> rx.Component:
     return rx.link(
         rx.flex(
-            rx.box("⚡", class_name="brand-icon"),
+            logo("brand-logo"),
             rx.box(rx.text("ASSISTÊNCIA", class_name="brand-name"), rx.text("TECH", class_name="brand-sub")),
             align="center",
             gap="10px",

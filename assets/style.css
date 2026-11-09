@@ -1854,3 +1854,88 @@ textarea:focus-visible,
 .rating-promotor { background: rgba(57, 255, 90, 0.14); color: #39ff5a; }
 .rating-neutro { background: rgba(255, 190, 70, 0.14); color: #ffbe46; }
 .rating-detrator { background: rgba(255, 92, 92, 0.14); color: #ff5c5c; }
+
+/* ------------------------------------------------------------------
+   Campos de texto do Radix (rx.input): a classe .input fica na caixa
+   externa (div.rt-TextFieldRoot), que o Radix fixa em 32 px. Sem estas
+   regras, o padding empurrava o <input> para fora da caixa e o contorno
+   de foco do Radix aparecia desalinhado (caixa dentro de caixa).
+   ------------------------------------------------------------------ */
+.rt-TextFieldRoot.input {
+  display: flex;
+  align-items: center;
+  height: auto;
+  min-height: 46px;
+  padding: 0 13px;
+  box-shadow: none;
+  outline: none;
+  cursor: text;
+}
+
+.rt-TextFieldRoot.input .rt-TextFieldInput {
+  width: 100%;
+  height: 44px;
+  padding: 0;
+  text-indent: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.rt-TextFieldRoot.input .rt-TextFieldInput::placeholder {
+  color: var(--text-muted);
+  opacity: 1;
+}
+
+/* Foco na caixa inteira, no lugar do contorno interno do Radix. */
+.rt-TextFieldRoot.input:focus-within {
+  border-color: var(--focus);
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.rt-TextFieldRoot.input .rt-TextFieldInput:focus,
+.rt-TextFieldRoot.input .rt-TextFieldInput:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Preenchimento automático do navegador sem fundo claro dentro da caixa escura. */
+.rt-TextFieldRoot.input .rt-TextFieldInput:-webkit-autofill,
+.rt-TextFieldRoot.input .rt-TextFieldInput:-webkit-autofill:hover,
+.rt-TextFieldRoot.input .rt-TextFieldInput:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text);
+  box-shadow: 0 0 0 1000px var(--input-bg) inset;
+  caret-color: var(--text);
+  transition: background-color 9999s ease-out 0s;
+}
+
+.rt-TextFieldRoot.input:has(.rt-TextFieldInput:disabled) {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Logo da Assistência TECH (assets/logo.svg) */
+.brand-logo {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  box-shadow: 0 0 22px rgba(57, 255, 90, 0.18);
+}
+.auth-logo {
+  display: block;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 18px;
+  border-radius: 16px;
+  box-shadow: 0 0 26px rgba(57, 255, 90, 0.18);
+}
+.receipt-logo { width: 28px; height: 28px; border-radius: 8px; }
+@media (max-width: 640px) {
+  .brand-logo { width: 36px; height: 36px; }
+}

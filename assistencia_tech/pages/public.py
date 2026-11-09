@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import reflex as rx
 
-from ..components import button, feedback_message, field, public_page, section_heading, stat_card
+from ..components import button, feedback_message, field, logo, public_page, section_heading, stat_card
 from ..state import AppState, LoginState, RegisterState, TrackingState
 
 HOME_SERVICES = [
@@ -166,10 +166,14 @@ def services_page() -> rx.Component:
     )
 
 
+LOGIN_ICON = "logo"
+
+
 def _auth_card(icon: str, title: str, subtitle: str, *children) -> rx.Component:
     return rx.center(
         rx.box(
-            rx.box(rx.text(icon, class_name="auth-icon"), rx.heading(title, size="7"),
+            rx.box(logo("auth-logo", "Assistência TECH") if icon == LOGIN_ICON else rx.text(icon, class_name="auth-icon"),
+                   rx.heading(title, size="7"),
                    rx.text(subtitle, class_name="muted"), class_name="auth-heading"),
             feedback_message(),
             *children,
@@ -225,7 +229,7 @@ def login_page() -> rx.Component:
     )
     return public_page(
         _auth_card(
-            "⚡", "Bem-vindo de volta", "Entre para acessar sua área.",
+            LOGIN_ICON, "Bem-vindo de volta", "Entre para acessar sua área.",
             rx.cond(LoginState.login_notice != "", rx.text(LoginState.login_notice, class_name="notice notice-error")),
             form,
             _demo_access(),

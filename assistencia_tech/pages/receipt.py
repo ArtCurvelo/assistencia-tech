@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import reflex as rx
 
-from ..components import data_error_alert, public_page
+from ..components import data_error_alert, logo, public_page
 from ..state.receipt import PortalReceiptState, ReceiptState, TrackingLinkState
 from .public import tracking_box
 
@@ -65,7 +65,8 @@ def _sheet(state) -> rx.Component:
     return rx.box(
         rx.flex(
             rx.box(
-                rx.text("⚡ Assistência TECH", class_name="receipt-brand"),
+                rx.flex(logo("receipt-logo"), rx.text("Assistência TECH", class_name="receipt-brand"),
+                        align="center", gap="8px"),
                 rx.text("Projeto acadêmico • manutenção e reparo de equipamentos", class_name="receipt-note"),
                 rx.heading(r["kind"], size="6", class_name="receipt-title"),
                 rx.text(r["code"], class_name="receipt-code"),

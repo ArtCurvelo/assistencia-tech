@@ -1,7 +1,7 @@
 """Componentes visuais reutilizáveis."""
 
 from .dialogs import confirm_dialog, dialog_actions, form_dialog
-from .layout import admin_shell, brand, footer, public_header, public_page
+from .layout import admin_shell, brand, footer, logo, public_header, public_page
 from .ui import (
     button,
     data_error_alert,
@@ -26,6 +26,7 @@ from .ui import (
 __all__ = [
     "admin_shell",
     "brand",
+    "logo",
     "button",
     "confirm_dialog",
     "data_error_alert",

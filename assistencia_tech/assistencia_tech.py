@@ -39,6 +39,7 @@ SUFFIX = " | Assistência TECH"
 app = rx.App(
     stylesheets=["/style.css"],
     theme=rx.theme(appearance="dark", accent_color="green", radius="medium"),
+    head_components=[rx.el.link(rel="icon", href="/logo.svg", type="image/svg+xml")],
 )
 
 # Públicas
