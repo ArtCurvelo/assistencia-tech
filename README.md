@@ -1,5 +1,7 @@
 # Assistência TECH — Reflex 1.0
 
+[![CI](https://github.com/ArtCurvelo/assistencia-tech/actions/workflows/ci.yml/badge.svg)](https://github.com/ArtCurvelo/assistencia-tech/actions/workflows/ci.yml)
+
 Aplicação acadêmica de gestão de assistência técnica, desenvolvida em Python com Reflex, com backend planejado no Xano.
 
 ## Funcionalidades atuais

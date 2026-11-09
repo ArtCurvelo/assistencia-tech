@@ -22,4 +22,7 @@ Comandos do workflow executados localmente (Windows, `.venv` com Python 3.14.7, 
 - Montagem do aplicativo → 20 páginas.
 - `npx --yes @fission-ai/openspec@1.14.3 validate --all --strict --no-interactive` → 17 passed, 0 failed.
 - YAML do workflow lido com PyYAML (instalado só para a conferência e removido em seguida): jobs `testes` e `especificacoes` com os passos esperados.
-- **Pendente:** a primeira execução no GitHub (Ubuntu) depende de o repositório ser publicado; ainda não há repositório remoto configurado.
+- **GitHub Actions (2026-11-08/09), repositório `ArtCurvelo/assistencia-tech`:**
+  - execução 42518910605 (`84de407`) → falha na coleta: `ModuleNotFoundError: No module named 'greenlet'`. O Reflex importa `sqlalchemy.ext.asyncio`, e no SQLAlchemy 2.1 o `greenlet` é opcional; a `.venv` local o tinha por acaso. OpenSpec passou.
+  - correção `2c19a57`: `greenlet>=3.0` no `requirements.txt` e ações `checkout@v5`, `setup-python@v6`, `setup-node@v5` (Node 24); conferida antes num ambiente Python limpo (434 passed, 70%, contrato 35 de 35, 20 páginas).
+  - execução 42557605011 (`2c19a57`) → sucesso nos dois jobs, em todos os passos.
