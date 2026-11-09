@@ -21,4 +21,6 @@
   - `/consulta/OS-2026-00002` → página com a ordem real do Xano ("Em reparo", "Notebook Inspiron 15");
   - `/login` sem o acesso rápido da demonstração.
 - **Limitação conhecida (Reflex 0.8.28):** rotas dinâmicas (`/consulta/<código>`, `/admin/ordens/<código>`) não são pré-geradas; o servidor entrega a página com HTTP 404 e o navegador monta a página correta. Funciona no navegador e no celular.
-- **Imagem Docker:** não construída localmente; a construção é verificada pelo Render.
+- **Primeiro deploy no Render (`470e765`):** a imagem foi construída, mas o serviço caiu com "Ran out of memory (used over 512MB)": `reflex run --env prod --single-port` recompila o frontend ao iniciar.
+- **Correção (`a838b16`):** frontend compilado na construção (`reflex export --frontend-only --no-zip --env prod`) e início só do Granian com `__REFLEX_SKIP_COMPILE` e `__REFLEX_MOUNT_FRONTEND_COMPILED_APP`; testado localmente antes (cerca de 120 MB, consulta da OS-2026-00001 com dados do Xano pelo WebSocket).
+- **Site publicado** (`https://assistencia-tech-2eyb.onrender.com`, deploy de `a838b16`): `/ping` 200 cerca de 60 s após o envio; `/` e `/style.css` 200; `/consulta/OS-2026-00001` no navegador → "Entregue", "Notebook Inspiron 15", com a conexão `wss://` no HTTPS do Render.

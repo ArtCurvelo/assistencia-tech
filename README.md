@@ -4,6 +4,8 @@
 
 Aplicação acadêmica de gestão de assistência técnica, desenvolvida em Python com Reflex, com backend planejado no Xano.
 
+**Site publicado:** https://assistencia-tech-2eyb.onrender.com (Render, plano gratuito, dados do Xano). Depois de 15 minutos sem acesso o site dorme, e o primeiro acesso leva cerca de 1 minuto.
+
 ## Funcionalidades atuais
 - Página inicial, serviços e consulta pública de OS (sem dados pessoais).
 - Painel com indicadores: ordens em aberto, aguardando aprovação, prontas para entrega e valor a receber.
@@ -59,6 +61,9 @@ O workflow `.github/workflows/ci.yml` roda no GitHub Actions a cada `push` e `pu
 - **Especificações:** `openspec validate --all --strict`.
 
 Os testes também conferem regras do projeto: arquivos Python com menos de 1.000 linhas, nenhum `.env` versionado e nenhum token JWT nos arquivos versionados (`tests/test_project_rules.py`).
+
+## Publicação
+O site é publicado no Render a partir do ramo `main` (`render.yaml` e `Dockerfile`): a cada envio ao GitHub, o Render constrói a imagem e publica a nova versão. O frontend é compilado na construção da imagem, e ao iniciar só o servidor Granian sobe, para caber nos 512 MB do plano gratuito. Nenhuma credencial é configurada no Render; cada usuário entra com a própria conta do Xano.
 
 ## Rotas
 Públicas: `/`, `/servicos`, `/consulta/[codigo]`, `/login`, `/cadastro`, `/acesso-negado`. Cliente: `/minha-conta`, `/minha-conta/ordens/[codigo]` e `/minha-conta/ordens/[codigo]/comprovante`. Administração (exige login):
