@@ -173,12 +173,15 @@ def history_rows(order: ServiceOrder) -> list[Row]:
 
 def totals_row(order: ServiceOrder) -> Row:
     t = compute_totals(order)
+    cancelled = order.status == OrderStatus.CANCELLED
     return {
         "services": format_brl(t.services),
         "parts": format_brl(t.parts),
         "total": format_brl(t.total),
         "paid": format_brl(t.paid),
-        "balance": format_brl(t.balance),
+        # Ordem cancelada não tem cobrança pendente.
+        "balance": PAYMENT_NOT_APPLICABLE if cancelled else format_brl(t.balance),
+        "balance_label": "Saldo" if cancelled else "Saldo devedor",
         "payment_status": t.payment_status,
         "has_balance": "1" if t.balance > 0 else "",
     }

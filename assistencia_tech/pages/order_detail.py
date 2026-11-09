@@ -226,7 +226,7 @@ def _budget() -> rx.Component:
             _info("Peças", t["parts"]),
             _info("Total", t["total"]),
             _info("Pago", t["paid"]),
-            _info("Saldo devedor", t["balance"]),
+            _info(t["balance_label"], t["balance"]),
             columns=rx.breakpoints(initial="2", md="5"),
             spacing="4",
             width="100%",

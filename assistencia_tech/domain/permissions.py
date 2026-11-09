@@ -111,6 +111,9 @@ class Principal:
 
     @property
     def display_name(self) -> str:
+        # Nome que já termina com parênteses (ex.: "Carlos (teste)") não ganha um segundo par.
+        if self.name.rstrip().endswith(")"):
+            return f"{self.name} · {self.role}"
         return f"{self.name} ({self.role})"
 
     @property

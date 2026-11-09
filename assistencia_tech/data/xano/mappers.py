@@ -249,11 +249,16 @@ def item_payload(order_id: str, item: OrderItem) -> Record:
 
 def payment_from(record: Record) -> Payment:
     created = to_datetime(record.get("created_at")) or datetime.now(BRT).replace(microsecond=0)
+    paid_at = from_date_text(record.get("data_do_pagamento"), created)
+    # O Xano guarda só a data do pagamento; no mesmo dia do registro, o horário do registro é o real
+    # (antes aparecia 00:00).
+    if paid_at.date() == created.astimezone(BRT).date():
+        paid_at = created
     return Payment(
         id=_id(record.get("id")),
         amount=to_money(record.get("valor_a_ser_pago")),
         method=_text(record.get("forma_de_pagamento")),
-        paid_at=from_date_text(record.get("data_do_pagamento"), created),
+        paid_at=paid_at,
     )
 
 
