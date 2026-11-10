@@ -80,6 +80,7 @@ def orders_page() -> rx.Component:
     return admin_shell(
         "Ordens de serviço",
         "Abra ordens, acompanhe o andamento e acesse o detalhe de cada atendimento.",
+        rx.link("◫ Ver no quadro (Kanban) →", href="/admin/ordens/quadro", class_name="quick-action"),
         rx.cond(OrderState.can_open_orders, panel(rx.heading("Abrir ordem de serviço", size="4"), _open_form())),
         panel(
             panel_header(

@@ -577,3 +577,43 @@ def home_stats(stats) -> Row:
         "nps": nps_text(nps),
         "nps_hint": f"NPS de {stats.ratings} {plural}" if stats.ratings else "Ainda sem avaliações",
     }
+
+
+# ----------------------------------------------------------------------
+# Quadro Kanban das ordens (add-orders-board)
+# ----------------------------------------------------------------------
+BOARD_FINAL_LIMIT = 8
+_FINAL = (OrderStatus.DELIVERED, OrderStatus.CANCELLED)
+
+
+def board_columns(catalog: Catalog, principal: Principal | None, today=None) -> tuple[list[Row], dict[str, list[Row]]]:
+    """Colunas na ordem do fluxo e cartões por status; "moves" lista as transições do usuário (sem cancelar)."""
+    today = today or now_brt().date()
+    columns: list[Row] = []
+    cards: dict[str, list[Row]] = {}
+    for status in OrderStatus:
+        orders = [o for o in catalog.orders if o.status == status]
+        if status in _FINAL:  # as mais recentes primeiro
+            orders.sort(key=lambda o: (o.updated_at, o.code), reverse=True)
+        else:  # fila: as mais antigas primeiro
+            orders.sort(key=lambda o: (o.opened_at, o.code))
+        shown = orders[:BOARD_FINAL_LIMIT] if status in _FINAL else orders
+        columns.append({"status": status.value, "count": str(len(orders)), "color": STATUS_COLORS[status.value],
+                        "more": str(len(orders) - len(shown)) if len(shown) < len(orders) else ""})
+        cards[status.value] = [_board_card(o, catalog, principal, today) for o in shown]
+    return columns, cards
+
+
+def _board_card(order: ServiceOrder, catalog: Catalog, principal: Principal | None, today) -> Row:
+    client = catalog.clients_by_id.get(order.client_id)
+    equipment = catalog.equipment_by_id.get(order.equipment_id)
+    technician = catalog.technicians_by_id.get(order.technician_id or "")
+    moves = [s for s in next_statuses(order, principal) if s != OrderStatus.CANCELLED.value]
+    return {
+        "code": order.code,
+        "client": client.name if client else "Cliente removido",
+        "equipment": equipment.description if equipment else "Equipamento removido",
+        "technician": _name(technician),
+        "late": deadline_fields(order, today)["late"],
+        "moves": "|" + "|".join(moves) + "|" if moves else "",
+    }

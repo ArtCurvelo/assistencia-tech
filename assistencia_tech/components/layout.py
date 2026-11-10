@@ -12,6 +12,7 @@ ADMIN_NAV = [
     ("♙", "Clientes", "/admin/clientes"),
     ("▣", "Equipamentos", "/admin/equipamentos"),
     ("☷", "Ordens de serviço", "/admin/ordens"),
+    ("◫", "Quadro de ordens", "/admin/ordens/quadro"),
 ]
 
 

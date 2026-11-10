@@ -8,6 +8,7 @@ import reflex as rx
 from reflex import constants
 
 from .pages.admin import reports_page, staff_page
+from .pages.board import board_page
 from .pages.clients import client_detail_page, clients_page
 from .pages.dashboard import dashboard_page
 from .pages.equipment import equipment_page
@@ -18,6 +19,7 @@ from .pages.portal import portal_order_page, portal_page
 from .pages.receipt import portal_receipt_page, receipt_page, tracking_link_page
 from .pages.public import access_denied_page, home_page, login_page, not_found_page, register_page, services_page
 from .state.admin import ReportsState, StaffState
+from .state.board import BoardState
 from .state.receipt import PortalReceiptState, ReceiptState, TrackingLinkState
 from .state import (
     AdminState,
@@ -71,6 +73,8 @@ app.add_page(equipment_page, route="/admin/equipamentos", title="Equipamentos" +
              on_load=EquipmentState.load_admin_data)
 app.add_page(orders_page, route="/admin/ordens", title="Ordens de serviço" + SUFFIX,
              on_load=OrderState.load_admin_data)
+app.add_page(board_page, route="/admin/ordens/quadro", title="Quadro de ordens" + SUFFIX,
+             on_load=BoardState.load_board)
 app.add_page(order_detail_page, route="/admin/ordens/[codigo]", title="Ordem de serviço" + SUFFIX,
              on_load=OrderDetailState.load_order)
 app.add_page(receipt_page, route="/admin/ordens/[codigo]/comprovante", title="Comprovante" + SUFFIX,

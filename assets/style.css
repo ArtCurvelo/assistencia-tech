@@ -2002,3 +2002,55 @@ textarea:focus-visible,
 .attention-ready { background: rgba(37, 167, 255, 0.14); color: #25a7ff; }
 .attention-awaiting { background: rgba(160, 100, 255, 0.16); color: #b58cff; }
 .attention-ok { color: var(--green); font-weight: 700; }
+
+/* Quadro Kanban das ordens (add-orders-board) */
+.board {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(250px, 1fr);
+  gap: 14px;
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  align-items: start;
+}
+.board-column {
+  min-height: 200px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(8, 26, 47, 0.6);
+}
+.board-column-header { margin-bottom: 10px; }
+.board-dot { width: 10px; height: 10px; border-radius: 999px; flex-shrink: 0; }
+.board-count {
+  margin-left: auto;
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+  font-weight: 700;
+}
+.board-card {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+}
+.board-card:hover { border-color: var(--border-strong); }
+.board-client { font-weight: 600; margin-top: 4px; }
+.board-moves { margin-top: 8px; }
+.board-move {
+  padding: 4px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.board-move:hover { border-color: var(--green); background: var(--green-soft); }
+.board-move:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.board-move:disabled { opacity: 0.5; cursor: wait; }
