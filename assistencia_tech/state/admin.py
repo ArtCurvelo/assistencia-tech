@@ -6,7 +6,7 @@ import reflex as rx
 
 from ..data.errors import DataAccessError
 from ..domain.permissions import Permission
-from ..presenters import report_view, staff_row
+from ..presenters import monthly_chart, report_view, staff_row
 from ..services import ReportService, StaffService
 from .base import AppState
 
@@ -151,6 +151,8 @@ class ReportsState(AppState):
     technician_rows: list[dict[str, str]] = []
     satisfaction: dict[str, str] = {}
     comments: list[dict[str, str]] = []
+    monthly: list[dict] = []
+    period_label: str = ""
     loaded: bool = False
 
     async def _build(self, start: str, end: str) -> None:
@@ -158,11 +160,13 @@ class ReportsState(AppState):
         period = service.period(start, end)
         view = report_view(await service.report(period))
         self.start, self.end = period.start.isoformat(), period.end.isoformat()
+        self.period_label = f"{period.start:%d/%m/%Y} a {period.end:%d/%m/%Y}"
         self.summary = view["summary"]
         self.methods = view["methods"]
         self.technician_rows = view["technicians"]
         self.satisfaction = view["satisfaction"]
         self.comments = view["comments"]
+        self.monthly = monthly_chart(await service.monthly())
         self.loaded = True
         self.data_error = ""
 

@@ -179,3 +179,46 @@ def build_report(
 
 def orders_in_period(all_orders: Iterable[ServiceOrder], period: Period) -> list[ServiceOrder]:
     return sorted((o for o in all_orders if period.contains(o.opened_at)), key=lambda o: (o.opened_at, o.code))
+
+
+# ----------------------------------------------------------------------
+# Evolução mensal (improve-reports)
+# ----------------------------------------------------------------------
+MONTHS_IN_CHART = 6
+
+
+@dataclass(frozen=True)
+class MonthPoint:
+    year: int
+    month: int
+    opened: int
+    delivered: int
+    received: Decimal
+
+
+def _shift_month(year: int, month: int, delta: int) -> tuple[int, int]:
+    index = year * 12 + (month - 1) + delta
+    return index // 12, index % 12 + 1
+
+
+def monthly_series(all_orders: Iterable[ServiceOrder], today: date, months: int = MONTHS_IN_CHART) -> list[MonthPoint]:
+    """Últimos ``months`` meses (incluindo o atual): abertas, entregues e recebido em cada mês."""
+    keys = [_shift_month(today.year, today.month, -offset) for offset in range(months - 1, -1, -1)]
+    opened = dict.fromkeys(keys, 0)
+    delivered = dict.fromkeys(keys, 0)
+    received = dict.fromkeys(keys, ZERO)
+
+    def key(moment: datetime) -> tuple[int, int]:
+        local = moment.astimezone(BRT)
+        return local.year, local.month
+
+    for order in all_orders:
+        if key(order.opened_at) in opened:
+            opened[key(order.opened_at)] += 1
+        delivered_at = _first_status_event(order, OrderStatus.DELIVERED)
+        if delivered_at and key(delivered_at) in delivered:
+            delivered[key(delivered_at)] += 1
+        for payment in order.payments:
+            if key(payment.paid_at) in received:
+                received[key(payment.paid_at)] = quantize(received[key(payment.paid_at)] + payment.amount)
+    return [MonthPoint(y, m, opened[(y, m)], delivered[(y, m)], received[(y, m)]) for y, m in keys]

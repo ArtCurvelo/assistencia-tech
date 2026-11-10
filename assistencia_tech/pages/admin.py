@@ -183,6 +183,36 @@ def _satisfaction() -> rx.Component:
     )
 
 
+AXIS_TICK = {"fill": "#a5b5c9", "fontSize": 12}
+TOOLTIP_STYLE = {"backgroundColor": "#081a2f", "border": "1px solid #285071", "borderRadius": "8px"}
+
+
+def _monthly_chart() -> rx.Component:
+    """Ordens abertas e entregues (barras) e valor recebido (linha) nos últimos 6 meses (improve-reports)."""
+    return panel(
+        panel_header("Evolução mensal (últimos 6 meses)"),
+        rx.recharts.composed_chart(
+            rx.recharts.cartesian_grid(stroke_dasharray="3 3", stroke="#193653", vertical=False),
+            rx.recharts.x_axis(data_key="mes", tick=AXIS_TICK, stroke="#285071"),
+            rx.recharts.y_axis(y_axis_id="ordens", allow_decimals=False, tick=AXIS_TICK, stroke="#285071"),
+            rx.recharts.y_axis(y_axis_id="valor", orientation="right", tick=AXIS_TICK, stroke="#285071"),
+            rx.recharts.graphing_tooltip(content_style=TOOLTIP_STYLE),
+            rx.recharts.legend(),
+            rx.recharts.bar(data_key="abertas", name="Abertas", fill="#087cff", y_axis_id="ordens",
+                            radius=[4, 4, 0, 0], bar_size=18, is_animation_active=False),
+            rx.recharts.bar(data_key="entregues", name="Entregues", fill="#39ff5a", y_axis_id="ordens",
+                            radius=[4, 4, 0, 0], bar_size=18, is_animation_active=False),
+            rx.recharts.line(data_key="recebido", name="Recebido (R$)", stroke="#ffbe46", y_axis_id="valor",
+                             stroke_width=2, type_="monotone", is_animation_active=False),
+            data=ReportsState.monthly,
+            width="100%",
+            height=280,
+        ),
+        rx.text("Abertas pela data de abertura; entregues pela data da entrega; recebido pela data do pagamento.",
+                class_name="muted tiny"),
+    )
+
+
 def reports_page() -> rx.Component:
     s = ReportsState.summary
     return admin_shell(
@@ -198,6 +228,8 @@ def reports_page() -> rx.Component:
                     submit_button("Atualizar"),
                     rx.button("Exportar CSV", type="button", on_click=ReportsState.export_csv,
                               disabled=~ReportsState.loaded, class_name="btn btn-outline"),
+                    rx.button("🖨 Imprimir / salvar PDF", type="button", on_click=rx.call_script("window.print()"),
+                              disabled=~ReportsState.loaded, class_name="btn btn-outline"),
                     gap="12px",
                     align="end",
                     wrap="wrap",
@@ -208,7 +240,9 @@ def reports_page() -> rx.Component:
             ),
             rx.text("Ordens consideradas pela data de abertura; recebimentos pela data do pagamento.",
                     class_name="muted tiny"),
+            class_name="no-print",
         ),
+        rx.text("Período: ", ReportsState.period_label, class_name="print-only print-period"),
         rx.grid(
             stat_card(s["opened"], "Ordens abertas", "No período"),
             stat_card(s["in_progress"], "Em andamento", IN_PERIOD),
@@ -237,5 +271,6 @@ def reports_page() -> rx.Component:
             spacing="4",
             width="100%",
         ),
+        _monthly_chart(),
         _satisfaction(),
     )

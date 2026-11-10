@@ -10,7 +10,16 @@ from ..data.repositories import DataGateway
 from ..domain.clock import now_brt
 from ..domain.csv_export import csv_filename, orders_csv
 from ..domain.permissions import Permission, Principal, require
-from ..domain.reports import OperationalReport, Period, build_report, default_period, make_period, orders_in_period
+from ..domain.reports import (
+    MonthPoint,
+    OperationalReport,
+    Period,
+    build_report,
+    default_period,
+    make_period,
+    monthly_series,
+    orders_in_period,
+)
 
 Today = Callable[[], date]
 
@@ -39,6 +48,11 @@ class ReportService:
     async def report(self, period: Period) -> OperationalReport:
         require(self._principal, Permission.REPORTS_VIEW)
         return build_report(await self._gw.orders.list(), await self._gw.technicians.list(), period)
+
+    async def monthly(self) -> list[MonthPoint]:
+        """Últimos 6 meses até hoje (improve-reports)."""
+        require(self._principal, Permission.REPORTS_VIEW)
+        return monthly_series(await self._gw.orders.list(), self._today())
 
     async def export_csv(self, period: Period) -> tuple[str, str]:
         """Retorna (nome do arquivo, conteúdo CSV) das ordens abertas no período."""

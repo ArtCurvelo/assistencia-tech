@@ -617,3 +617,15 @@ def _board_card(order: ServiceOrder, catalog: Catalog, principal: Principal | No
         "late": deadline_fields(order, today)["late"],
         "moves": "|" + "|".join(moves) + "|" if moves else "",
     }
+
+
+MONTH_ABBR = ("jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez")
+
+
+def monthly_chart(series) -> list[dict]:
+    """Pontos do gráfico mensal dos relatórios (improve-reports)."""
+    return [
+        {"mes": f"{MONTH_ABBR[p.month - 1]}/{p.year % 100:02d}", "abertas": p.opened, "entregues": p.delivered,
+         "recebido": float(p.received)}
+        for p in series
+    ]

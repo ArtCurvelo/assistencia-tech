@@ -2054,3 +2054,19 @@ textarea:focus-visible,
 .board-move:hover { border-color: var(--green); background: var(--green-soft); }
 .board-move:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 .board-move:disabled { opacity: 0.5; cursor: wait; }
+
+/* Relatório em PDF (improve-reports): folha clara, sem navegação nem botões */
+.print-only { display: none; }
+@media print {
+  .sidebar, .menu-toggle, .data-source-pill, .quick-actions, button, form { display: none !important; }
+  .print-only { display: block !important; }
+  .admin-root, .admin-layout, .admin-main, .admin-content, .panel-card, .stat-card, .metrics-grid {
+    background: #fff !important;
+    color: #111 !important;
+    box-shadow: none !important;
+  }
+  .admin-main { margin: 0 !important; padding: 0 !important; }
+  .admin-root *, .admin-root .muted, .admin-root .stat-label, .admin-root .stat-hint { color: #111 !important; }
+  .panel-card, .stat-card { border: 1px solid #ccd3db !important; break-inside: avoid; }
+  .admin-topbar { border: 0 !important; padding: 0 0 8px !important; }
+}
