@@ -9,13 +9,13 @@
 
 - [x] 2.1 Implementar o menu administrativo recolhível abaixo de 900 px, com `aria-expanded` e fechamento ao escolher uma página; verificar no navegador em 375 px, 768 px e 1366 px.
 - [x] 2.2 Manter "Entrar" visível para visitantes no cabeçalho público do celular; verificar no navegador em 375 px.
-- [ ] 2.3 Adicionar o link "Pular para o conteúdo" e o foco visível; verificar com Tab no navegador.
+- [x] 2.3 Adicionar o link "Pular para o conteúdo" e o foco visível; verificar com Tab no navegador.
 
 ## 3. Painel
 
 - [x] 3.1 Criar `payment_summary` e adicionar cores e quantidades numéricas a `status_counts`, com testes em `tests/test_presenters.py`; verificar com `pytest`.
 - [x] 3.2 Substituir as barras do painel por gráficos Recharts (status e pagamentos); verificar no navegador que todos os status e situações aparecem com quantidades.
-- [ ] 3.3 Exibir "—" nos indicadores antes do carregamento e quando ele falhar; verificar com teste de `EMPTY_METRICS` e no navegador observando o estado inicial do painel.
+- [x] 3.3 Exibir "—" nos indicadores antes do carregamento e quando ele falhar; verificar com teste de `EMPTY_METRICS` e no navegador observando o estado inicial do painel.
 
 ## 4. Formulários e páginas
 
@@ -62,3 +62,9 @@
 ## Workflow follow-up
 
 - Arquivar esta mudança após a verificação integrada e a revisão do usuário.
+
+## Fechamento das tarefas 2.3 e 3.3 (2026-11-13)
+
+Conferidas por testes de ponta a ponta num navegador real (`e2e/test_site.py`, Chromium via Playwright):
+- **2.3:** na página inicial, o primeiro Tab leva o foco a "Pular para o conteúdo", que entra na tela; o Tab seguinte mostra contorno de foco (`test_keyboard_reaches_the_skip_link_with_visible_focus`).
+- **3.3:** a página do painel entregue pelo servidor, antes do carregamento dos dados, traz "—" em todos os indicadores (`test_dashboard_starts_with_dashes_before_loading`); a falha de carregamento continua coberta pelo teste de `EMPTY_METRICS`.

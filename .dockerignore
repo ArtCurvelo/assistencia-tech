@@ -23,6 +23,7 @@ htmlcov
 docs
 openspec
 tests
+e2e
 tools
 xano
 packages-before-refactor.txt

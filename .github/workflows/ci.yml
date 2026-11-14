@@ -59,3 +59,53 @@ jobs:
 
       - name: Validação estrita das especificações
         run: npx --yes @fission-ai/openspec@1.14.3 validate --all --strict --no-interactive
+
+  ponta-a-ponta:
+    name: Ponta a ponta (navegador)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ASSISTENCIA_DATA_SOURCE: demo
+      PYTHONIOENCODING: utf-8
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Instalar dependências e o navegador de teste
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-e2e.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Compilar o site em modo produção
+        run: reflex export --frontend-only --no-zip --env prod
+
+      - name: Subir o site em modo demonstração
+        env:
+          REFLEX_ENV_MODE: prod
+          __REFLEX_SKIP_COMPILE: "true"
+          __REFLEX_MOUNT_FRONTEND_COMPILED_APP: "true"
+        run: |
+          nohup python -m granian --host 127.0.0.1 --port 8000 --interface asgi --factory assistencia_tech.assistencia_tech:app > servidor.log 2>&1 &
+          for tentativa in $(seq 1 30); do
+            if [ "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8000/ping)" = "200" ]; then exit 0; fi
+            sleep 2
+          done
+          cat servidor.log
+          exit 1
+
+      - name: Testes de ponta a ponta
+        run: python -m pytest e2e
+
+      - name: Registro do servidor (em caso de falha)
+        if: failure()
+        run: cat servidor.log
