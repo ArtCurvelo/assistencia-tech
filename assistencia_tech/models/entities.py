@@ -81,6 +81,7 @@ class ClientCreate(_Model):
 
 class Client(ClientCreate):
     id: Text
+    anonymized: bool = False  # dados pessoais removidos a pedido do titular (add-lgpd-portal)
 
 
 # ----------------------------------------------------------------------

@@ -136,6 +136,8 @@ O `POST /auth/signup` atual cria usuários `member` sem vínculo: remova-o ou re
 | `PATCH /pecas/{peca_id}` | token: admin, atendente | os mesmos campos | a peça; nunca altera a quantidade |
 | `POST /estoque/entrada` | token: admin, atendente | `peca_id`, `quantidade`, `observacao` | a peça com a nova quantidade, e a movimentação |
 | `GET /estoque/movimentos` | token: colaboradores | — | movimentações com `_ordem` (id e `created_at` da ordem) |
+| `POST /portal/excluir_conta` | token: cliente | `senha` | `{anonimizado: true}`; confere a senha, recusa com ordem em andamento, anonimiza `cliente` (campo `anonimizado`), desativa o login e apaga os comentários das avaliações numa transação |
+| `GET /estatisticas_publicas` | público | — | `entregues`, `em_atendimento`, `avaliacoes`, `promotores`, `detratores` (só contagens) |
 | `POST /portal/avaliacao` | token: cliente | `os_servicos_id`, `nota` (0 a 10), `comentario` (até 500 caracteres) | a avaliação; somente ordem própria `entregue`, uma única vez (índice único em `avaliacao.os_servicos_id`) |
 
 - `POST /os_itens` aceita `peca_id`: dá baixa no estoque na mesma transação e recusa quantidade insuficiente. `DELETE /os_itens/{id}`, o cancelamento em `PATCH /os_servicos/{id}` e a recusa em `POST /portal/decisao_orcamento` devolvem as peças.

@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ..data.errors import NotFoundError
+from ..data.errors import NotFoundError, ValidationError
 from ..data.repositories import DataGateway
 from ..domain import order_operations as ops
+from ..domain import privacy
 from ..domain import rating as rating_rules
 from ..domain.clock import Clock, now_brt
 from ..domain.permissions import Permission, Principal, require
@@ -64,3 +65,18 @@ class PortalService:
         rated = rating_rules.rate(item.order, score, comment, self._clock())
         saved = await self._gw.portal.save_rating(client_id, rated)
         return PortalOrder(saved, item.equipment)
+
+    async def export_data(self) -> dict:
+        """Dados do próprio titular para download (LGPD, art. 18; add-lgpd-portal)."""
+        client = await self.account()
+        items = await self.my_orders()
+        return privacy.export_data(client, [(i.order, i.equipment) for i in items], self._clock())
+
+    async def delete_account(self, password: str) -> None:
+        """Anonimiza o cadastro e desativa o login do titular, mantendo as ordens."""
+        user = require(self._principal, Permission.PORTAL_VIEW)
+        client_id = self._client_id()
+        if not (password or "").strip():
+            raise ValidationError("Informe a sua senha para confirmar.")
+        privacy.ensure_can_delete(item.order for item in await self.my_orders())
+        await self._gw.portal.delete_account(user.user_id, client_id, password)

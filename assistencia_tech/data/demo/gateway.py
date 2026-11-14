@@ -23,7 +23,9 @@ from ...models import (
     ServiceOrder,
     Technician,
 )
-from ..errors import NotFoundError, ValidationError
+from ...domain.passwords import verify_password
+from ...domain.privacy import OPEN_ORDERS_MESSAGE
+from ..errors import NotFoundError, PermissionDeniedError, ValidationError
 from ..repositories import DataGateway
 from . import seed
 from ...domain.inventory import stock_effects
@@ -163,11 +165,16 @@ class DemoPortalRepository:
     """Projeções do portal e da consulta pública sobre os repositórios em memória."""
 
     def __init__(
-        self, clients: DemoClientRepository, equipment: DemoEquipmentRepository, orders: DemoOrderRepository
+        self,
+        clients: DemoClientRepository,
+        equipment: DemoEquipmentRepository,
+        orders: DemoOrderRepository,
+        auth: DemoAuthProvider | None = None,
     ) -> None:
         self._clients = clients
         self._equipment = equipment
         self._orders = orders
+        self._auth = auth
 
     async def _equipment_of(self, equipment_id: str) -> Equipment | None:
         try:
@@ -197,6 +204,26 @@ class DemoPortalRepository:
         if current.rating is not None:
             raise ValidationError("Esta ordem já foi avaliada.")
         return await self._orders.save(current.model_copy(update={"rating": order.rating}))
+
+    async def delete_account(self, user_id: str, client_id: str, password: str) -> None:
+        """Mesmas regras do endpoint do Xano: senha, nada em andamento, anonimização e login desativado."""
+        user = await self._auth.get_user(user_id)
+        if not verify_password(password, user.password_hash):
+            raise PermissionDeniedError("Senha incorreta.")
+        orders = [o for o in await self._orders.list() if o.client_id == client_id]
+        if any(o.status not in (OrderStatus.DELIVERED, OrderStatus.CANCELLED) for o in orders):
+            raise ValidationError(OPEN_ORDERS_MESSAGE)
+        await self._clients.update(Client.model_construct(id=client_id, name="Cliente anonimizado", cpf="", email="",
+                                                          phone="", anonymized=True))
+        self._auth.users = [
+            u.model_copy(update={"name": "Cliente anonimizado", "email": f"anonimizado-u{u.id}@removido.invalid",
+                                 "active": False}) if u.id == user_id else u
+            for u in self._auth.users
+        ]
+        for order in orders:
+            if order.rating and order.rating.comment:
+                await self._orders.save(order.model_copy(update={"rating": order.rating.model_copy(
+                    update={"comment": ""})}))
 
     async def public_stats(self) -> PublicStats:
         orders = await self._orders.list()
@@ -228,6 +255,7 @@ def build_demo_gateway(year_provider: YearProvider | None = None) -> DataGateway
     equipment = DemoEquipmentRepository(seed.seed_equipment())
     parts = DemoPartRepository(seed_parts())
     orders = DemoOrderRepository(seed.seed_orders(), year_provider or (lambda: date.today().year), parts)
+    auth = DemoAuthProvider(seed_users())
     return DataGateway(
         source=DATA_SOURCE_DEMO,
         label="Modo demonstração",
@@ -236,7 +264,7 @@ def build_demo_gateway(year_provider: YearProvider | None = None) -> DataGateway
         equipment=equipment,
         technicians=DemoTechnicianRepository(seed.seed_technicians()),
         orders=orders,
-        auth=DemoAuthProvider(seed_users()),
-        portal=DemoPortalRepository(clients, equipment, orders),
+        auth=auth,
+        portal=DemoPortalRepository(clients, equipment, orders, auth),
         parts=parts,
     )

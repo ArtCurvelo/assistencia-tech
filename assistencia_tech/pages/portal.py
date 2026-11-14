@@ -74,6 +74,41 @@ def portal_page() -> rx.Component:
                 ),
             ),
         ),
+        _privacy_panel(),
+    )
+
+
+def _privacy_panel() -> rx.Component:
+    """Direitos do titular (LGPD, art. 18): acesso, portabilidade e eliminação (add-lgpd-portal)."""
+    return panel(
+        panel_header("Privacidade e dados (LGPD)"),
+        rx.text("Você pode baixar uma cópia de todos os seus dados ou excluir a sua conta. Na exclusão, nome, CPF, "
+                "e-mail e telefone são anonimizados e o login é desativado; as ordens de serviço continuam "
+                "registradas, sem identificar você, porque a assistência precisa guardá-las por obrigação legal.",
+                class_name="muted"),
+        rx.flex(
+            button("⬇ Baixar meus dados (JSON)", outline=True, on_click=PortalState.download_my_data,
+                   type="button"),
+            rx.button("Excluir minha conta", type="button", on_click=PortalState.set_delete_open(True),
+                      class_name="btn btn-danger"),
+            gap="12px", wrap="wrap",
+        ),
+        form_dialog(
+            "Excluir minha conta",
+            "Esta ação não pode ser desfeita. Só é possível excluir sem ordens em andamento.",
+            PortalState.delete_open,
+            PortalState.set_delete_open,
+            rx.form(
+                field("Sua senha", rx.input(name="password", type="password", required=True, class_name="input",
+                                            custom_attrs={"autocomplete": "current-password"})),
+                field("Digite EXCLUIR para confirmar", rx.input(name="confirmation", required=True,
+                                                                class_name="input", placeholder="EXCLUIR")),
+                dialog_actions("Excluir definitivamente"),
+                on_submit=PortalState.confirm_delete_account,
+                reset_on_submit=False,
+                class_name="stack-form",
+            ),
+        ),
     )
 
 

@@ -145,6 +145,10 @@ class XanoPortalRepository(XanoRepository):
                 return refreshed
         raise NotFoundError("Ordem de serviço não encontrada.")
 
+    async def delete_account(self, user_id: str, client_id: str, password: str) -> None:
+        # O backend confere a senha, as ordens em andamento e anonimiza numa transação.
+        await self._call("portal.delete_account", json={"senha": password})
+
     async def public_stats(self) -> PublicStats:
         return mappers.public_stats_from(await self._record("portal.public_stats"))
 

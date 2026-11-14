@@ -176,7 +176,14 @@ def technician_from(record: Record) -> Technician:
 # ----------------------------------------------------------------------
 # Clientes e equipamentos
 # ----------------------------------------------------------------------
+ANONYMIZED_NAME = "Cliente anonimizado"
+
+
 def client_from(record: Record) -> Client:
+    if record.get("anonimizado"):
+        # Cadastro anonimizado (LGPD): sem CPF, e-mail ou telefone, portanto sem validá-los.
+        return Client.model_construct(id=_id(record.get("id")), name=ANONYMIZED_NAME, cpf="", email="", phone="",
+                                      anonymized=True)
     return Client(
         id=_id(record.get("id")),
         name=_text(record.get("Nome")),

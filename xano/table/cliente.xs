@@ -14,6 +14,9 @@ table "cliente" {
     text telefone_Aparelho filters=trim {
       description = "Telefone do cliente"
     }
+    bool anonimizado?=false {
+      description = "Dados pessoais removidos a pedido do titular (LGPD)"
+    }
   }
   index = [
     {type: "primary", field: [{name: "id"}]}

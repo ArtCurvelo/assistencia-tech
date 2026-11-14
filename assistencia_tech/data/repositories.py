@@ -168,6 +168,10 @@ class PortalRepository(Protocol):
         """Status público da ordem, sem dados pessoais nem valores; ou ``NotFoundError``."""
         ...
 
+    async def delete_account(self, user_id: str, client_id: str, password: str) -> None:
+        """Anonimiza o cadastro e desativa o login do titular (LGPD), mantendo as ordens."""
+        ...
+
     async def public_stats(self) -> PublicStats:
         """Contagens agregadas para a página inicial (entregues, em atendimento, avaliações)."""
         ...

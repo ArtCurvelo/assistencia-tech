@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import reflex as rx
 
 from ..data.errors import DataAccessError, NotFoundError
@@ -18,12 +20,14 @@ from ..presenters import (
     totals_row,
 )
 from ..services import PortalService
-from .base import AppState
+from ..domain import privacy
+from .base import FEEDBACK_ERROR, AppState
 
 
 class PortalState(AppState):
     account: dict[str, str] = {}
     my_orders: list[dict[str, str]] = []
+    delete_open: bool = False  # diálogo de exclusão da conta (add-lgpd-portal)
 
     async def _guard_portal(self):
         redirect = await self._guard(Permission.PORTAL_VIEW)
@@ -43,6 +47,41 @@ class PortalState(AppState):
             self.data_error = ""
         except DataAccessError as error:
             self.data_error = error.user_message
+
+
+    def set_delete_open(self, value: bool):
+        self.delete_open = value
+        self._clear_feedback()
+
+    async def download_my_data(self):
+        """LGPD, art. 18: o titular baixa os próprios dados em JSON."""
+        try:
+            data = await PortalService(self._gateway(), await self._current()).export_data()
+        except DataAccessError as error:
+            return self._fail(error)
+        return rx.download(data=json.dumps(data, ensure_ascii=False, indent=2), filename=privacy.EXPORT_FILENAME)
+
+    async def confirm_delete_account(self, form_data: dict):
+        if str(form_data.get("confirmation", "")).strip().upper() != "EXCLUIR":
+            self.feedback_message = "Digite EXCLUIR para confirmar."
+            self.feedback_kind = FEEDBACK_ERROR
+            return
+        if not self._start():
+            return
+        yield
+        try:
+            await PortalService(self._gateway(), await self._current()).delete_account(
+                str(form_data.get("password", "")))
+        except DataAccessError as error:
+            self.is_loading = False
+            self.feedback_message = error.user_message
+            self.feedback_kind = FEEDBACK_ERROR
+            yield
+            return
+        self.is_loading = False
+        self.delete_open = False
+        yield rx.toast.success("Sua conta foi excluída e os seus dados pessoais foram anonimizados.")
+        yield self.logout()
 
 
 class PortalOrderState(PortalState):
