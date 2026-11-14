@@ -1,5 +1,7 @@
 # Roteiro de demonstração (≈ 15 minutos)
 
+> Roteiro do **modo demonstração local**. Para apresentar o site publicado com o Xano, use `ROTEIRO_APRESENTACAO.md`.
+
 Roteiro para apresentar o Assistência TECH ao professor. Os passos 1 a 9 são executados automaticamente pelos serviços em `tests/test_demo_script.py`; se esse teste passa, o roteiro funciona com os dados de demonstração.
 
 ## Preparação (antes da apresentação)

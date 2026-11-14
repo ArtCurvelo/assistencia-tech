@@ -1,5 +1,20 @@
 # Changelog
 
+## Não lançado — Incrementos e publicação (2026-11-07 a 2026-11-13)
+Cada item é uma mudança OpenSpec arquivada em `openspec/changes/archive/`, com o registro do que foi testado.
+- **Backend próprio no Xano** em XanoScript (`xano/`), integrado à aplicação; verificador de contrato com todos os endpoints atendidos.
+- **Aprovação do orçamento pelo cliente** no portal (`add-client-budget-approval`).
+- **Estoque de peças** com baixa e devolução pelos orçamentos (`add-parts-inventory`).
+- **Previsão de entrega, atrasos e garantia de 90 dias** (`add-deadlines-and-warranty`).
+- **Comprovante com QR code** e consulta pública por link (`add-order-receipt`).
+- **Avaliação do atendimento e NPS** (`add-service-rating`).
+- **Integração contínua** no GitHub Actions (`add-continuous-integration`) e **testes de ponta a ponta** no navegador (`add-e2e-tests`).
+- **Publicação** no Render com Docker (`add-public-deployment`).
+- **Página de serviços, painel orientado a ações** e **números reais na página inicial** (`improve-services-and-dashboard`, `add-public-stats`).
+- **Quadro Kanban** (`add-orders-board`) e **evolução mensal e PDF** nos relatórios (`improve-reports`).
+- **LGPD no portal:** exportação e exclusão de dados pelo titular (`add-lgpd-portal`).
+- Logo, campos de texto e espaçamentos corrigidos; povoamento de vitrine (`tools/seed_showcase.py`); documentação nova (`VISAO_DO_SISTEMA.md`, `MANUAL.md`, `ROTEIRO_APRESENTACAO.md`).
+
 ## Não lançado — Contrato do Xano (2026-11-07)
 - Documentação OpenAPI dos grupos de Autenticação, Cliente e Ordens de Serviço registrada em `docs/xano-openapi/` (grupo Sistema de Gestão: acesso restrito, HTTP 403).
 - Análise de compatibilidade (`XANO_CONTRACT_ANALYSIS.md`) e especificação dos ajustes no Xano (`XANO_BACKEND_SPEC.md`), conforme a opção A.

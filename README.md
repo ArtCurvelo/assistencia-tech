@@ -55,10 +55,25 @@ python -m pytest
 python -m pytest --cov=assistencia_tech   # cobertura (pytest-cov)
 ```
 
+## Testes de ponta a ponta
+A pasta `e2e/` abre o site num navegador real (Playwright) e percorre os fluxos principais, inclusive pelo teclado. Eles rodam contra o site compilado em modo produção, no modo demonstração:
+
+```powershell
+pip install -r requirements-e2e.txt
+python -m playwright install chromium
+reflex export --frontend-only --no-zip --env prod
+$env:REFLEX_ENV_MODE = "prod"; $env:__REFLEX_SKIP_COMPILE = "true"; $env:__REFLEX_MOUNT_FRONTEND_COMPILED_APP = "true"
+python -m granian --host 127.0.0.1 --port 8000 --interface asgi --factory assistencia_tech.assistencia_tech:app   # em outro terminal
+python -m pytest e2e
+```
+
 ## Integração contínua
 O workflow `.github/workflows/ci.yml` roda no GitHub Actions a cada `push` e `pull_request`, sem segredos e sem acessar o Xano real:
 - **Testes (Python 3.14):** `pytest` com cobertura, verificador de contrato com as cópias de `docs/xano-openapi/` (`--offline`) e montagem de todas as páginas do Reflex.
 - **Especificações:** `openspec validate --all --strict`.
+- **Ponta a ponta (navegador):** os testes de `e2e/` contra o site em modo demonstração.
+
+Um segundo workflow (`keep-awake.yml`) acessa o `/ping` do site publicado a cada 10 minutos em horário comercial, para o plano gratuito do Render não dormir.
 
 Os testes também conferem regras do projeto: arquivos Python com menos de 1.000 linhas, nenhum `.env` versionado e nenhum token JWT nos arquivos versionados (`tests/test_project_rules.py`).
 
@@ -104,6 +119,9 @@ O QR code dos comprovantes aponta para `ASSISTENCIA_PUBLIC_URL` (por exemplo, o 
 - O PDF do comprovante é gerado pela impressão do navegador ("Salvar como PDF"), não pelo servidor.
 
 ## Documentação
+- `docs/VISAO_DO_SISTEMA.md` — o sistema publicado: componentes (diagrama), onde cada regra é aplicada e as capacidades especificadas.
+- `docs/MANUAL.md` — manual de uso por perfil (visitante, cliente, atendente, técnico e administrador).
+- `docs/ROTEIRO_APRESENTACAO.md` — roteiro de apresentação do site publicado (≈ 12 min), com plano de contingência.
 - `docs/XANO_DEV_ENV.md` — Xano CLI, Developer MCP e fluxo de sincronização do backend.
 - `docs/XANO_AI_PROMPTS.md` — prompts em etapas para a IA do Xano criar o backend conforme o contrato.
 - `docs/XANO_BACKEND_SPEC.md` — ajustes a fazer no Xano (contrato-alvo); verifique com `python -m tools.xano_contract_check`.
