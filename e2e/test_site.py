@@ -72,7 +72,7 @@ def test_attendant_dashboard_and_board(page: Page, base_url: str, login):
     expect(page.locator(".quick-action", has_text="Nova ordem")).to_be_visible()
 
     page.goto(f"{base_url}/admin/ordens/quadro")
-    expect(page.locator(".board-column")).to_have_count(7)
+    expect(page.locator(".board-column")).to_have_count(8)
     # Entrega sem quitação: recusada com a mensagem do sistema, e a ordem continua onde estava.
     page.get_by_role("button", name="Mover OS-2026-00122 para Entregue").click()
     expect(page.get_by_text("Registre o pagamento antes da entrega").first).to_be_visible()
@@ -113,3 +113,40 @@ def test_client_cannot_open_the_admin_area(page: Page, base_url: str, login):
     login("Cliente")
     page.goto(f"{base_url}/admin")
     expect(page).to_have_url(re.compile(r"/(acesso-negado|minha-conta)"), timeout=20_000)
+
+
+def test_client_requests_pickup_and_attendant_receives(page: Page, base_url: str, login):
+    """add-client-self-service: equipamento e solicitação pelo portal; recebimento pela equipe."""
+    login("Cliente")
+    equipment = page.locator(".panel-card", has=page.get_by_role("heading", name="Meus equipamentos"))
+    equipment.get_by_role("combobox").click()
+    page.get_by_role("option", name="Console").click()
+    equipment.locator("input[name=brand]").fill("Sony")
+    equipment.locator("input[name=model]").fill("PlayStation 4")
+    equipment.get_by_role("button", name="Cadastrar equipamento").click()
+    expect(equipment.get_by_role("cell", name="Console Sony PlayStation 4")).to_be_visible()
+
+    request = page.locator(".panel-card", has=page.get_by_role("heading", name="Solicitar atendimento"))
+    expect(request.locator(".store-box")).to_contain_text("Endereço a confirmar")  # sem endereço configurado
+    request.get_by_role("combobox").first.click()
+    page.get_by_role("option", name="Console Sony PlayStation 4").click()
+    request.locator("textarea[name=problem]").fill("Não lê discos")
+    request.get_by_role("button", name=re.compile("Coleta por motoboy")).click()
+    request.locator("input[name=pickup_address]").fill("Rua das Flores, 100 - Centro")
+    request.get_by_role("combobox").nth(1).click()
+    page.get_by_role("option", name="Tarde").click()
+    request.get_by_role("button", name="Solicitar atendimento").click()
+
+    expect(page).to_have_url(re.compile(r"/minha-conta/ordens/OS-\d{4}-\d+"), timeout=20_000)
+    code = re.search(r"OS-\d{4}-\d+", page.url).group(0)
+    expect(page.locator(".status-badge").first).to_have_text("Solicitado")
+    expect(page.get_by_text("Rua das Flores, 100 - Centro")).to_be_visible()
+
+    page.get_by_role("button", name="Sair").click()
+    expect(page).to_have_url(re.compile(r"/login"), timeout=20_000)
+    login("Atendente")
+    expect(page.locator(".attention-item", has_text=code)).to_contain_text("Coleta por motoboy")
+    page.goto(f"{base_url}/admin/ordens/quadro")
+    expect(page.get_by_role("region", name="Coluna Solicitado").get_by_role("link", name=code)).to_be_visible()
+    page.get_by_role("button", name=f"Mover {code} para Recebido").click()
+    expect(page.get_by_role("region", name="Coluna Recebido").get_by_role("link", name=code)).to_be_visible()

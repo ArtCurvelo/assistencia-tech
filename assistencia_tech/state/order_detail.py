@@ -19,6 +19,7 @@ from ..presenters import (
     totals_row,
 )
 from ..services import OrderService, load_catalog
+from ..domain import notifications
 from ..domain.permissions import Permission
 from .base import AdminState
 
@@ -43,6 +44,7 @@ class OrderDetailState(AdminState):
     next_status: list[str] = []
     item_kind: str = "Serviço"
     warranty_open: bool = False
+    whatsapp_url: str = ""
     item_part: str = LOOSE_PART  # peça do estoque escolhida (add-parts-inventory)
     item_form_key: int = 0
     payment_form_key: int = 0
@@ -55,6 +57,10 @@ class OrderDetailState(AdminState):
         await self._load_stock_summary(principal)
         self.code = order.code
         self.order = order_row(order, catalog)
+        client = catalog.clients_by_id.get(order.client_id)
+        # Mesmo texto do e-mail, para a equipe avisar pelo WhatsApp (add-client-self-service).
+        self.whatsapp_url = notifications.whatsapp_link(
+            client.phone, notifications.status_message(order, client.name).text) if client else ""
         self.diagnosis = order.diagnosis
         self.cancel_reason = order.cancel_reason
         self.items = item_rows(order)

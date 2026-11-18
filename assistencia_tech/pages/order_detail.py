@@ -52,7 +52,22 @@ def _summary() -> rx.Component:
             width="100%",
         ),
         rx.cond(S.cancel_reason != "", rx.text("Motivo do cancelamento: ", S.cancel_reason, class_name="notice-error")),
+        rx.cond(
+            o["delivery_mode"] != "",
+            rx.grid(
+                _info("Entrega do equipamento", o["delivery_mode"]),
+                rx.cond(o["pickup_address"] != "", _info("Endereço de coleta", o["pickup_address"])),
+                rx.cond(o["pickup_period"] != "", _info("Período da coleta", o["pickup_period"])),
+                columns=rx.breakpoints(initial="1", md="3"), spacing="4", width="100%",
+                class_name="deadline-box",
+            ),
+        ),
         _deadlines(),
+        rx.cond(
+            S.whatsapp_url != "",
+            rx.link("💬 Avisar pelo WhatsApp", href=S.whatsapp_url, is_external=True, class_name="quick-action",
+                    title="Abre o WhatsApp com a mensagem do status atual"),
+        ),
     )
 
 

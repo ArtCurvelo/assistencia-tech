@@ -83,15 +83,16 @@ async def test_dashboard_metrics(catalog):
     # 00125: 185,00 + 00123: 410,00 + 00122: 111,00 (canceladas não entram)
     assert metrics["receivable"] == "R$ 706,00"
     counts = {row["status"]: row["count"] for row in status_counts(catalog)}
-    assert set(counts.values()) == {"1"} and len(counts) == 7
+    # Uma ordem em cada status do seed; nenhuma solicitação pelo portal.
+    assert counts.pop("Solicitado") == "0" and set(counts.values()) == {"1"} and len(counts) == 7
 
 
 async def test_chart_data(catalog):
     chart = status_chart(catalog)
-    assert [row["status"] for row in chart][0] == "Recebido" and len(chart) == 7
-    assert all(row["quantidade"] == 1 for row in chart)
+    assert [row["status"] for row in chart][:2] == ["Solicitado", "Recebido"] and len(chart) == 8
+    assert [row["quantidade"] for row in chart] == [0, 1, 1, 1, 1, 1, 1, 1]
     colors = {row["color"] for row in status_counts(catalog)}
-    assert len(colors) == 7 and all(c.startswith("#") for c in colors)
+    assert len(colors) == 8 and all(c.startswith("#") for c in colors)
     # Canceladas e ordens sem valor ficam de fora: 00120 pago; 00122 parcial; 00123 e 00125 pendentes.
     summary = {row["situacao"]: row["quantidade"] for row in payment_summary(catalog)}
     assert summary == {"Pendente": 2, "Parcial": 1, "Pago": 1}

@@ -14,13 +14,16 @@ from ..presenters import (
     account_row,
     item_rows,
     payment_rows,
+    portal_equipment_row,
     portal_order_row,
     portal_timeline,
     rating_row,
     totals_row,
 )
 from ..services import PortalService
-from ..domain import privacy
+from ..config import load_settings
+from ..domain import privacy, service_request
+from ..models import DELIVERY_STORE
 from .base import FEEDBACK_ERROR, AppState
 
 
@@ -28,6 +31,11 @@ class PortalState(AppState):
     account: dict[str, str] = {}
     my_orders: list[dict[str, str]] = []
     delete_open: bool = False  # diálogo de exclusão da conta (add-lgpd-portal)
+    # Autoatendimento (add-client-self-service)
+    my_equipment: list[dict[str, str]] = []
+    request_mode: str = DELIVERY_STORE
+    store: dict[str, str] = {}
+    equipment_form_key: int = 0
 
     async def _guard_portal(self):
         redirect = await self._guard(Permission.PORTAL_VIEW)
@@ -44,10 +52,48 @@ class PortalState(AppState):
             service = PortalService(self._gateway(), await self._current())
             self.account = account_row(await service.account())
             self.my_orders = [portal_order_row(p.order, p.equipment) for p in await service.my_orders()]
+            self.my_equipment = [portal_equipment_row(e) for e in await service.my_equipment()]
+            settings = load_settings()
+            self.store = service_request.store_info(settings.store_address, settings.store_hours)
             self.data_error = ""
         except DataAccessError as error:
             self.data_error = error.user_message
 
+    @rx.var
+    def equipment_options(self) -> list[dict[str, str]]:
+        return [{"value": e["id"], "label": e["description"]} for e in self.my_equipment]
+
+    def choose_request_mode(self, mode: str):
+        self.request_mode = mode
+
+    async def add_my_equipment(self, form_data: dict):
+        if not self._start():
+            return
+        yield
+        try:
+            service = PortalService(self._gateway(), await self._current())
+            await service.add_equipment(form_data)
+            self.my_equipment = [portal_equipment_row(e) for e in await service.my_equipment()]
+            self.equipment_form_key += 1
+            yield self._succeed("Equipamento cadastrado.")
+        except DataAccessError as error:
+            yield self._fail(error)
+        finally:
+            self.is_loading = False
+
+    async def submit_request(self, form_data: dict):
+        if not self._start():
+            return
+        yield
+        try:
+            service = PortalService(self._gateway(), await self._current())
+            item = await service.request_service({**form_data, "delivery_mode": self.request_mode})
+            yield rx.toast.success(f"Atendimento solicitado: {item.order.code}.")
+            yield rx.redirect("/minha-conta/ordens/" + item.order.code)
+        except DataAccessError as error:
+            yield self._fail(error)
+        finally:
+            self.is_loading = False
 
     def set_delete_open(self, value: bool):
         self.delete_open = value

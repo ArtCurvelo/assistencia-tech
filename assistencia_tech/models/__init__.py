@@ -1,6 +1,10 @@
 """Modelos de domínio do Assistência TECH."""
 
 from .entities import (
+    DELIVERY_COURIER,
+    DELIVERY_MODES,
+    DELIVERY_STORE,
+    PICKUP_PERIODS,
     EQUIPMENT_KINDS,
     ORDER_STATUSES,
     PAYMENT_METHODS,
@@ -28,6 +32,10 @@ from .users import Role, UserAccount
 from .validation import parse_model
 
 __all__ = [
+    "DELIVERY_COURIER",
+    "DELIVERY_MODES",
+    "DELIVERY_STORE",
+    "PICKUP_PERIODS",
     "EQUIPMENT_KINDS",
     "ORDER_STATUSES",
     "PAYMENT_METHODS",

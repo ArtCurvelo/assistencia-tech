@@ -2,16 +2,20 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
+from typing import Any
 
-from ..data.errors import NotFoundError, ValidationError
+from ..data.errors import DataAccessError, NotFoundError, ValidationError
 from ..data.repositories import DataGateway
 from ..domain import order_operations as ops
 from ..domain import privacy
 from ..domain import rating as rating_rules
+from ..domain import service_request
 from ..domain.clock import Clock, now_brt
 from ..domain.permissions import Permission, Principal, require
-from ..models import Client, Equipment, ServiceOrder
+from .notifications import get_notifier, notify_order_status
+from ..models import Client, Equipment, EquipmentCreate, OrderCreate, ServiceOrder, parse_model
 
 
 @dataclass(frozen=True)
@@ -31,6 +35,15 @@ class PortalService:
         if not user.client_id:
             raise NotFoundError("Conta sem cliente associado.")
         return user.client_id
+
+    async def _notify(self, order: ServiceOrder) -> None:
+        """Avisa o próprio cliente; só lê o cadastro quando o envio de e-mail está ligado."""
+        if get_notifier().enabled:
+            try:
+                client = await self.account()
+            except DataAccessError:
+                return
+            await notify_order_status(self._gw, order, client)
 
     async def account(self) -> Client:
         return await self._gw.portal.client_account(self._client_id())
@@ -55,6 +68,7 @@ class PortalService:
         item = await self.my_order(code)
         updated = ops.client_decision(item.order, approve, reason, self._clock(), user.display_name)
         saved = await self._gw.portal.save_client_decision(client_id, updated, approve, (reason or "").strip())
+        await self._notify(saved)
         return PortalOrder(saved, item.equipment)
 
     async def rate(self, code: str, score: object, comment: object = "") -> PortalOrder:
@@ -80,3 +94,35 @@ class PortalService:
             raise ValidationError("Informe a sua senha para confirmar.")
         privacy.ensure_can_delete(item.order for item in await self.my_orders())
         await self._gw.portal.delete_account(user.user_id, client_id, password)
+
+    # ------------------------------------------------------------------
+    # Autoatendimento (add-client-self-service)
+    # ------------------------------------------------------------------
+    async def my_equipment(self) -> list[Equipment]:
+        require(self._principal, Permission.PORTAL_EQUIPMENT)
+        items = await self._gw.portal.client_equipment(self._client_id())
+        return sorted(items, key=lambda e: e.description.casefold())
+
+    async def add_equipment(self, form: Mapping[str, Any]) -> Equipment:
+        require(self._principal, Permission.PORTAL_EQUIPMENT)
+        client_id = self._client_id()
+        # O cliente é sempre o da sessão, nunca um valor vindo do formulário.
+        data = parse_model(EquipmentCreate, {**form, "client_id": client_id})
+        return await self._gw.portal.add_client_equipment(client_id, data)
+
+    async def request_service(self, form: Mapping[str, Any]) -> PortalOrder:
+        """O cliente pede atendimento para um equipamento próprio; a ordem nasce em Solicitado."""
+        user = require(self._principal, Permission.PORTAL_REQUEST)
+        client_id = self._client_id()
+        equipment_id = str(form.get("equipment_id", "")).strip()
+        equipment = next((e for e in await self.my_equipment() if e.id == equipment_id), None)
+        if equipment is None:
+            raise ValidationError("Escolha um dos seus equipamentos.")
+        data = parse_model(OrderCreate, {"client_id": client_id, "equipment_id": equipment_id,
+                                         "problem": form.get("problem", "")})
+        delivery = service_request.parse_delivery(form)
+        order = ops.request_service(await self._gw.orders.next_code(), data, delivery, self._clock(),
+                                    user.display_name)
+        saved = await self._gw.portal.request_service(client_id, order)
+        await self._notify(saved)
+        return PortalOrder(saved, equipment)

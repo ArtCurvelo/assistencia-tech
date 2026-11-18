@@ -38,6 +38,8 @@ class Permission(StrEnum):
     PORTAL_VIEW = "portal.view"
     PORTAL_DECIDE_BUDGET = "portal.decide_budget"
     PORTAL_RATE = "portal.rate_service"
+    PORTAL_EQUIPMENT = "portal.manage_equipment"
+    PORTAL_REQUEST = "portal.request_service"
     STAFF_MANAGE = "staff.manage"
     STOCK_VIEW = "stock.view"
     STOCK_MANAGE = "stock.manage"
@@ -66,6 +68,8 @@ PERMISSION_LABELS: dict[Permission, str] = {
     P.PORTAL_VIEW: "acessar o portal do cliente",
     P.PORTAL_DECIDE_BUDGET: "aprovar ou recusar o orçamento no portal",
     P.PORTAL_RATE: "avaliar o atendimento no portal",
+    P.PORTAL_EQUIPMENT: "cadastrar os próprios equipamentos no portal",
+    P.PORTAL_REQUEST: "solicitar atendimento no portal",
     P.STAFF_MANAGE: "gerenciar colaboradores",
     P.STOCK_VIEW: "consultar o estoque",
     P.STOCK_MANAGE: "cadastrar peças e repor o estoque",
@@ -73,7 +77,9 @@ PERMISSION_LABELS: dict[Permission, str] = {
 }
 
 # Ações que só o próprio cliente pode tomar, nem o administrador (add-service-rating).
-CLIENT_ONLY = frozenset({P.PORTAL_VIEW, P.PORTAL_DECIDE_BUDGET, P.PORTAL_RATE})
+CLIENT_ONLY = frozenset(
+    {P.PORTAL_VIEW, P.PORTAL_DECIDE_BUDGET, P.PORTAL_RATE, P.PORTAL_EQUIPMENT, P.PORTAL_REQUEST}
+)
 _STAFF_VIEW = frozenset({P.DASHBOARD_VIEW, P.CLIENTS_VIEW, P.EQUIPMENT_VIEW, P.ORDERS_VIEW, P.STOCK_VIEW})
 
 ROLE_PERMISSIONS: dict[Role, frozenset[Permission]] = {
@@ -156,6 +162,8 @@ def status_permission(current: OrderStatus, target: OrderStatus) -> Permission:
         return P.ORDERS_DELIVER
     if current == S.AWAITING_APPROVAL and target == S.REPAIR:
         return P.ORDERS_APPROVE
+    if current == S.REQUESTED and target == S.RECEIVED:
+        return P.ORDERS_OPEN  # confirmar o recebimento é do balcão, como abrir a ordem
     return P.ORDERS_STATUS_TECHNICAL
 
 

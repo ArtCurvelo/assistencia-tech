@@ -18,6 +18,8 @@ Aplicação acadêmica de gestão de assistência técnica, desenvolvida em Pyth
 - Aprovação ou recusa do orçamento pelo próprio cliente no portal.
 - Estoque de peças: catálogo, entradas, movimentações, alerta de estoque baixo e baixa automática pelos orçamentos.
 - Previsão de entrega, ordens atrasadas e garantia de 90 dias com abertura de ordem em garantia sem cobrança.
+- Autoatendimento no portal: o cliente cadastra os próprios equipamentos e solicita atendimento, escolhendo levar à loja ou coleta por motoboy (status Solicitado até a equipe confirmar o recebimento).
+- Avisos ao cliente por e-mail (Brevo, quando configurado) na abertura e a cada mudança de status, e botão "Avisar pelo WhatsApp" para a equipe.
 - Avaliação do atendimento (nota de 0 a 10) pelo cliente após a entrega, com NPS no painel e nos relatórios.
 - Comprovante de entrada e de entrega para imprimir ou salvar em PDF, com QR code que abre a consulta pública da ordem (`/consulta/<código>`).
 
@@ -110,6 +112,8 @@ Públicas: `/`, `/servicos`, `/consulta/[codigo]`, `/login`, `/cadastro`, `/aces
 A aplicação usa uma camada de acesso a dados com duas fontes, escolhidas por variável de ambiente (veja `.env.example` e `docs/XANO_INTEGRATION.md`):
 - `demo` (padrão): dados fictícios em memória, sempre identificados como "Modo demonstração".
 - `xano`: backend Xano (pasta `xano/`, em XanoScript), sem recorrer aos dados de demonstração quando indisponível.
+
+Variáveis do autoatendimento e dos avisos (configure no painel do Render, nunca no repositório): `ASSISTENCIA_STORE_ADDRESS` e `ASSISTENCIA_STORE_HOURS` (endereço e horário da loja), `BREVO_API_KEY` e `ASSISTENCIA_EMAIL_FROM` (e-mail automático). Sem elas, o portal diz que o endereço será confirmado e nenhum e-mail é enviado.
 
 O QR code dos comprovantes aponta para `ASSISTENCIA_PUBLIC_URL` (por exemplo, o domínio do site publicado). Sem essa variável, usa o endereço pelo qual o sistema foi aberto; com `localhost`, o QR code só funciona no próprio computador.
 

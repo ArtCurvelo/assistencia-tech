@@ -22,6 +22,7 @@ from ...models import (
     PublicStats,
     ServiceOrder,
     Technician,
+    serial_key,
 )
 from ...domain.passwords import verify_password
 from ...domain.privacy import OPEN_ORDERS_MESSAGE
@@ -205,6 +206,21 @@ class DemoPortalRepository:
             raise ValidationError("Esta ordem já foi avaliada.")
         return await self._orders.save(current.model_copy(update={"rating": order.rating}))
 
+    async def client_equipment(self, client_id: str) -> list[Equipment]:
+        return [e for e in await self._equipment.list() if e.client_id == client_id]
+
+    async def add_client_equipment(self, client_id: str, data: EquipmentCreate) -> Equipment:
+        key = serial_key(data.serial_number)
+        if key and any(serial_key(e.serial_number) == key for e in await self._equipment.list()):
+            raise ValidationError("Este número de série já está cadastrado.")
+        return await self._equipment.create(data.model_copy(update={"client_id": client_id}))
+
+    async def request_service(self, client_id: str, order: ServiceOrder) -> ServiceOrder:
+        equipment = await self._equipment_of(order.equipment_id)
+        if equipment is None or equipment.client_id != client_id or order.client_id != client_id:
+            raise NotFoundError("Equipamento não encontrado.")
+        return await self._orders.create(order)
+
     async def delete_account(self, user_id: str, client_id: str, password: str) -> None:
         """Mesmas regras do endpoint do Xano: senha, nada em andamento, anonimização e login desativado."""
         user = await self._auth.get_user(user_id)
@@ -228,7 +244,7 @@ class DemoPortalRepository:
     async def public_stats(self) -> PublicStats:
         orders = await self._orders.list()
         scores = [o.rating.score for o in orders if o.rating is not None]
-        finished = (OrderStatus.DELIVERED, OrderStatus.CANCELLED)
+        finished = (OrderStatus.DELIVERED, OrderStatus.CANCELLED, OrderStatus.REQUESTED)
         return PublicStats(
             delivered=sum(1 for o in orders if o.status == OrderStatus.DELIVERED),
             in_progress=sum(1 for o in orders if o.status not in finished),

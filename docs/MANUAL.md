@@ -17,6 +17,9 @@ Depois de entrar, o cliente cai em **Minha conta**.
 
 | Quero… | Como |
 |---|---|
+| Cadastrar um equipamento | Em "Meus equipamentos": tipo, marca, modelo e, se quiser, número de série |
+| Pedir atendimento | Em "Solicitar atendimento": escolha o equipamento, descreva o problema e escolha **Levar à loja** (o portal mostra o endereço) ou **Coleta por motoboy** (informe o endereço e o período). A ordem fica **Solicitado** até a assistência receber o equipamento |
+| Receber avisos | A cada etapa, o e-mail cadastrado recebe um aviso (quando a assistência tiver configurado o envio) |
 | Ver minhas ordens | Lista em "Minhas ordens de serviço"; clique no código para o detalhe |
 | Aprovar ou recusar um orçamento | No detalhe de uma ordem "Aguardando aprovação": **Aprovar orçamento** inicia o reparo; **Recusar orçamento** pede o motivo e cancela a ordem |
 | Pegar o comprovante | No detalhe da ordem, **🧾 Comprovante (imprimir / PDF)** |
@@ -30,6 +33,8 @@ Entra pelo mesmo "Entrar" e cai no **painel**.
 
 | Quero… | Como |
 |---|---|
+| Atender uma solicitação do portal | Painel → "Precisa de atenção" mostra "Nova solicitação" ou "Coleta por motoboy". No detalhe estão o endereço e o período da coleta. Quando o equipamento chegar, mova para **Recebido** (a previsão de 7 dias começa aí) |
+| Avisar pelo WhatsApp | No detalhe da ordem, **💬 Avisar pelo WhatsApp** abre a conversa com a mensagem do status atual |
 | Saber o que fazer agora | Painel → "Precisa de atenção": atrasadas, prontas para entrega e aguardando o cliente |
 | Cadastrar cliente e equipamento | Menu **Clientes** e **Equipamentos** |
 | Abrir uma ordem | **Ordens de serviço** → "Abrir ordem de serviço": cliente, equipamento, problema e previsão (padrão de 7 dias) |
@@ -65,7 +70,7 @@ Faz tudo o que a atendente e o técnico fazem, e ainda:
 ## Status de uma ordem
 
 ```
-Recebido → Em análise → Aguardando aprovação → Em reparo → Concluído → Entregue
+(Solicitado →) Recebido → Em análise → Aguardando aprovação → Em reparo → Concluído → Entregue
                                     ↓ (recusa do cliente)
         (em qualquer etapa antes da entrega) → Cancelado
 ```

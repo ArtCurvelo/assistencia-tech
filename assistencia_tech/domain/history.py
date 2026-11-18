@@ -31,6 +31,11 @@ def opened(problem: str, at: datetime, author: str, warranty_of: str = "") -> Hi
     return _event(KIND_OPENED, f"{prefix} Problema relatado: {problem}", at, author)
 
 
+def requested(problem: str, delivery_mode: str, at: datetime, author: str) -> HistoryEvent:
+    return _event(KIND_OPENED, f"Atendimento solicitado pelo cliente ({delivery_mode}). Problema relatado: {problem}",
+                  at, author)
+
+
 def due_date_changed(due, at: datetime, author: str) -> HistoryEvent:
     return _event(KIND_DUE_DATE, f"Previsão de entrega alterada para {due:%d/%m/%Y}.", at, author)
 

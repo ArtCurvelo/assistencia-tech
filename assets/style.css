@@ -2070,3 +2070,30 @@ textarea:focus-visible,
   .panel-card, .stat-card { border: 1px solid #ccd3db !important; break-inside: avoid; }
   .admin-topbar { border: 0 !important; padding: 0 0 8px !important; }
 }
+
+/* Status Solicitado e solicitações do portal (add-client-self-service) */
+.status-solicitado {
+  border-color: rgba(90, 209, 230, 0.25);
+  background: rgba(90, 209, 230, 0.14);
+  color: #7fe0f1;
+}
+.attention-requested { background: rgba(90, 209, 230, 0.16); color: #7fe0f1; }
+
+.mode-btn {
+  padding: 10px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--input-bg);
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+}
+.mode-btn:hover { border-color: var(--green); }
+.mode-btn:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.mode-btn-active { background: var(--green-soft); border-color: var(--green); color: var(--green); }
+.store-box {
+  padding: 12px 14px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+}

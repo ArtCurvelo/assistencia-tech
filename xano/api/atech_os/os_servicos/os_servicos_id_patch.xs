@@ -7,7 +7,7 @@ query "os_servicos/{os_servicos_id}" verb=PATCH {
       table = "os_servicos"
     }
     enum? status? {
-      values = ["recebido", "em_analise", "aguardando_aprovacao", "em_reparo", "concluido", "entregue", "cancelado"]
+      values = ["solicitado", "recebido", "em_analise", "aguardando_aprovacao", "em_reparo", "concluido", "entregue", "cancelado"]
     }
     int? user_id? {
       table = "user"
@@ -127,6 +127,7 @@ query "os_servicos/{os_servicos_id}" verb=PATCH {
         }
         var $transicoes {
           value = {
+            solicitado: ["recebido", "cancelado"],
             recebido: ["em_analise", "cancelado"],
             em_analise: ["aguardando_aprovacao", "cancelado"],
             aguardando_aprovacao: ["em_reparo", "cancelado"],
@@ -140,10 +141,10 @@ query "os_servicos/{os_servicos_id}" verb=PATCH {
           error = "Transição de status não permitida a partir do status atual."
         }
         conditional {
-          if ($input.status == "cancelado" || $input.status == "entregue" || ($atual.status == "aguardando_aprovacao" && $input.status == "em_reparo")) {
+          if ($input.status == "cancelado" || $input.status == "entregue" || ($atual.status == "aguardando_aprovacao" && $input.status == "em_reparo") || ($atual.status == "solicitado" && $input.status == "recebido")) {
             precondition ($eu.role != "tecnico") {
               error_type = "accessdenied"
-              error = "O perfil tecnico não tem permissão para aprovar, entregar ou cancelar ordens."
+              error = "O perfil tecnico não tem permissão para receber, aprovar, entregar ou cancelar ordens."
             }
           }
           else {
@@ -180,6 +181,14 @@ query "os_servicos/{os_servicos_id}" verb=PATCH {
             }
             var.update $updates.motivo_cancelamento {
               value = $input.motivo_cancelamento
+            }
+          }
+        }
+        // Recebimento de ordem solicitada: a previsão conta a partir de hoje (add-client-self-service).
+        conditional {
+          if ($atual.status == "solicitado" && $input.status == "recebido" && $atual.previsao_entrega == null) {
+            var.update $updates.previsao_entrega {
+              value = now|transform_timestamp:"+7 days"|format_timestamp:"Y-m-d":"America/Sao_Paulo"
             }
           }
         }

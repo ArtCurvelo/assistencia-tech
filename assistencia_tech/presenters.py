@@ -19,7 +19,7 @@ from .domain.order_workflow import BUDGET_EDITABLE, OPEN_STATUSES, TECHNICIAN_LO
 from .domain.permissions import Permission, Principal, has_permission, is_own_order, transitions_for
 from .domain.pricing import compute_totals
 from .domain.validators import format_brl, format_cpf, format_phone, only_digits
-from .models import Client, Equipment, OrderStatus, ServiceOrder, Technician
+from .models import DELIVERY_COURIER, Client, Equipment, OrderStatus, ServiceOrder, Technician
 from .services.catalog import Catalog
 
 Row = dict[str, str]
@@ -114,6 +114,16 @@ def deadline_fields(order: ServiceOrder, today=None) -> Row:
     }
 
 
+def delivery_fields(order: ServiceOrder) -> Row:
+    """Forma de entrega das ordens pedidas pelo portal (add-client-self-service)."""
+    courier = order.delivery_mode == DELIVERY_COURIER
+    return {
+        "delivery_mode": order.delivery_mode,
+        "pickup_address": order.pickup_address if courier else "",
+        "pickup_period": order.pickup_period if courier else "",
+    }
+
+
 def order_row(order: ServiceOrder, catalog: Catalog) -> Row:
     client = catalog.clients_by_id.get(order.client_id)
     equipment = catalog.equipment_by_id.get(order.equipment_id)
@@ -139,7 +149,9 @@ def order_row(order: ServiceOrder, catalog: Catalog) -> Row:
         "opened_at": format_datetime(order.opened_at),
         "updated_at": format_datetime(order.updated_at),
         "search": search_key(order.code, client_name, equipment_name),
+        "client_phone": only_digits(client.phone) if client else "",
         **deadline_fields(order),
+        **delivery_fields(order),
     }
 
 
@@ -222,6 +234,7 @@ def next_statuses(order: ServiceOrder, principal: Principal | None) -> list[str]
 
 # Cores sólidas dos gráficos (versões opacas das cores dos badges).
 STATUS_COLORS: dict[str, str] = {
+    "Solicitado": "#5ad1e6",
     "Recebido": "#087cff",
     "Em análise": "#ffbe46",
     "Aguardando aprovação": "#a064ff",
@@ -352,6 +365,7 @@ def portal_order_row(order: ServiceOrder, equipment: Equipment | None) -> Row:
         "payment_status": payment,
         "payment_class": f"pay-badge pay-{slug(payment)}",
         **deadline_fields(order),
+        **delivery_fields(order),
     }
 
 
@@ -533,6 +547,10 @@ def attention_rows(catalog: Catalog, today=None) -> list[Row]:
     late = sorted((o for o in catalog.orders if deadlines.is_overdue(o, today)),
                   key=lambda o: (-deadlines.days_late(o, today), o.code))
     add(late, lambda o: deadline_fields(o, today)["late"], "late")
+    requested = sorted((o for o in catalog.orders if o.status == OrderStatus.REQUESTED),
+                       key=lambda o: (o.opened_at, o.code))
+    add(requested, lambda o: "Coleta por motoboy" if o.delivery_mode == DELIVERY_COURIER else "Nova solicitação",
+        "requested")
     def oldest_first(status):
         return sorted((o for o in catalog.orders if o.status == status), key=lambda o: (o.updated_at, o.code))
 
@@ -629,3 +647,9 @@ def monthly_chart(series) -> list[dict]:
          "recebido": float(p.received)}
         for p in series
     ]
+
+
+def portal_equipment_row(equipment: Equipment) -> Row:
+    """Equipamento do próprio cliente no portal (add-client-self-service)."""
+    return {"id": equipment.id, "description": equipment.description, "kind": equipment.kind,
+            "serial": equipment.serial_number or "—", "notes": equipment.notes}

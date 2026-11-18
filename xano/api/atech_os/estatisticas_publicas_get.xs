@@ -8,7 +8,7 @@ query "estatisticas_publicas" verb=GET {
       return = {type: "count"}
     } as $entregues
     db.query "os_servicos" {
-      where = $db.os_servicos.status != "entregue" && $db.os_servicos.status != "cancelado"
+      where = $db.os_servicos.status != "entregue" && $db.os_servicos.status != "cancelado" && $db.os_servicos.status != "solicitado"
       return = {type: "count"}
     } as $em_atendimento
     db.query "avaliacao" {

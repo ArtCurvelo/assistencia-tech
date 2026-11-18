@@ -145,6 +145,31 @@ class XanoPortalRepository(XanoRepository):
                 return refreshed
         raise NotFoundError("Ordem de serviço não encontrada.")
 
+    async def client_equipment(self, client_id: str):
+        items = [mappers.equipment_from(r) for r in await self._list("portal.equipment.list")]
+        return [e for e in items if e.client_id == client_id]
+
+    async def add_client_equipment(self, client_id: str, data):
+        # O backend usa o cliente do token; ``cliente_id`` não é enviado.
+        payload = {k: v for k, v in mappers.equipment_payload(data).items() if k != "cliente_id"}
+        return mappers.equipment_from(await self._record("portal.equipment.create", json=payload))
+
+    async def request_service(self, client_id: str, order: ServiceOrder) -> ServiceOrder:
+        # O backend confere o dono do equipamento e grava a ordem e o histórico numa transação.
+        payload = {
+            "item_cliente_id": int(order.equipment_id),
+            "descricao_problema": order.problem,
+            "entrega_modo": mappers.DELIVERY_TO_XANO[order.delivery_mode],
+            "coleta_endereco": order.pickup_address,
+            "coleta_periodo": order.pickup_period,
+        }
+        record = await self._record("portal.request_service", json=payload)
+        created_id = str(record.get("id"))
+        for refreshed, _ in await self.client_orders(client_id):
+            if mappers.order_id_of(refreshed) == created_id:
+                return refreshed
+        raise NotFoundError("Ordem de serviço não encontrada.")
+
     async def delete_account(self, user_id: str, client_id: str, password: str) -> None:
         # O backend confere a senha, as ordens em andamento e anonimiza numa transação.
         await self._call("portal.delete_account", json={"senha": password})

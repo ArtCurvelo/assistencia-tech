@@ -27,6 +27,7 @@ Text = Annotated[str, Field(min_length=1)]
 
 
 class OrderStatus(StrEnum):
+    REQUESTED = "Solicitado"  # pedido pelo cliente no portal; o equipamento ainda não chegou
     RECEIVED = "Recebido"
     ANALYSIS = "Em análise"
     AWAITING_APPROVAL = "Aguardando aprovação"
@@ -247,6 +248,12 @@ class Rating(_Model):
     at: datetime
 
 
+DELIVERY_STORE = "Levar à loja"
+DELIVERY_COURIER = "Coleta por motoboy"
+DELIVERY_MODES: tuple[str, ...] = (DELIVERY_STORE, DELIVERY_COURIER)
+PICKUP_PERIODS: tuple[str, ...] = ("Manhã", "Tarde", "Noite")
+
+
 class ServiceOrder(OrderCreate):
     code: Text
     status: OrderStatus = OrderStatus.RECEIVED
@@ -259,6 +266,10 @@ class ServiceOrder(OrderCreate):
     payments: tuple[Payment, ...] = ()
     history: tuple[HistoryEvent, ...] = ()
     rating: Rating | None = None
+    # Solicitação pelo portal (add-client-self-service); vazio nas ordens abertas no balcão.
+    delivery_mode: str = ""
+    pickup_address: str = ""
+    pickup_period: str = ""
 
 
 class PublicStats(_Model):

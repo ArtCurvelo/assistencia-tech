@@ -168,6 +168,18 @@ class PortalRepository(Protocol):
         """Status público da ordem, sem dados pessoais nem valores; ou ``NotFoundError``."""
         ...
 
+    async def client_equipment(self, client_id: str) -> list[Equipment]:
+        """Equipamentos do próprio cliente (add-client-self-service)."""
+        ...
+
+    async def add_client_equipment(self, client_id: str, data: EquipmentCreate) -> Equipment:
+        """Cadastra um equipamento do cliente; recusa número de série já usado."""
+        ...
+
+    async def request_service(self, client_id: str, order: ServiceOrder) -> ServiceOrder:
+        """Grava a ordem solicitada pelo cliente (status Solicitado) para um equipamento dele."""
+        ...
+
     async def delete_account(self, user_id: str, client_id: str, password: str) -> None:
         """Anonimiza o cadastro e desativa o login do titular (LGPD), mantendo as ordens."""
         ...

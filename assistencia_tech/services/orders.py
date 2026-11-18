@@ -12,6 +12,7 @@ from ..domain import deadlines
 from ..domain import order_operations as ops
 from ..domain.inventory import ensure_available
 from .inventory import parse_quantity
+from .notifications import notify_order_status
 from ..domain.clock import Clock, now_brt
 from ..domain.permissions import Permission as P
 from ..domain.permissions import Principal, ensure_can_modify_order, require, status_permission
@@ -98,7 +99,9 @@ class OrderService:
             raise ValidationError(f"O equipamento selecionado não pertence ao cliente {client.name}.")
         code = await self._gw.orders.next_code()
         order = ops.open_order(code, data, self._clock(), self._actor)
-        return await self._gw.orders.create(order)
+        saved = await self._gw.orders.create(order)
+        await notify_order_status(self._gw, saved, client)
+        return saved
 
     async def _mutate(self, code: str, permission: P, change: Mutation) -> ServiceOrder:
         user = require(self._principal, permission)
@@ -159,7 +162,9 @@ class OrderService:
         require(user, status_permission(order.status, parse_status(target)))
         ensure_can_modify_order(user, order)
         updated = ops.change_status(order, target, self._clock(), self._actor, reason)
-        return await self._gw.orders.save(updated)
+        saved = await self._gw.orders.save(updated)
+        await notify_order_status(self._gw, saved)
+        return saved
 
     async def public_view(self, code: str) -> PublicOrderView:
         if not code.strip():

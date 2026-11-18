@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from .data.errors import ConfigurationError
 
@@ -26,6 +26,12 @@ ENV_XANO_GROUP_AUTH = "XANO_GROUP_AUTH"
 ENV_XANO_GROUP_CLIENTE = "XANO_GROUP_CLIENTE"
 ENV_XANO_GROUP_OS = "XANO_GROUP_OS"
 ENV_PUBLIC_URL = "ASSISTENCIA_PUBLIC_URL"  # endereço público usado no QR code dos comprovantes
+ENV_RENDER_URL = "RENDER_EXTERNAL_URL"  # definido pelo Render; usado quando o endereço público não é informado
+# Autoatendimento e avisos (add-client-self-service)
+ENV_STORE_ADDRESS = "ASSISTENCIA_STORE_ADDRESS"  # endereço da loja exibido a quem vai levar o equipamento
+ENV_STORE_HOURS = "ASSISTENCIA_STORE_HOURS"
+ENV_BREVO_API_KEY = "BREVO_API_KEY"  # chave do serviço de e-mail; só no ambiente, nunca no repositório
+ENV_EMAIL_FROM = "ASSISTENCIA_EMAIL_FROM"  # remetente verificado no Brevo
 
 DEFAULT_GROUP_AUTH = "assistencia-tech-auth"
 DEFAULT_GROUP_CLIENTE = "assistencia-tech-cliente"
@@ -41,6 +47,10 @@ class Settings:
     xano_group_cliente: str = DEFAULT_GROUP_CLIENTE
     xano_group_os: str = DEFAULT_GROUP_OS
     public_url: str | None = None
+    store_address: str | None = None
+    store_hours: str | None = None
+    brevo_api_key: str | None = field(default=None, repr=False)  # nunca aparece em logs
+    email_from: str | None = None
 
 
 def _clean(value: str | None) -> str | None:
@@ -72,6 +82,14 @@ def _parse_public_url(raw: str | None) -> str | None:
     return raw.rstrip("/")
 
 
+def _parse_email_from(raw: str | None) -> str | None:
+    if raw is None:
+        return None
+    if "@" not in raw or " " in raw:
+        raise ConfigurationError(f"{ENV_EMAIL_FROM} deve ser um endereço de e-mail (recebido: '{raw}').")
+    return raw
+
+
 def load_settings(env: Mapping[str, str] | None = None) -> Settings:
     """Lê as configurações do ambiente (``os.environ`` por padrão)."""
     env = os.environ if env is None else env
@@ -94,5 +112,9 @@ def load_settings(env: Mapping[str, str] | None = None) -> Settings:
         xano_group_auth=_clean(env.get(ENV_XANO_GROUP_AUTH)) or DEFAULT_GROUP_AUTH,
         xano_group_cliente=_clean(env.get(ENV_XANO_GROUP_CLIENTE)) or DEFAULT_GROUP_CLIENTE,
         xano_group_os=_clean(env.get(ENV_XANO_GROUP_OS)) or DEFAULT_GROUP_OS,
-        public_url=_parse_public_url(_clean(env.get(ENV_PUBLIC_URL))),
+        public_url=_parse_public_url(_clean(env.get(ENV_PUBLIC_URL)) or _clean(env.get(ENV_RENDER_URL))),
+        store_address=_clean(env.get(ENV_STORE_ADDRESS)),
+        store_hours=_clean(env.get(ENV_STORE_HOURS)),
+        brevo_api_key=_clean(env.get(ENV_BREVO_API_KEY)),
+        email_from=_parse_email_from(_clean(env.get(ENV_EMAIL_FROM))),
     )

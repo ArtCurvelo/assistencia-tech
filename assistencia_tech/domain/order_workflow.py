@@ -14,6 +14,7 @@ from .validators import format_brl
 S = OrderStatus
 
 TRANSITIONS: dict[OrderStatus, tuple[OrderStatus, ...]] = {
+    S.REQUESTED: (S.RECEIVED, S.CANCELLED),
     S.RECEIVED: (S.ANALYSIS, S.CANCELLED),
     S.ANALYSIS: (S.AWAITING_APPROVAL, S.CANCELLED),
     S.AWAITING_APPROVAL: (S.REPAIR, S.CANCELLED),

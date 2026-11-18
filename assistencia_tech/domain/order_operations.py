@@ -51,6 +51,27 @@ def open_order(code: str, data: OrderCreate, at: datetime, author: str) -> Servi
     )
 
 
+def request_service(
+    code: str, data: OrderCreate, delivery: tuple[str, str, str], at: datetime, author: str
+) -> ServiceOrder:
+    """Ordem pedida pelo cliente no portal: nasce em Solicitado, sem previsão, com a forma de entrega."""
+    mode, address, period = delivery
+    return ServiceOrder(
+        code=code,
+        client_id=data.client_id,
+        equipment_id=data.equipment_id,
+        problem=data.problem,
+        status=OrderStatus.REQUESTED,
+        opened_at=at,
+        updated_at=at,
+        due_date=None,
+        delivery_mode=mode,
+        pickup_address=address,
+        pickup_period=period,
+        history=(history.requested(data.problem, mode, at, author),),
+    )
+
+
 def set_due_date(order: ServiceOrder, due, at: datetime, author: str) -> ServiceOrder:
     deadlines.ensure_due_date_editable(order)
     if due is None:
@@ -152,5 +173,8 @@ def change_status(
     changes: dict[str, object] = {"status": new_status}
     if new_status == OrderStatus.CANCELLED:
         changes["cancel_reason"] = reason
+    if order.status == OrderStatus.REQUESTED and new_status == OrderStatus.RECEIVED and order.due_date is None:
+        # O prazo conta a partir do recebimento do equipamento (add-client-self-service).
+        changes["due_date"] = deadlines.default_due_date(at)
     event = history.status_changed(order.status, new_status, at, author, reason if reason else "")
     return history.append(order, event, **changes)

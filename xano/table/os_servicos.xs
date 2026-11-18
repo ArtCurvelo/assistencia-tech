@@ -26,8 +26,14 @@ table "os_servicos" {
       description = "Ordem original, nas ordens em garantia"
     }
     enum status?="recebido" {
-      values = ["recebido", "em_analise", "aguardando_aprovacao", "em_reparo", "concluido", "entregue", "cancelado"]
+      values = ["solicitado", "recebido", "em_analise", "aguardando_aprovacao", "em_reparo", "concluido", "entregue", "cancelado"]
     }
+    enum? entrega_modo? {
+      values = ["loja", "motoboy"]
+      description = "Forma de entrega nas ordens pedidas pelo portal"
+    }
+    text? coleta_endereco? filters=trim
+    text? coleta_periodo? filters=trim
   }
   index = [
     {type: "primary", field: [{name: "id"}]}

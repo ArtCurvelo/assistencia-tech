@@ -16,6 +16,8 @@ from typing import Any
 
 from ...domain.clock import BRT
 from ...models import (
+    DELIVERY_COURIER,
+    DELIVERY_STORE,
     EQUIPMENT_KINDS,
     Client,
     ClientCreate,
@@ -40,7 +42,11 @@ logger = logging.getLogger(__name__)
 
 Record = dict[str, Any]
 
+DELIVERY_TO_XANO = {DELIVERY_STORE: "loja", DELIVERY_COURIER: "motoboy"}
+DELIVERY_FROM_XANO = {value: mode for mode, value in DELIVERY_TO_XANO.items()}
+
 STATUS_TO_XANO: dict[OrderStatus, str] = {
+    OrderStatus.REQUESTED: "solicitado",
     OrderStatus.RECEIVED: "recebido",
     OrderStatus.ANALYSIS: "em_analise",
     OrderStatus.AWAITING_APPROVAL: "aguardando_aprovacao",
@@ -354,6 +360,9 @@ def order_from(record: Record) -> ServiceOrder:
         due_date=to_date(record.get("previsao_entrega")),
         warranty_of=_linked_code(record.get("_garantia")),
         rating=rating_from(record.get("_avaliacao")),
+        delivery_mode=DELIVERY_FROM_XANO.get(_text(record.get("entrega_modo")), ""),
+        pickup_address=_text(record.get("coleta_endereco")),
+        pickup_period=_text(record.get("coleta_periodo")),
     )
 
 

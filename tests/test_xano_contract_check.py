@@ -41,7 +41,7 @@ def test_detects_missing_auth_fields_and_wrong_enum():
     assert "não exige autenticação (bearerAuth)" in problems
     assert "entrada sem: diagnostico" in problems
     assert "resposta sem: diagnostico" in problems
-    assert any(p.startswith("status deve aceitar recebido") for p in problems)
+    assert any(p.startswith("status deve aceitar solicitado, recebido") for p in problems)
 
 
 def test_detects_missing_endpoint_undocumented_response_and_group():

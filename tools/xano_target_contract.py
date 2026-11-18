@@ -18,6 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 ORDER_STATUS_VALUES = (
+    "solicitado",
     "recebido",
     "em_analise",
     "aguardando_aprovacao",
@@ -49,6 +50,9 @@ ORDER_FIELDS = (
     "status",
     "previsao_entrega",
     "garantia_de",
+    "entrega_modo",
+    "coleta_endereco",
+    "coleta_periodo",
 )
 ORDER_WITH_ADDONS = ORDER_FIELDS + ("_itens", "_pagamentos", "_historico", "_garantia", "_avaliacao")
 RATING_FIELDS = ("id", "created_at", "os_servicos_id", "cliente_id", "nota", "comentario")
@@ -135,6 +139,15 @@ TARGET: dict[str, tuple[Endpoint, ...]] = {
                  ("id", "created_at", "status", "aparelho", "modelo", "atualizado_em", "previsao_entrega"), {"status": ORDER_STATUS_VALUES},
                  purpose="Consulta pública: somente estes campos, sem dados pessoais nem valores."),
         # Resposta montada no XanoScript (objeto de contagens): campos conferidos pelo roteiro e pelos testes.
+        Endpoint("get", "/portal/equipamentos", "bearer", (), DEVICE_FIELDS,
+                 purpose="Perfil cliente: somente os aparelhos do cliente do token."),
+        Endpoint("post", "/portal/equipamentos", "bearer",
+                 ("aparelho", "marca", "modelo", "numero_serie", "observacoes"), DEVICE_FIELDS,
+                 purpose="Perfil cliente: cadastra um aparelho no próprio cadastro; série única."),
+        Endpoint("post", "/portal/solicitacao", "bearer",
+                 ("item_cliente_id", "descricao_problema", "entrega_modo", "coleta_endereco", "coleta_periodo"),
+                 ORDER_FIELDS, {"status": ORDER_STATUS_VALUES, "entrega_modo": ("loja", "motoboy")},
+                 purpose="Perfil cliente: solicita atendimento; a ordem nasce em solicitado."),
         Endpoint("post", "/portal/excluir_conta", "bearer", ("senha",), None,
                  purpose="Perfil cliente (LGPD): anonimiza o cadastro e desativa o login; mantém as ordens."),
         Endpoint("get", "/estatisticas_publicas", "public", (), None,

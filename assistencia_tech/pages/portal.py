@@ -10,6 +10,7 @@ from ..components import (
     dialog_actions,
     field,
     form_dialog,
+    options_select,
     empty_state,
     panel,
     panel_header,
@@ -17,7 +18,9 @@ from ..components import (
     public_page,
     status_badge,
     table,
+    values_select,
 )
+from ..models import DELIVERY_COURIER, DELIVERY_STORE, EQUIPMENT_KINDS, PICKUP_PERIODS
 from ..state import PortalOrderState, PortalState
 
 
@@ -74,7 +77,95 @@ def portal_page() -> rx.Component:
                 ),
             ),
         ),
+        _request_panel(),
+        _equipment_panel(),
         _privacy_panel(),
+    )
+
+
+def _equipment_row(equipment) -> rx.Component:
+    return rx.table.row(rx.table.cell(equipment["description"]), rx.table.cell(equipment["kind"]),
+                        rx.table.cell(equipment["serial"]))
+
+
+def _equipment_panel() -> rx.Component:
+    """O cliente cadastra e vê os próprios equipamentos (add-client-self-service)."""
+    return panel(
+        panel_header("Meus equipamentos"),
+        table(["Equipamento", "Tipo", "Número de série"], PortalState.my_equipment, _equipment_row,
+              "Você ainda não cadastrou equipamentos."),
+        rx.form(
+            rx.grid(
+                field("Tipo", values_select("kind", list(EQUIPMENT_KINDS), "Tipo de aparelho", required=True)),
+                field("Marca", rx.input(name="brand", required=True, class_name="input", placeholder="Ex.: Dell")),
+                field("Modelo", rx.input(name="model", required=True, class_name="input",
+                                         placeholder="Ex.: Inspiron 15")),
+                field("Número de série (opcional)", rx.input(name="serial_number", class_name="input")),
+                columns=rx.breakpoints(initial="1", md="4"), spacing="3", width="100%",
+            ),
+            field("Observações (opcional)", rx.input(name="notes", class_name="input",
+                                                      placeholder="Ex.: tampa trincada, sem carregador")),
+            rx.button("Cadastrar equipamento", type="submit", loading=PortalState.is_loading,
+                      disabled=PortalState.is_loading, class_name="btn btn-outline"),
+            on_submit=PortalState.add_my_equipment,
+            key=PortalState.equipment_form_key,
+            class_name="stack-form",
+        ),
+    )
+
+
+def _mode_button(mode: str, icon: str) -> rx.Component:
+    chosen = PortalState.request_mode == mode
+    return rx.button(
+        icon + " " + mode,
+        type="button",
+        on_click=PortalState.choose_request_mode(mode),
+        class_name=rx.cond(chosen, "mode-btn mode-btn-active", "mode-btn"),
+        aria_pressed=rx.cond(chosen, "true", "false"),
+    )
+
+
+def _request_panel() -> rx.Component:
+    """O cliente pede atendimento e escolhe como o equipamento chega (add-client-self-service)."""
+    store = PortalState.store
+    return panel(
+        panel_header("Solicitar atendimento"),
+        rx.cond(
+            PortalState.my_equipment.length() > 0,
+            rx.form(
+                field("Equipamento", options_select("equipment_id", PortalState.equipment_options,
+                                                    "Escolha o equipamento", required=True)),
+                field("O que está acontecendo?", rx.text_area(name="problem", required=True, class_name="input",
+                                                              placeholder="Descreva o problema")),
+                rx.text("Como o equipamento chega até nós?", class_name="form-label"),
+                rx.flex(_mode_button(DELIVERY_STORE, "🏬"), _mode_button(DELIVERY_COURIER, "🛵"),
+                        gap="10px", wrap="wrap", role="group", aria_label="Forma de entrega"),
+                rx.cond(
+                    PortalState.request_mode == DELIVERY_STORE,
+                    rx.box(
+                        rx.text("Leve o equipamento a:", class_name="info-label"),
+                        rx.text(store["address"], class_name="info-value"),
+                        rx.cond(store["hours"] != "", rx.text("Horário: ", store["hours"], class_name="muted")),
+                        class_name="store-box",
+                    ),
+                    rx.box(
+                        field("Endereço de coleta", rx.input(name="pickup_address", class_name="input",
+                                                              max_length=200,
+                                                              placeholder="Rua, número, bairro e complemento")),
+                        field("Período de preferência", values_select("pickup_period", list(PICKUP_PERIODS),
+                                                                      "Escolha o período")),
+                        rx.text("A coleta por motoboy não tem custo. A assistência confirma o horário com você.",
+                                class_name="muted tiny"),
+                    ),
+                ),
+                rx.button("Solicitar atendimento", type="submit", loading=PortalState.is_loading,
+                          disabled=PortalState.is_loading, class_name="btn btn-primary"),
+                on_submit=PortalState.submit_request,
+                reset_on_submit=False,
+                class_name="stack-form",
+            ),
+            rx.text("Cadastre um equipamento acima para solicitar atendimento.", class_name="muted"),
+        ),
     )
 
 
@@ -244,6 +335,9 @@ def portal_order_page() -> rx.Component:
                             _info("Previsão de entrega", o["due_date"]),
                             rx.cond(o["warranty_until"] != "", _info("Garantia até", o["warranty_until"])),
                             rx.cond(o["warranty_of"] != "", _info("Atendimento em garantia da", o["warranty_of"])),
+                            rx.cond(o["delivery_mode"] != "", _info("Entrega do equipamento", o["delivery_mode"])),
+                            rx.cond(o["pickup_address"] != "",
+                                    _info("Coleta", rx.fragment(o["pickup_address"], " · ", o["pickup_period"]))),
                             columns=rx.breakpoints(initial="1", md="3"), spacing="4", width="100%"),
                     rx.cond(o["diagnosis"] != "", rx.box(_info("Diagnóstico", o["diagnosis"]))),
                 ),
