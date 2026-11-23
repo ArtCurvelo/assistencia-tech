@@ -95,4 +95,5 @@ query "portal/solicitacao" verb=POST {
     }
   }
   response = $ordem
+  guid = "qWT_edIvt1NlK3RS6Y8bXQxbTe4"
 }

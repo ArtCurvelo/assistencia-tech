@@ -18,4 +18,5 @@ query "portal/equipamentos" verb=GET {
     } as $aparelhos
   }
   response = $aparelhos
+  guid = "oZtqkdkJlyeyyqcs4I4oLAbWcCU"
 }

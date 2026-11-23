@@ -49,4 +49,5 @@ query "portal/equipamentos" verb=POST {
     } as $aparelho
   }
   response = $aparelho
+  guid = "ailsqRX_6HTAH90DvkiqsS_inoM"
 }

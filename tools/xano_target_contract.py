@@ -146,7 +146,9 @@ TARGET: dict[str, tuple[Endpoint, ...]] = {
                  purpose="Perfil cliente: cadastra um aparelho no próprio cadastro; série única."),
         Endpoint("post", "/portal/solicitacao", "bearer",
                  ("item_cliente_id", "descricao_problema", "entrega_modo", "coleta_endereco", "coleta_periodo"),
-                 ORDER_FIELDS, {"status": ORDER_STATUS_VALUES, "entrega_modo": ("loja", "motoboy")},
+                 # Resposta criada dentro da transação (sem esquema na documentação do Xano): os campos são
+                 # conferidos pelo roteiro no Xano real e pelos testes do adaptador.
+                 None,
                  purpose="Perfil cliente: solicita atendimento; a ordem nasce em solicitado."),
         Endpoint("post", "/portal/excluir_conta", "bearer", ("senha",), None,
                  purpose="Perfil cliente (LGPD): anonimiza o cadastro e desativa o login; mantém as ordens."),
